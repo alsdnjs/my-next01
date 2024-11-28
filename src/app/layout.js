@@ -2,7 +2,7 @@
 // layout 이 필요없는 간단한 페이지에서는 생략 가능
 
 import Link from "next/link";
-
+import './globals.css'
 // 페이지 전체의 공통 구조를 랜더링 할 때 사용
 
 // 부모 컴포넌트
@@ -20,8 +20,8 @@ export default function RootLayout({ children }) {
           <li><Link href="/read/2">CSS</Link> </li>
           <li><Link href="/read/3">JS</Link></li>
           <li><Link href="/gallery"> Image</Link></li>
-          <li>ItemList(외부서버)</li>
-          <li>Guestbook(Spring 서버)</li>
+          <li><Link href="/itemList">ItemList(외부서버)</Link></li>
+          <li><Link href="/guestBookList">Guestbook(Spring 서버)</Link></li>
         </ol>
         {children}
         <ul>
