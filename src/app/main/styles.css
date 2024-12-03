@@ -1,0 +1,39 @@
+#app {
+    height: 100%;
+  }
+  
+  html,
+  body {
+    position: relative;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    background: #eee;
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    color: #000;
+  }
+  
+  .swiper {
+    width: 100%;
+    height: 60vh; /* 스와이프 영역의 높이를 60%로 조정 */
+  }
+  
+  .swiper-slide {
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .swiper-slide img {
+    display: block;
+    width: 100%;
+    height: auto; /* 이미지를 비율에 맞게 표시 */
+    object-fit: cover; /* 이미지가 영역을 꽉 채우도록 설정 */
+  }
+  
