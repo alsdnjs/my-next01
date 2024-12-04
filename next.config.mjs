@@ -15,6 +15,10 @@ const nextConfig = {
                 source: "/members/:path*",
                 destination: `${process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL}/members/:path*`, // Members API 경로
             },
+            {
+                source: '/api/:path*', // 이 경로에 들어오는 요청을
+                destination: 'https://apis.data.go.kr/:path*', // 실제 API 주소로 프록시
+            }
         ];
     }
 };
