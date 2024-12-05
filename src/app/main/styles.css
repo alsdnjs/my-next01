@@ -28,6 +28,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: 6; /* 슬라이드 간 간격을 0으로 설정 */
   }
   
   .swiper-slide img {
@@ -109,5 +110,132 @@
   height: auto;
   border-radius: 8px;
 }
+
+ /* 아래 스와이프 CSS */
+.new-swiper-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+/* 네비게이션 버튼 공통 스타일 */
+.swiper-button-next,
+.swiper-button-prev {
+    color: #ffffff; /* 버튼 색상 */
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+    border-radius: 50%; /* 둥근 모양 */
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+/* 호버 시 강조 효과 */
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: rgba(0, 0, 0, 0.8); /* 호버 시 배경색 변경 */
+    transform: scale(1.1); /* 살짝 확대 */
+}
+
+/* 버튼 위치 조정 */
+.swiper-button-next {
+    right: 10px; /* 오른쪽 여백 */
+}
+
+.swiper-button-prev {
+    left: 10px; /* 왼쪽 여백 */
+}
+
+/* 버튼 아이콘 크기 조정 */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    font-size: 14px; /* 기본 아이콘 크기 */
+}
+
+.new-swiper-container {
+  margin: 10px 0; /* 스와이퍼 전체 여백 */
+  background-color: #f5f7fa;
+ 
+}
+
+.camping-slide {
+  
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-radius: 35px;
+}
+
+/* 카드안 이미지 스타일 */
+.camping-image {
+  width: 100%;              /* 부모 크기에 맞게 width 조정 */
+  aspect-ratio: 16 / 9;     /* 16:9 비율 설정 */
+  object-fit: cover;        /* 이미지를 비율에 맞게 잘라서 채우기 */
+  height: auto;             /* 높이는 자동으로 조정 */
+  margin: 5px;             /* 이미지 간의 간격을 10px로 설정 */
+  border-radius: 30px;
+  
+}
+
+/* 카드 제목 스타일 */
+.camping-slide h3 {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+
+.category-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  gap : 20px
+ 
+}
+
+/* 카테고리 CSS */
+.category-button {
+  padding: 10px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  background-color: #f4f8f6;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  display: flex; /* Flexbox 적용 */
+  flex-direction: column; /* 아이콘과 텍스트를 수직으로 정렬 */
+  align-items: center; /* 수평 중앙 정렬 */
+}
+
+.category-button:hover {
+  background-color: #ddd;
+}
+
+.category-button svg {
+  margin-bottom: 5px; /* 아이콘과 텍스트 간 간격 */
+}
+
+
+/* 아래 스와이프 텍스트 css */
+.month-text {
+  font-size: 24px;        /* 텍스트 크기 */
+  font-weight: bold;      /* 텍스트 두께 */
+  color: black;           /* 텍스트 색상 */
+  text-align: center;     /* 텍스트 가운데 정렬 */
+  position: absolute;     /* 위치를 절대적으로 설정 */
+  top: 40px;                 /* 상단에 위치 */
+  left: 25%;              /* 가로 중앙으로 위치 */
+  transform: translateX(-60%); /* 가로 중앙 정렬 */
+  z-index: 10;            /* 이미지 위에 텍스트가 위치하도록 z-index 설정 */
+}
+
+
+
 
 

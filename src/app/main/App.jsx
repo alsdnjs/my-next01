@@ -7,53 +7,56 @@ import "swiper/css/effect-fade";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/virtual"; // 필요한 스타일 추가
+import AirportShuttleRoundedIcon from '@mui/icons-material/AirportShuttleRounded'; // 카테고리 아이콘
+import DeckIcon from '@mui/icons-material/Deck'; // 카테고리 아이콘
+import LocalShippingIcon from '@mui/icons-material/LocalShipping'; // 카테고리 아이콘
+import FestivalIcon from '@mui/icons-material/Festival'; // 카테고리 아이콘
 import { EffectFade, Navigation, Pagination, Autoplay, Virtual } from "swiper/modules";
 import './styles.css';
 
 export default function App() {
-    // 상태 초기화
     const [data, setData] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedRegion, setSelectedRegion] = useState('');
-    const [filteredData, setFilteredData] = useState([]);
+    const [selectedRegion, setSelectedRegion] = useState(''); // 지역 선택 상태
+    const [filteredData, setFilteredData] = useState([]); // 필터링된 데이터 상태
     const [swiperRef, setSwiperRef] = useState(null);
+    const [showNavigation, setShowNavigation] = useState(false); // 네비게이션 버튼 상태
     const appendNumber = useRef(500);
     const prependNumber = useRef(1);
 
     const regions = [
         "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
-        "경기도", "강원도", "충청북도", "충청남도", "전라북도", "전라남도",
+        "경기도", "강원", "충북", "충남", "전라북도", "전라남도",
         "경상북도", "경상남도", "제주도"
     ];
 
-    // Create array with 500 slides for new swiper
+    const categories = [
+        "카라반", "일반야영장", "자동차야영장", "글램핑"
+    ];
+
     const [slides, setSlides] = useState(
         Array.from({ length: 500 }).map((_, index) => `Slide ${index + 1}`)
     );
 
-    // 컴포넌트가 마운트될 때 API 호출
     useEffect(() => {
-        fetchData(); // 데이터 가져오는 함수 호출
+        fetchData();
     }, []);
 
-    // API 호출 및 데이터 처리
     const fetchData = () => {
         fetch("https://apis.data.go.kr/B551011/GoCamping/basedList?serviceKey=0nU1JWq4PQ1i5sjvesSwir9C4yWQy66K695whewvIpbxtuV1H5ZU8gDIp4c0N9rL4Yt4wQU5eLviLsHKxks9rg%3D%3D&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json")
-            .then(response => response.text()) // 응답을 텍스트로 읽어봄
+            .then(response => response.text())
             .then(text => {
-                console.log(text); // 응답 내용 로그로 출력
                 try {
-                    const data = JSON.parse(text); // 응답이 JSON이라면 파싱
+                    const data = JSON.parse(text);
                     setData(data.response.body.items.item);
-                    setFilteredData(data.response.body.items.item); // 초기에는 모든 데이터 표시
+                    setFilteredData(data.response.body.items.item);
                 } catch (error) {
-                    console.error("Failed to parse JSON:", error); // JSON 파싱 오류 처리
+                    console.error("Failed to parse JSON:", error);
                 }
             })
             .catch(error => console.error("Error fetching data:", error));
     };
 
-    // 검색 기능
     const handleSearch = (e) => {
         e.preventDefault();
         const filtered = data.filter((item) => {
@@ -61,12 +64,21 @@ export default function App() {
             const matchesQuery = searchQuery ? item.facltNm.includes(searchQuery) : true;
             return matchesRegion && matchesQuery;
         });
-        setFilteredData(filtered); // 필터링된 데이터 설정
+        setFilteredData(filtered);
     };
 
-    // Prepend slides
+    const handleCategoryClick = (category) => {
+        if (category === "카라반") {
+            const filtered = data.filter((item) => item.facltNm.includes(category) || item.addr1.includes(category));
+            setFilteredData(filtered);
+        } else {
+            const filtered = data.filter((item) => item.facltNm.includes(category));
+            setFilteredData(filtered);
+        }
+    };
+
     const prepend = () => {
-        setSlides([
+        setSlides([ 
             `Slide ${prependNumber.current - 2}`,
             `Slide ${prependNumber.current - 1}`,
             ...slides,
@@ -75,19 +87,16 @@ export default function App() {
         swiperRef.slideTo(swiperRef.activeIndex + 2, 0);
     };
 
-    // Append slides
     const append = () => {
         setSlides([...slides, 'Slide ' + ++appendNumber.current]);
     };
 
-    // Slide to specific index
     const slideTo = (index) => {
         swiperRef.slideTo(index - 1, 0);
     };
 
     return (
         <div>
-            {/* 기존 캠핑장 슬라이드 */}
             <div className="slider-container">
                 <Swiper
                     spaceBetween={30}
@@ -95,36 +104,30 @@ export default function App() {
                     navigation={true}
                     pagination={{ clickable: true }}
                     autoplay={{
-                        delay: 4000, // 슬라이드 간격 4초 (단위: ms)
-                        disableOnInteraction: false, // 유저와 상호작용 후에도 자동 슬라이드 유지
+                        delay: 4000,
+                        disableOnInteraction: false,
                     }}
                     modules={[EffectFade, Navigation, Pagination, Autoplay]}
                     className="mySwiper"
                 >
                     <SwiperSlide>
                         <div className="slide-content">
-                            <img src="https://swiperjs.com/demos/images/nature-1.jpg" alt="Slide 1" />
+                            <img src="./images/cam1.webp" alt="Slide 1" />
                         </div>
                     </SwiperSlide>
                     <SwiperSlide>
                         <div className="slide-content">
-                            <img src="https://swiperjs.com/demos/images/nature-2.jpg" alt="Slide 2" />
+                            <img src="./images/cam1.webp"  alt="Slide 2" />
                         </div>
                     </SwiperSlide>
                     <SwiperSlide>
                         <div className="slide-content">
-                            <img src="https://swiperjs.com/demos/images/nature-3.jpg" alt="Slide 3" />
-                        </div>
-                    </SwiperSlide>
-                    <SwiperSlide>
-                        <div className="slide-content">
-                            <img src="https://swiperjs.com/demos/images/nature-4.jpg" alt="Slide 4" />
+                            <img src="./images/cam1.webp"  alt="Slide 3" />
                         </div>
                     </SwiperSlide>
                 </Swiper>
             </div>
 
-            {/* 검색 폼 */}
             <form onSubmit={handleSearch} className="search-form">
                 <input
                     type="text"
@@ -150,58 +153,68 @@ export default function App() {
                 </button>
             </form>
 
-            {/* 캠핑장 데이터 목록 */}
-            <div className="camping-list">
-                {filteredData && filteredData.map((item, index) => (
-                    <div key={index} className="camping-item">
-                        <img src={item.firstImageUrl} alt={item.facltNm} style={{ height: '300px', objectFit: 'cover' }} />
-                        <h1>{item.facltNm}</h1>
-                        <p>주소: {item.addr1}</p>
-                        <p>전화번호: {item.tel}</p>
-                    </div>
+            <div className="category-container">
+                {categories.map((category, index) => (
+                    <button 
+                        key={index} 
+                        className="category-button" 
+                        onClick={() => handleCategoryClick(category)}
+                    >
+                        {category === "카라반" ? (
+                            <AirportShuttleRoundedIcon style={{ marginRight: "5px" }} />
+                        ) : category === "일반야영장" ? (  // '일반야영장'에 아이콘 
+                            <DeckIcon style={{ marginRight: "5px" }} />
+                        ) : category === "자동차야영장" ? ( // '자동차야영장'에 LocalShippingIcon 
+                            <LocalShippingIcon style={{ marginRight: "5px" }} />
+                        ) : category === "글램핑" ? ( // '글램핑'에 FestivalIcon 
+                            <FestivalIcon style={{ marginRight: "5px" }} />
+                        ) : null}
+                        {category}
+                    </button>
                 ))}
             </div>
 
-            {/* 새로운 스와이프 */}
-            <div className="new-swiper-container">
+            {/* 아래 스와이프 */}
+            <div
+                className="new-swiper-container"
+                onMouseEnter={() => setShowNavigation(true)} // 마우스 진입 시 버튼 표시
+                onMouseLeave={() => setShowNavigation(false)} // 마우스 나가면 버튼 숨김
+            >
+                <div className="month-text">12월 추천 캠핑장 !</div> {/* 텍스트 추가 */}
                 <Swiper
                     modules={[Virtual, Navigation, Pagination]}
                     onSwiper={setSwiperRef}
                     slidesPerView={3}
                     centeredSlides={true}
-                    spaceBetween={30}
+                    spaceBetween={1}
                     pagination={{
                         type: 'fraction',
                     }}
-                    navigation={true}
+                    navigation={showNavigation} // 상태에 따라 네비게이션 활성화
                     virtual
                 >
                     {filteredData && filteredData.map((item, index) => (
                         <SwiperSlide key={item.facltNm} virtualIndex={index}>
                             <div className="camping-slide">
-                                <img src={item.firstImageUrl} alt={item.facltNm} style={{ height: '200px', objectFit: 'cover' }} />
+                                <img
+                                    src={item.firstImageUrl}
+                                    alt={item.facltNm}
+                                    className="camping-image" // 클래스 이름 추가
+                                />
+                                <div className="image-overlay"></div>
                                 <h3>{item.facltNm}</h3>
                             </div>
                         </SwiperSlide>
                     ))}
                 </Swiper>
 
-                <div className="append-buttons">
-                    <button onClick={() => prepend()} className="prepend-2-slides">
-                        Prepend 2 Slides
-                    </button>
-                    <button onClick={() => slideTo(1)} className="prepend-slide">
-                        Slide 1
-                    </button>
-                    <button onClick={() => slideTo(250)} className="slide-250">
-                        Slide 250
-                    </button>
-                    <button onClick={() => slideTo(500)} className="slide-500">
-                        Slide 500
-                    </button>
-                    <button onClick={() => append()} className="append-slides">
-                        Append Slide
-                    </button>
+                <div className="camping-list">
+                    {filteredData && filteredData.map((item, index) => (
+                        <div key={index} className="camping-item">
+                            <img src={item.firstImageUrl} alt={item.facltNm} style={{ height: '300px', objectFit: 'cover' }} />
+                            <h1>{item.facltNm}</h1>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

@@ -20,7 +20,8 @@ const nextConfig = {
                 destination: 'https://apis.data.go.kr/:path*', // 실제 API 주소로 프록시
             }
         ];
-    }
+    },
+    
 };
 
 export default nextConfig;
