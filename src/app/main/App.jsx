@@ -18,6 +18,7 @@ export default function App() {
     const [data, setData] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRegion, setSelectedRegion] = useState(''); // 지역 선택 상태
+    const [selectedCategory, setSelectedCategory] = useState(''); // 카테고리 선택 상태
     const [filteredData, setFilteredData] = useState([]); // 필터링된 데이터 상태
     const [swiperRef, setSwiperRef] = useState(null);
     const [showNavigation, setShowNavigation] = useState(false); // 네비게이션 버튼 상태
@@ -43,7 +44,7 @@ export default function App() {
     }, []);
 
     const fetchData = () => {
-        fetch("https://apis.data.go.kr/B551011/GoCamping/basedList?serviceKey=0nU1JWq4PQ1i5sjvesSwir9C4yWQy66K695whewvIpbxtuV1H5ZU8gDIp4c0N9rL4Yt4wQU5eLviLsHKxks9rg%3D%3D&numOfRows=10&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json")
+        fetch("https://apis.data.go.kr/B551011/GoCamping/basedList?serviceKey=0nU1JWq4PQ1i5sjvesSwir9C4yWQy66K695whewvIpbxtuV1H5ZU8gDIp4c0N9rL4Yt4wQU5eLviLsHKxks9rg%3D%3D&numOfRows=1000&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json")
             .then(response => response.text())
             .then(text => {
                 try {
@@ -113,16 +114,19 @@ export default function App() {
                     <SwiperSlide>
                         <div className="slide-content">
                             <img src="./images/cam1.webp" alt="Slide 1" />
+                            <div className="slide-text">KyungBin Camping, the perfect retreat in nature !</div> {/* 텍스트 추가 */}
                         </div>
                     </SwiperSlide>
                     <SwiperSlide>
                         <div className="slide-content">
-                            <img src="./images/cam1.webp"  alt="Slide 2" />
+                            <img src="./images/campingg2.jpg"  alt="Slide 2" />
+                            <div className="slide-text">Enjoy a relaxing camping trip at KyungBin Camping, book now !</div> {/* 텍스트 추가 */}
                         </div>
                     </SwiperSlide>
                     <SwiperSlide>
                         <div className="slide-content">
-                            <img src="./images/cam1.webp"  alt="Slide 3" />
+                            <img src="./images/campingg3.jpg"  alt="Slide 3" />
+                            <div className="slide-text">KyungBin Camping makes your camping trip extra special !</div> {/* 텍스트 추가 */}
                         </div>
                     </SwiperSlide>
                 </Swiper>
@@ -133,7 +137,7 @@ export default function App() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="검색어를 입력하세요"
+                    placeholder="Search ..."
                     className="search-input"
                 />
                 <select
@@ -141,15 +145,30 @@ export default function App() {
                     onChange={(e) => setSelectedRegion(e.target.value)}
                     className="region-select"
                 >
-                    <option value="">지역 선택</option>
+                    <option value="">region</option>
                     {regions.map((region, i) => (
                         <option key={i} value={region}>
                             {region}
                         </option>
                     ))}
                 </select>
+
+                <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="category-select"
+                >
+                    <option value="">category</option>
+                    {categories.map((category, index) => (
+                        <option key={index} value={category}>
+                            {category}
+                        </option>
+                    ))}
+                </select>
+
+
                 <button type="submit" className="search-button">
-                    검색
+                search
                 </button>
             </form>
 
@@ -180,43 +199,52 @@ export default function App() {
                 onMouseEnter={() => setShowNavigation(true)} // 마우스 진입 시 버튼 표시
                 onMouseLeave={() => setShowNavigation(false)} // 마우스 나가면 버튼 숨김
             >
-                <div className="month-text">12월 추천 캠핑장 !</div> {/* 텍스트 추가 */}
-                <Swiper
-                    modules={[Virtual, Navigation, Pagination]}
-                    onSwiper={setSwiperRef}
-                    slidesPerView={3}
-                    centeredSlides={true}
-                    spaceBetween={1}
-                    pagination={{
-                        type: 'fraction',
-                    }}
-                    navigation={showNavigation} // 상태에 따라 네비게이션 활성화
-                    virtual
-                >
-                    {filteredData && filteredData.map((item, index) => (
-                        <SwiperSlide key={item.facltNm} virtualIndex={index}>
-                            <div className="camping-slide">
-                                <img
-                                    src={item.firstImageUrl}
-                                    alt={item.facltNm}
-                                    className="camping-image" // 클래스 이름 추가
-                                />
-                                <div className="image-overlay"></div>
-                                <h3>{item.facltNm}</h3>
-                            </div>
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
-
-                <div className="camping-list">
-                    {filteredData && filteredData.map((item, index) => (
-                        <div key={index} className="camping-item">
-                            <img src={item.firstImageUrl} alt={item.facltNm} style={{ height: '300px', objectFit: 'cover' }} />
-                            <h1>{item.facltNm}</h1>
-                        </div>
-                    ))}
+                <div className="month-text">경빈캠핑에 오신 것을 환영해요 !</div> {/* 텍스트 추가 */}
+                <div className="additional-text">
+        12월에 이런 캠핑장 어떠세요 ? {/* 여기에 추가 텍스트 작성 */}
+    </div>
+                
+    <Swiper
+    modules={[Virtual, Navigation, Pagination]}
+    onSwiper={setSwiperRef}
+    slidesPerView={3}
+    centeredSlides={true}
+    spaceBetween={1}
+    pagination={{
+        type: 'fraction',
+    }}
+    navigation={showNavigation} // 상태에 따라 네비게이션 활성화
+    virtual
+>
+    {filteredData && filteredData
+        .filter(item => item.induty.includes("카라반")) // 'induty'에 '카라반' 텍스트가 포함된 항목만 필터링
+        .map((item, index) => (
+            <SwiperSlide key={item.facltNm} virtualIndex={index}>
+                <div className="camping-slide">
+                    <img
+                        src={item.firstImageUrl}
+                        alt={item.facltNm}
+                        className="camping-image" // 클래스 이름 추가
+                    />
+                    <div className="image-overlay"></div>
+                    <h3>{item.facltNm}</h3>
                 </div>
-            </div>
-        </div>
+            </SwiperSlide>
+        ))}
+</Swiper>
+
+
+
+       </div>
+        {/* <div className="camping-list">
+           {filteredData && filteredData.map((item, index) => (
+               <div key={index} className="camping-item">
+                   <img src={item.firstImageUrl} alt={item.facltNm} style={{ height: '300px', objectFit: 'cover' }} />
+                   <h1>{item.facltNm}</h1>
+               </div>
+           ))}
+       </div>*/}
+        </div> 
     );
 }
+  
