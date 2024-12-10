@@ -1,9 +1,9 @@
 "use client"
 import React from 'react';
 import Header from './component/Header';
-import App from './main/App';
 import Footer from './component/Footer';
-import Map from './map/Map';
+
+
 
 
 const Layout = ({ children }) => {
@@ -11,12 +11,11 @@ const Layout = ({ children }) => {
     <html lang="ko">
       <body>
         <Header />
-        <App />
-        <Map />
-       
+        
+        {children}
+        
         <Footer />    
 
-        {children}
       </body>
      
     </html>

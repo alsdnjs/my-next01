@@ -14,6 +14,8 @@ import FestivalIcon from '@mui/icons-material/Festival'; // 카테고리 아이�
 import { EffectFade, Navigation, Pagination, Autoplay, Virtual } from "swiper/modules";
 import './styles.css';
 
+
+
 export default function App() {
     const [data, setData] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -97,7 +99,7 @@ export default function App() {
     };
 
     return (
-        <div>
+        <div className="outer-container"> {/* 전체 뒷 배경 */}
             <div className="slider-container">
                 <Swiper
                     spaceBetween={30}
@@ -131,6 +133,7 @@ export default function App() {
                     </SwiperSlide>
                 </Swiper>
             </div>
+            
 
             <form onSubmit={handleSearch} className="search-form">
                 <input

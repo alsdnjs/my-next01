@@ -89,7 +89,7 @@ const Header = () => {
                 <Link href="/" className="appbar-link">
                   Login
                 </Link>
-                <Link href="/" className="appbar-link">
+                <Link href="/notice" className="appbar-link">
                   Customer Service
                 </Link>
               </Box>
@@ -101,7 +101,7 @@ const Header = () => {
 
             {!isSmallScreen && (
               <Box className="appbar-right-menu">
-                <Link href="/admin/campgrounds/search" className="appbar-link">
+                <Link href="/campinglist" className="appbar-link">
                   Camping GO
                 </Link>
                 <Link href="/" className="appbar-link">

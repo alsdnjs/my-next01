@@ -21,7 +21,7 @@ body {
   position: relative;
   width: 100%;
   height: 90vh; /* 스와이프 영역의 높이를 60%로 조정 */
- 
+  
 }
 
 .swiper-slide {
@@ -150,49 +150,43 @@ body {
   height: auto;
   border-radius: 8px;
 }
-
-
+/* 아래 스와이프의 뒷 배경 색 */
+.outer-container {
+  background: #f9f9f5; /* 배경 그라디언트 */
+}
 
 /* 아래 스와이프 CSS */
 .new-swiper-container {
   position: relative;
-  width: 100%;
-  height: auto;
-  overflow: hidden;
-  margin: 0 auto;  /* 좌우 중앙 정렬 */
-  background-color: #f5f7fa;
-  
-}
-
-.swiper-wrapper {
-  display: flex; /* 스와이프 컨테이너 내부 카드들을 가로로 나열 */
-  gap: 0; /* 간격을 완전히 없앰 */
-  margin: 0; /* 여백 제거 */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 유동적으로 배치 */
+  gap: 25px; /* 카드 간 간격을 5px로 설정 */
+  width: 58%;
+  background-color: #f9f9f5;
+  margin: 0 auto; /* 중앙 정렬 */
 }
 
 .camping-slide {
   background-color: #fff;
-  padding: 0; /* 내부 패딩 제거 */
-  border-radius: 1px;
+  border-radius: 20px; /* 카드 둥글기 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
-  margin: 0; /* 카드 간 간격 없앰 */
-  border-radius: 35px;
-  flex: 1 0 33.33%; /* 각 카드 너비가 1/3씩 차지하도록 설정 */
-  max-width: 300px; /* 카드 최대 크기 */
+  margin: 10px; /* 카드 간 추가 간격 */
+  padding: 8px; /* 카드 내부 여백 */
 }
 
 
-/* 카드안 이미지 스타일 */
 .camping-image {
   width: 100%;              /* 부모 크기에 맞게 width 조정 */
   aspect-ratio: 16 / 9;     /* 16:9 비율 설정 */
   object-fit: cover;        /* 이미지를 비율에 맞게 잘라서 채우기 */
   height: auto;             /* 높이는 자동으로 조정 */
-  margin: 3px;             /* 이미지 간의 간격을 10px로 설정 */
+
   border-radius: 15px;
   transition: transform 0.6s ease, box-shadow 0.3s ease; /* 애니메이션 추가 */
 }
+
+
 /* 카드에 마우스 올렸을 때 확대 효과 */
 .camping-image:hover {
   transform: scale(1.05) translateY(-20px); /* 10% 확대 + 위로 10px 이동 */
@@ -248,7 +242,7 @@ body {
 /* 유형 아이콘 부분 위치 */
 .category-container {
   display: flex;
-  background-color: #f2f4f7;
+  background-color: #f9f9f5;
   justify-content: center;
   margin: 0;
   gap: 80px;
@@ -260,7 +254,7 @@ body {
   padding: 10px 20px;
   font-size: 18px;
   cursor: pointer;
-  background-color: #f2f4f7;
+  background-color: #f9f9f5;
   border: none;
   border-radius: 15px;
   transition: background-color 0.3s;
@@ -305,3 +299,5 @@ body {
   transform: translateX(-60%); /* 가로 중앙 정렬 */
   z-index: 10;            /* 아래 스와이프 이미지 위에 텍스트가 위치하도록 z-index 설정 */
 }
+
+
