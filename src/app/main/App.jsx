@@ -14,10 +14,8 @@ import FestivalIcon from '@mui/icons-material/Festival'; // 카테고리 아이�
 import { EffectFade, Navigation, Pagination, Autoplay, Virtual } from "swiper/modules";
 import './styles.css';
 
-
-
 export default function App() {
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]); // 캠핑장 데이터
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRegion, setSelectedRegion] = useState(''); // 지역 선택 상태
     const [selectedCategory, setSelectedCategory] = useState(''); // 카테고리 선택 상태
@@ -37,27 +35,24 @@ export default function App() {
         "카라반", "일반야영장", "자동차야영장", "글램핑"
     ];
 
-    const [slides, setSlides] = useState(
-        Array.from({ length: 500 }).map((_, index) => `Slide ${index + 1}`)
-    );
-
     useEffect(() => {
-        fetchData();
+        fetchCampData(); // 페이지 로드 시 캠핑장 데이터 가져오기
     }, []);
 
-    const fetchData = () => {
-        fetch("https://apis.data.go.kr/B551011/GoCamping/basedList?serviceKey=0nU1JWq4PQ1i5sjvesSwir9C4yWQy66K695whewvIpbxtuV1H5ZU8gDIp4c0N9rL4Yt4wQU5eLviLsHKxks9rg%3D%3D&numOfRows=1000&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json")
-            .then(response => response.text())
-            .then(text => {
-                try {
-                    const data = JSON.parse(text);
-                    setData(data.response.body.items.item);
-                    setFilteredData(data.response.body.items.item);
-                } catch (error) {
-                    console.error("Failed to parse JSON:", error);
-                }
-            })
-            .catch(error => console.error("Error fetching data:", error));
+    const fetchCampData = async (region = "") => {
+        try {
+            const response = await fetch("http://localhost:8080/api/camping/sites");
+
+            if (!response.ok) {
+                throw new Error("네트워크 응답이 정상적이지 않습니다.");
+            }
+
+            const data = await response.json();
+            setData(data); // 서버에서 받은 데이터를 상태에 저장
+            setFilteredData(data); // 필터링된 데이터도 초기화
+        } catch (error) {
+            console.error("데이터 로딩 실패:", error);
+        }
     };
 
     const handleSearch = (e) => {
@@ -116,24 +111,23 @@ export default function App() {
                     <SwiperSlide>
                         <div className="slide-content">
                             <img src="./images/cam1.webp" alt="Slide 1" />
-                            <div className="slide-text">KyungBin Camping, the perfect retreat in nature !</div> {/* 텍스트 추가 */}
+                            <div className="slide-text">KyungBin Camping, the perfect retreat in nature !</div>
                         </div>
                     </SwiperSlide>
                     <SwiperSlide>
                         <div className="slide-content">
                             <img src="./images/campingg2.jpg"  alt="Slide 2" />
-                            <div className="slide-text">Enjoy a relaxing camping trip at KyungBin Camping, book now !</div> {/* 텍스트 추가 */}
+                            <div className="slide-text">Enjoy a relaxing camping trip at KyungBin Camping, book now !</div>
                         </div>
                     </SwiperSlide>
                     <SwiperSlide>
                         <div className="slide-content">
                             <img src="./images/campingg3.jpg"  alt="Slide 3" />
-                            <div className="slide-text">KyungBin Camping makes your camping trip extra special !</div> {/* 텍스트 추가 */}
+                            <div className="slide-text">KyungBin Camping makes your camping trip extra special !</div>
                         </div>
                     </SwiperSlide>
                 </Swiper>
             </div>
-            
 
             <form onSubmit={handleSearch} className="search-form">
                 <input
@@ -169,9 +163,8 @@ export default function App() {
                     ))}
                 </select>
 
-
                 <button type="submit" className="search-button">
-                search
+                    search
                 </button>
             </form>
 
@@ -184,11 +177,11 @@ export default function App() {
                     >
                         {category === "카라반" ? (
                             <AirportShuttleRoundedIcon style={{ marginRight: "5px" }} />
-                        ) : category === "일반야영장" ? (  // '일반야영장'에 아이콘 
+                        ) : category === "일반야영장" ? (
                             <DeckIcon style={{ marginRight: "5px" }} />
-                        ) : category === "자동차야영장" ? ( // '자동차야영장'에 LocalShippingIcon 
+                        ) : category === "자동차야영장" ? (
                             <LocalShippingIcon style={{ marginRight: "5px" }} />
-                        ) : category === "글램핑" ? ( // '글램핑'에 FestivalIcon 
+                        ) : category === "글램핑" ? (
                             <FestivalIcon style={{ marginRight: "5px" }} />
                         ) : null}
                         {category}
@@ -196,58 +189,45 @@ export default function App() {
                 ))}
             </div>
 
-            {/* 아래 스와이프 */}
             <div
                 className="new-swiper-container"
                 onMouseEnter={() => setShowNavigation(true)} // 마우스 진입 시 버튼 표시
                 onMouseLeave={() => setShowNavigation(false)} // 마우스 나가면 버튼 숨김
             >
-                <div className="month-text">경빈캠핑에 오신 것을 환영해요 !</div> {/* 텍스트 추가 */}
+                <div className="month-text">경빈캠핑에 오신 것을 환영해요 !</div>
                 <div className="additional-text">
-        12월에 이런 캠핑장 어떠세요 ? {/* 여기에 추가 텍스트 작성 */}
-    </div>
-                
-    <Swiper
-    modules={[Virtual, Navigation, Pagination]}
-    onSwiper={setSwiperRef}
-    slidesPerView={3}
-    centeredSlides={true}
-    spaceBetween={1}
-    pagination={{
-        type: 'fraction',
-    }}
-    navigation={showNavigation} // 상태에 따라 네비게이션 활성화
-    virtual
->
-    {filteredData && filteredData
-        .filter(item => item.induty.includes("카라반")) // 'induty'에 '카라반' 텍스트가 포함된 항목만 필터링
-        .map((item, index) => (
-            <SwiperSlide key={item.facltNm} virtualIndex={index}>
-                <div className="camping-slide">
-                    <img
-                        src={item.firstImageUrl}
-                        alt={item.facltNm}
-                        className="camping-image" // 클래스 이름 추가
-                    />
-                    <div className="image-overlay"></div>
-                    <h3>{item.facltNm}</h3>
+                    12월에 이런 캠핑장 어떠세요 ?
                 </div>
-            </SwiperSlide>
-        ))}
-</Swiper>
 
-
-
-       </div>
-        {/* <div className="camping-list">
-           {filteredData && filteredData.map((item, index) => (
-               <div key={index} className="camping-item">
-                   <img src={item.firstImageUrl} alt={item.facltNm} style={{ height: '300px', objectFit: 'cover' }} />
-                   <h1>{item.facltNm}</h1>
-               </div>
-           ))}
-       </div>*/}
-        </div> 
+                <Swiper
+                    modules={[Virtual, Navigation, Pagination]}
+                    onSwiper={setSwiperRef}
+                    slidesPerView={3}
+                    centeredSlides={true}
+                    spaceBetween={1}
+                    pagination={{
+                        type: 'fraction',
+                    }}
+                    navigation={showNavigation}
+                    virtual
+                >
+                    {filteredData && filteredData
+                        .filter(item => item.induty.includes("카라반")) // '카라반'만 필터링
+                        .map((item, index) => (
+                            <SwiperSlide key={item.facltNm} virtualIndex={index}>
+                                <div className="camping-slide">
+                                    <img
+                                        src={item.firstImageUrl}
+                                        alt={item.facltNm}
+                                        className="camping-image"
+                                    />
+                                    <div className="image-overlay"></div>
+                                    <h3>{item.facltNm}</h3>
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                </Swiper>
+            </div>
+        </div>
     );
 }
-  

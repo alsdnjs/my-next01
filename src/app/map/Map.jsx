@@ -7,14 +7,6 @@ const Map = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // 한 페이지에 6개 (3개씩 2열)
 
-  // contentId 목록
-  const targetContentIds = [
-    "100013", // 약수동산
-    "100203", // 둥그레 휴양마을
-    "1947",   // 씨사이드힐 캠핑장
-    "10"      // 아웃오브 파크
-  ];
-
   useEffect(() => {
     const script = document.createElement("script");
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=82653f2edcf163a11fb5d8dc0dab9587&autoload=false`;
@@ -77,7 +69,7 @@ const Map = () => {
 
             // 마커 클릭 이벤트
             window.kakao.maps.event.addListener(marker, "click", () => {
-              fetchCampData(markerData.name); // 지역 기반 데이터 호출
+              fetchCampData(markerData.name); // 클릭한 마커 지역에 맞는 캠핑장 데이터 가져오기
             });
           });
 
@@ -103,23 +95,24 @@ const Map = () => {
   // 캠핑장 데이터를 가져오는 함수
   const fetchCampData = async (region = "") => {
     try {
-      const response = await fetch(
-        `https://apis.data.go.kr/B551011/GoCamping/basedList?serviceKey=0nU1JWq4PQ1i5sjvesSwir9C4yWQy66K695whewvIpbxtuV1H5ZU8gDIp4c0N9rL4Yt4wQU5eLviLsHKxks9rg%3D%3D&numOfRows=2000&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json`
-      );
-      const data = await response.json();
-      const camps = data.response.body.items.item;
-      setCampData(camps);
-      
-      // 지역 필터링
-      if (region) {
-        const filtered = camps.filter((camp) => camp.addr1.includes(region));
-        setFilteredCamps(filtered);
-      } else {
-        setFilteredCamps(camps); // 초기에는 필터 없이 모든 캠핑장 표시
+      const response = await fetch("http://localhost:8080/api/camping/sites");
+
+      if (!response.ok) {
+        throw new Error("네트워크 응답이 정상적이지 않습니다.");
       }
-      setCurrentPage(1); // 페이지를 처음으로 리셋
+
+      const data = await response.json();
+
+      // 지역에 맞는 캠핑장 데이터 필터링
+      const filteredData = region
+        ? data.filter((camp) => camp.addr1.includes(region))
+        : data;
+
+      setCampData(data);
+      setFilteredCamps(filteredData);
+      setCurrentPage(1);
     } catch (error) {
-      console.error("캠핑장 데이터를 가져오는 중 오류 발생:", error);
+      console.error("캠핑장 데이터를 가져오는 중 오류 발생:", error.message || error);
     }
   };
 
@@ -160,16 +153,11 @@ const Map = () => {
     return pageNumbers;
   };
 
-  // contentId 목록에 해당하는 캠핑장만 필터링
-  const filteredByIds = campData.filter((camp) => 
-    targetContentIds.includes(camp.contentId)
-  );
-
   return (
-    <div style={{ display: "flex", marginLeft: "580px" }}>
-      <div id="map" style={{ width: "32%", height: "600px", marginRight: "50px" }}></div>
-      <div style={{ width: "40%" }}>
-        <h3>캠핑장 정보</h3>
+    <div style={{ display: "flex" }}>
+      <div id="map" style={{ width: "33%", height: "600px", marginRight: "35px" }}></div>
+      <div style={{ width: "60%" }}>
+        <h3>캠핑장 정보 </h3>
         <p>총 캠핑장 수: {filteredCamps.length}</p>
         <div
           style={{
@@ -180,7 +168,7 @@ const Map = () => {
         >
           {getCurrentPageData().length > 0 ? (
             getCurrentPageData().map((camp) => (
-              <div key={camp.contentId} style={{ marginBottom: "40px" }}>
+              <div key={camp.contentId} style={{ marginBottom: "20px" }}>
                 {camp.firstImageUrl ? (
                   <img
                     src={camp.firstImageUrl}
@@ -217,70 +205,28 @@ const Map = () => {
             <div>캠핑장 정보를 불러오는 중입니다...</div>
           )}
         </div>
-       
-        {/* 페이징 부분 */}
-<div style={{ marginTop: "20px", textAlign: "center" }}>
-  <button
-    onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
-    disabled={currentPage === 1}
-    style={{
-      margin: "0 5px",
-      padding: "5px 10px",
-      backgroundColor: currentPage === 1 ? "#597445" : "#597445",
-      color: currentPage === 1 ? "#000" : "#fff",
-      border: "1px solid #ddd",
-      borderRadius: "3px",
-      cursor: "pointer",
-    }}
-  >
-    이전
-  </button>
-
-  {generatePageNumbers().map((number, index) => (
-    <button
-      key={index}
-      onClick={() => setCurrentPage(number)}
-      disabled={number === "..."}
-
-      style={{
-        margin: "0 5px",
-        padding: "5px 10px",
-        backgroundColor: currentPage === number ? "#597445" : "#f0f0f0",
-        color: currentPage === number ? "#fff" : "#000",
-        border: "1px solid #ddd",
-        borderRadius: "3px",
-        cursor: number !== "..." ? "pointer" : "default",
-        fontWeight: currentPage === number ? "bold" : "normal",
-      }}
-    >
-      {number}
-    </button>
-  ))}
-
-  <button
-    onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
-    disabled={currentPage === totalPages}
-    style={{
-      margin: "0 5px",
-      padding: "5px 10px",
-      backgroundColor: currentPage === totalPages ? "#f0f0f0" : "#597445",
-      color: currentPage === totalPages ? "#000" : "#fff",
-      border: "1px solid #ddd",
-      borderRadius: "3px",
-      cursor: "pointer",
-    }}
-  >
-    다음
-  </button>
-</div>
-
-
-    
-</div>
-
+        <div style={{ textAlign: "center" }}>
+          {generatePageNumbers().map((pageNum, index) => (
+            <button
+              key={index}
+              onClick={() => pageNum !== "..." && setCurrentPage(pageNum)}
+              style={{
+                margin: "0 5px",
+                padding: "5px 10px",
+                backgroundColor: currentPage === pageNum ? "#007bff" : "#f0f0f0",
+                color: currentPage === pageNum ? "#fff" : "#000",
+                border: "1px solid #ddd",
+                borderRadius: "3px",
+                cursor: pageNum !== "..." ? "pointer" : "default",
+              }}
+              disabled={pageNum === "..."} >
+              {pageNum}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
-
-);
+  );
 };
 
 export default Map;

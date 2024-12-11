@@ -3,12 +3,11 @@
 import React, { useState, useEffect, use } from "react";
 import { Button } from "@mui/material";
 import { useRouter } from "next/navigation"; // 라우터 사용
-
 import "./styles.css";
 // import { useRouter } from "next/navigation";
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import AddToHomeScreenIcon from '@mui/icons-material/AddToHomeScreen';
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import AddToHomeScreenIcon from "@mui/icons-material/AddToHomeScreen";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import {
@@ -21,12 +20,11 @@ import {
   Store,
 } from "@mui/icons-material";
 import HikingIcon from "@mui/icons-material/Hiking";
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 
 export default function CampingDetail({ params }) {
-  const {id} = use(params); // URL에서 받은 id 값
+  const { id } = use(params); // URL에서 받은 id 값
   const [data, setData] = useState(null); // 상태 관리
   const [loading, setLoading] = useState(true); // 로딩 상태
   const [error, setError] = useState(null); // 에러 상태
@@ -68,20 +66,20 @@ export default function CampingDetail({ params }) {
   if (loading) {
     return <div>로딩 중...</div>;
   }
-  
+
   if (error) {
     return <div style={{ color: "red" }}>{error}</div>;
   }
   // 클릭 시 상태 변경
- const reserveClick = () => {
-   setIsRecommended(prevState => !prevState); // 상태를 반전시켜 추천 여부 변경
- };
- // 클릭 시 상태 변경
- const saveClick = () => {
-   setIsSaved(prevState => !prevState);
- }
-   // 주요 시설 정보 매핑
-   const getFacilityInfo = () => {
+  const reserveClick = () => {
+    setIsRecommended((prevState) => !prevState); // 상태를 반전시켜 추천 여부 변경
+  };
+  // 클릭 시 상태 변경
+  const saveClick = () => {
+    setIsSaved((prevState) => !prevState);
+  };
+  // 주요 시설 정보 매핑
+  const getFacilityInfo = () => {
     const facilities = [];
     if (data.induty.includes("일반 야영장")) {
       facilities.push({ name: "일반 야영장", value: data.gnrlSiteCo });
@@ -104,21 +102,61 @@ export default function CampingDetail({ params }) {
   const facilityInfo = getFacilityInfo();
   return (
     <div>
-     
+    
       {data ? (
         <>
-       
-          <div id="camping-inner">
+          <div
+            id="camping-inner"
+            style={{
+              width: "100%",
+              backgroundColor: "#f9f9f5",
+              color: "black",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                backgroundImage: "url(/images/image.png)", // 배경 이미지
+                backgroundSize: "cover", // 이미지 크기 조정
+                backgroundPosition: "center",
+                height: "250px",
+                flexDirection: "column", // 세로로 정렬
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  height: "150px",
+                  width: "800px",
+                  marginTop: "70px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "white",
+                    fontWeight: "bold",
+                    textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)",
+                  }}
+                >
+                  <p style={{ fontSize: "2rem" }}>{data.facltNm}</p>
+                  <p style={{ fontSize: "20px" }}>{data.lineIntro}</p>
+                </div>
+              </div>
+            </div>
             <div className="camping_layout">
               <div className="camping_info_box">
                 <div className="img_b">
-                  <img src={data.firstImageUrl} alt=""/>
+                  <img src={data.firstImageUrl} alt="" />
                 </div>
-                <div className="content_tb">
+                <div
+                  className="content_tb"
+                  style={{ backgroundColor: "white", padding: "5px" }}
+                >
                   <table className="table">
                     <colgroup>
-                      <col style={{width: "30%"}} />
-                      <col style={{width: "70%"}} />
+                      <col style={{ width: "30%" }} />
+                      <col style={{ width: "70%" }} />
                     </colgroup>
                     <tbody>
                       <tr>
@@ -143,7 +181,15 @@ export default function CampingDetail({ params }) {
                       </tr>
                       <tr>
                         <th scope="col">홈페이지</th>
-                        <td><a href={data.homepage} target="_BLANK" title="새창열림">홈페이지 바로가기</a></td>
+                        <td>
+                          <a
+                            href={data.homepage}
+                            target="_BLANK"
+                            title="새창열림"
+                          >
+                            홈페이지 바로가기
+                          </a>
+                        </td>
                       </tr>
                       <tr>
                         <th scope="col">주변이용가능시설</th>
@@ -152,22 +198,61 @@ export default function CampingDetail({ params }) {
                     </tbody>
                   </table>
                   <div className="btn">
-                    <Button type="button" className="reserve" onClick={reserveClick}><AddToHomeScreenIcon/>예약하기</Button>
-                    <Button type="button" className="save"onClick={saveClick}>{isSaved ? <FavoriteIcon /> : <FavoriteBorderIcon />}찜하기</Button>
+                    <Button
+                      type="button"
+                      className="reserve"
+                      onClick={reserveClick}
+                    >
+                      <AddToHomeScreenIcon />
+                      예약하기
+                    </Button>
+                    <Button type="button" className="save" onClick={saveClick}>
+                      {isSaved ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                      찜하기
+                    </Button>
                   </div>
-
                 </div>
-
               </div>
             </div>
-
           </div>
           <div className="camping-info">
             <div className="tabs">
-                <Button className={`tab-button ${activeTab === "intro" ? "active" : ""}`} onClick={() => setActiveTab("intro")}>캠핑장 소개</Button>
-                <Button className={`tab-button ${activeTab === "usage" ? "active" : ""}`} onClick={() => setActiveTab("usage")}>이용안내</Button>
-                <Button className={`tab-button ${activeTab === "location" ? "active" : ""}`} onClick={() => setActiveTab("location")}>날씨/위치정보</Button>
-                <Button className={`tab-button ${activeTab === "reviews" ? "active" : ""}`} onClick={() => setActiveTab("reviews")}>캠핑&여행후기</Button>
+              <Button
+                className={`tab-button ${
+                  activeTab === "intro" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("intro")}
+                sx={{ color: "black" }}
+              >
+                캠핑장 소개
+              </Button>
+              <Button
+                className={`tab-button ${
+                  activeTab === "usage" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("usage")}
+                sx={{ color: "black" }}
+              >
+                이용안내
+              </Button>
+              <Button
+                className={`tab-button ${
+                  activeTab === "location" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("location")}
+                sx={{ color: "black" }}
+              >
+                날씨/위치정보
+              </Button>
+              <Button
+                className={`tab-button ${
+                  activeTab === "reviews" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("reviews")}
+                sx={{ color: "black" }}
+              >
+                캠핑&여행후기
+              </Button>
             </div>
           </div>
 
@@ -177,366 +262,377 @@ export default function CampingDetail({ params }) {
                 <div>
                   <p>{data.intro}</p>
                 </div>
-                  {/* 시설 아이콘 */}
-                  <div>
-                    <h2 className="camping-info-list"><ChevronRightIcon className="rightIcon"/> 캠핑장 시설 정보</h2>     
-                      <div
-                      className="camping-item-facilities"
-                      style={{
-                        display: "flex",
-                        gap: "20px",
-                        padding :"20px 50px",
-                        border : "1px solid #fff",
-                        backgroundColor : "#f1f1f1",
-                      }}
-                    >             
-                      {data.sbrsCl &&
-                        data.sbrsCl.split(",").map((facility, idx) => {
-                          switch (facility.trim()) {
-                            case "운동시설":
-                              return (
-                                <div
-                                  key={idx}
+                {/* 시설 아이콘 */}
+                <div>
+                  <h2 className="camping-info-list">
+                    <ChevronRightIcon className="rightIcon" /> 캠핑장 시설 정보
+                  </h2>
+                  <div
+                    className="camping-item-facilities"
+                    style={{
+                      display: "flex",
+                      gap: "50px",
+                      paddingTop: "20px",
+                      paddingLeft: "20px",
+                      border: "1px solid #fff",
+                      backgroundColor: "#f1f1f1",
+                    }}
+                  >
+                    {data.sbrsCl &&
+                      data.sbrsCl.split(",").map((facility, idx) => {
+                        switch (facility.trim()) {
+                          case "운동시설":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <FitnessCenterIcon
+                                  style={{ fontSize: "30px", color: "#3f51b5" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <FitnessCenterIcon
-                                    style={{ fontSize: "30px", color: "#3f51b5" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    운동시설
-                                  </p>
-                                </div>
-                              );
-                            case "전기":
-                              return (
-                                <div
-                                  key={idx}
+                                  운동시설
+                                </p>
+                              </div>
+                            );
+                          case "전기":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <ElectricBoltIcon
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    fontSize: "30px",
+                                    color: "#FADA7A",
+                                  }}
+                                />
+                                <p
+                                  style={{
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <ElectricBoltIcon
-                                    style={{
-                                      fontSize: "30px",
-                                      color: "#FADA7A",
-                                    }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    전기
-                                  </p>
-                                </div>
-                              );
-                            case "무선인터넷":
-                              return (
-                                <div
-                                  key={idx}
+                                  전기
+                                </p>
+                              </div>
+                            );
+                          case "무선인터넷":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Wifi
+                                  style={{ fontSize: "30px", color: "#00bcd4" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <Wifi
-                                    style={{ fontSize: "30px", color: "#00bcd4" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    무선인터넷
-                                  </p>
-                                </div>
-                              );
-                            case "장작판매":
-                              return (
-                                <div
-                                  key={idx}
+                                  무선인터넷
+                                </p>
+                              </div>
+                            );
+                          case "장작판매":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <ShoppingCart
+                                  style={{ fontSize: "30px", color: "#8bc34a" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <ShoppingCart
-                                    style={{ fontSize: "30px", color: "#8bc34a" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    장작판매
-                                  </p>
-                                </div>
-                              );
-                            case "온수":
-                              return (
-                                <div
-                                  key={idx}
+                                  장작판매
+                                </p>
+                              </div>
+                            );
+                          case "온수":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <LocalFireDepartment
+                                  style={{ fontSize: "30px", color: "#ff5722" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <LocalFireDepartment
-                                    style={{ fontSize: "30px", color: "#ff5722" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    온수
-                                  </p>
-                                </div>
-                              );
-                            case "트렘폴린":
-                              return (
-                                <div
-                                  key={idx}
+                                  온수
+                                </p>
+                              </div>
+                            );
+                          case "트렘폴린":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <ChildCare
+                                  style={{ fontSize: "30px", color: "#EE66A6" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <ChildCare
-                                    style={{ fontSize: "30px", color: "#EE66A6" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    트렘폴린
-                                  </p>
-                                </div>
-                              );
-                            case "물놀이장":
-                              return (
-                                <div
-                                  key={idx}
+                                  트렘폴린
+                                </p>
+                              </div>
+                            );
+                          case "물놀이장":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Pool
+                                  style={{ fontSize: "30px", color: "#009688" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <Pool
-                                    style={{ fontSize: "30px", color: "#009688" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    물놀이장
-                                  </p>
-                                </div>
-                              );
-                            case "놀이터":
-                              return (
-                                <div
-                                  key={idx}
+                                  물놀이장
+                                </p>
+                              </div>
+                            );
+                          case "놀이터":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <ChildCare
+                                  style={{ fontSize: "30px", color: "#673ab7" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <ChildCare
-                                    style={{ fontSize: "30px", color: "#673ab7" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    놀이터
-                                  </p>
-                                </div>
-                              );
-                            case "산책로":
-                              return (
-                                <div
-                                  key={idx}
+                                  놀이터
+                                </p>
+                              </div>
+                            );
+                          case "산책로":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <HikingIcon
+                                  style={{ fontSize: "30px", color: "#4caf50" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <HikingIcon
-                                    style={{ fontSize: "30px", color: "#4caf50" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    산책로
-                                  </p>
-                                </div>
-                              );
-                            case "운동장":
-                              return (
-                                <div
-                                  key={idx}
+                                  산책로
+                                </p>
+                              </div>
+                            );
+                          case "운동장":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <SportsSoccer
+                                  style={{ fontSize: "30px", color: "#ff5722" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <SportsSoccer
-                                    style={{ fontSize: "30px", color: "#ff5722" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    운동장
-                                  </p>
-                                </div>
-                              );
-                            case "마트":
-                              return (
-                                <div
-                                  key={idx}
+                                  운동장
+                                </p>
+                              </div>
+                            );
+                          case "마트":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Store
+                                  style={{ fontSize: "30px", color: "#9e9e9e" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <Store
-                                    style={{ fontSize: "30px", color: "#9e9e9e" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    마트
-                                  </p>
-                                </div>
-                              );
-                            case "편의점":
-                              return (
-                                <div
-                                  key={idx}
+                                  마트
+                                </p>
+                              </div>
+                            );
+                          case "편의점":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Store
+                                  style={{ fontSize: "30px", color: "#607d8b" }}
+                                />
+                                <p
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
                                   }}
                                 >
-                                  <Store
-                                    style={{ fontSize: "30px", color: "#607d8b" }}
-                                  />
-                                  <p
-                                    style={{
-                                      marginTop: "5px",
-                                      textAlign: "center",
-                                      color: "black",
-                                    }}
-                                  >
-                                    편의점
-                                  </p>
-                                </div>
-                              );
-                            default:
-                              return null;
-                          }
-                        })}
-                    </div>
+                                  편의점
+                                </p>
+                              </div>
+                            );
+                          default:
+                            return null;
+                        }
+                      })}
                   </div>
-                <div>
-                <h2 className="camping-info-list"><ChevronRightIcon className="rightIcon"/> 기타 주요 시설</h2>
-                      <div className="etc-table">
-                        <table className="table">
-                          <colgroup>
-                            <col style={{width: "30%"}} />
-                            <col style={{width: "70%"}} />
-                          </colgroup>
-                          <tbody>
-                            <tr>
-                              <th scope="col">주요시설</th>
-                              <td>
-                                {facilityInfo.map((facility, index) => (
-                                  <span key={index}>
-                                  {facility.name}({facility.value}면)
-                                  {index < facilityInfo.length - 1 && " ● "}
-                                  </span>
-                                ))}
-                              </td>
-                            </tr>
-                            <tr>
-                              <th scope="col">기타 부대시설</th>
-                              <td>{data.tel}</td>
-                            </tr>
-                            <tr>
-                              <th scope="col">{data.induty} 내부시설</th>
-                              <td>{data.induty}</td>
-                            </tr>
-                            <tr>
-                              <th scope="col">반려동물 출입</th>
-                              <td>{data.operPdCl}</td>
-                            </tr>
-                            <tr>
-                              <th scope="col">화로대</th>
-                              <td>{data.operDeCl}</td>
-                            </tr>
-                            <tr>
-                              <th scope="col">안전시설현황</th>
-                              <td><a href={data.homepage} target="_BLANK" title="새창열림">홈페이지 바로가기</a></td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
                 </div>
                 <div>
-
+                  <h2 className="camping-info-list">
+                    <ChevronRightIcon className="rightIcon" /> 기타 주요 시설
+                  </h2>
+                  <div className="etc-table">
+                    <table className="table">
+                      <colgroup>
+                        <col style={{ width: "30%" }} />
+                        <col style={{ width: "70%" }} />
+                      </colgroup>
+                      <tbody>
+                        <tr>
+                          <th scope="col">주요시설</th>
+                          <td>
+                            {facilityInfo.map((facility, index) => (
+                              <span key={index}>
+                                {facility.name}({facility.value}면)
+                                {index < facilityInfo.length - 1 && " ● "}
+                              </span>
+                            ))}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="col">기타 부대시설</th>
+                          <td>{data.tel}</td>
+                        </tr>
+                        <tr>
+                          <th scope="col">{data.induty} 내부시설</th>
+                          <td>{data.induty}</td>
+                        </tr>
+                        <tr>
+                          <th scope="col">반려동물 출입</th>
+                          <td>{data.operPdCl}</td>
+                        </tr>
+                        <tr>
+                          <th scope="col">화로대</th>
+                          <td>{data.operDeCl}</td>
+                        </tr>
+                        <tr>
+                          <th scope="col">안전시설현황</th>
+                          <td>
+                            <a
+                              href={data.homepage}
+                              target="_BLANK"
+                              title="새창열림"
+                            >
+                              홈페이지 바로가기
+                            </a>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+                <div></div>
               </div>
             )}
 
@@ -574,8 +670,7 @@ export default function CampingDetail({ params }) {
               </div>
             )}
           </div>
-      
-      </>
+        </>
       ) : (
         <p>로딩 중...</p>
       )}
