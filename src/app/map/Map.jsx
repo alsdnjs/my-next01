@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const Map = () => {
@@ -6,7 +7,7 @@ const Map = () => {
   const [filteredCamps, setFilteredCamps] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // 한 페이지에 6개 (3개씩 2열)
-
+  const router = useRouter();
   useEffect(() => {
     const script = document.createElement("script");
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=82653f2edcf163a11fb5d8dc0dab9587&autoload=false`;
@@ -121,6 +122,11 @@ const Map = () => {
     return filteredCamps.slice(startIndex, startIndex + itemsPerPage);
   };
 
+    // 상세 페이지로 이동
+    const handleDetailClick = (contentId) => {
+      router.push(`/campingdetail/${contentId}`); // 디테일 페이지로 이동
+    };
+
   const totalPages = Math.ceil(filteredCamps.length / itemsPerPage);
 
   const generatePageNumbers = () => {
@@ -171,6 +177,7 @@ const Map = () => {
               <div key={camp.contentId} style={{ marginBottom: "20px" }}>
                 {camp.firstImageUrl ? (
                   <img
+                  onClick={() => handleDetailClick(camp.contentId)}
                     src={camp.firstImageUrl}
                     alt={camp.facltNm}
                     style={{

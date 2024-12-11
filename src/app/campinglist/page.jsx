@@ -21,6 +21,8 @@ import { useRouter } from "next/navigation";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { fetchCampgrounds } from "../fetchCampData/page";
 import { Avatar, Pagination, Stack } from "@mui/material";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import StoreIcon from "@mui/icons-material/Store";
 
 function CampgroundSearchPage() {
   // 데이터 불러오기
@@ -43,29 +45,32 @@ function CampgroundSearchPage() {
   const handleSearch = (e) => {
     e.preventDefault();
 
-    // 검색 로직 (캠핑장 이름, 지역, 가격대, 시설, 반려동물 동반 가능, 테마를 기준으로 필터링)
     const filteredResults = data.filter((campground) => {
-      const matchesSearchTerm = campground.facltNm
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      // 캠핑장 이름 검색
+      const matchesSearchTerm = searchTerm
+        ? campground.facltNm?.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
 
-      const matchesRegion = region
-        ? campground.doNm.includes(region) // region 필드가 설정된 경우 해당 지역으로 필터링
-        : true; // region이 선택되지 않았으면 모든 캠핑장
+      // 지역 필터링
+      const matchesRegion = region ? campground.doNm?.includes(region) : true;
 
-      const matchesCity = city
-        ? campground.sigunguNm && campground.sigunguNm.includes(city) // 시/군 필터링
-        : true; // city 필터가 비어 있으면 모든 캠핑장
+      // 시/군 필터링
+      const matchesCity = city ? campground.sigunguNm?.includes(city) : true;
 
+      // 반려동물 동반 가능 여부
       const matchesPetFriendly = isPetFriendly
-        ? campground.animalCmgCl === "가능" // 반려동물 동반 가능 여부
+        ? campground.animalCmgCl === "가능"
         : true;
 
-      const matchesTheme = theme
-        ? campground.lctCl.includes(theme) // 테마 필드에서 필터링
+      // 테마 필터링
+      const matchesTheme = theme ? campground.lctCl?.includes(theme) : true;
+
+      // 캠핑장 종류 필터링
+      const matchesCampingType = type
+        ? campground.induty?.includes(type)
         : true;
 
-      const matchesCampingType = type ? campground.induty.includes(type) : true;
+      // 모든 조건을 만족하는 캠핑장만 반환
       return (
         matchesSearchTerm &&
         matchesRegion &&
@@ -76,7 +81,7 @@ function CampgroundSearchPage() {
       );
     });
 
-    setFilteredData(filteredResults); // 필터링된 결과 설정
+    setFilteredData(filteredResults);
   };
 
   // 컴포넌트가 마운트될 때 API 호출
@@ -105,22 +110,6 @@ function CampgroundSearchPage() {
   const currentData = filteredData.slice(startIndex, endIndex);
   // 전체 페이지 수 계산
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  // 페이지네이션 범위 (10개씩 표시)
-  const getPageNumbers = () => {
-    let start = Math.max(currentPage - 4, 1); // 현재 페이지에서 왼쪽으로 최대 4개 페이지 표시
-    let end = Math.min(start + 9, totalPages); // 현재 페이지에서 오른쪽으로 최대 9개 페이지 표시
-
-    if (end - start < 9) {
-      start = Math.max(end - 9, 1); // 페이지 범위가 9개 미만일 경우 조정
-    }
-
-    let pageNumbers = [];
-    for (let i = start; i <= end; i++) {
-      pageNumbers.push(i);
-    }
-
-    return pageNumbers;
-  };
 
   // 검색
   // 엔터 키로 검색 처리
@@ -136,6 +125,7 @@ function CampgroundSearchPage() {
     setRegion(""); // 지역 필터 초기화
     setIsPetFriendly(false); // 반려동물 동반 필터 초기화
     setTheme(""); // 테마 필터 초기화
+    setCampingType("");
     setFilteredData(data); // 필터링된 데이터 초기화 (모든 데이터 표시)
     setCurrentPage(1);
   };
@@ -162,7 +152,7 @@ function CampgroundSearchPage() {
 
   return (
     <>
-      
+  
       {/* Search Bar Section */}
       <div
         style={{
@@ -593,6 +583,54 @@ function CampgroundSearchPage() {
                                 </p>
                               </div>
                             );
+                          case "마트":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <StorefrontIcon
+                                  style={{ fontSize: "30px", color: "grey" }}
+                                />
+                                <p
+                                  style={{
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
+                                  }}
+                                >
+                                  마트
+                                </p>
+                              </div>
+                            );
+                          case "편의점":
+                            return (
+                              <div
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <StoreIcon
+                                  style={{ fontSize: "30px", color: "grey" }}
+                                />
+                                <p
+                                  style={{
+                                    marginTop: "5px",
+                                    textAlign: "center",
+                                    color: "black",
+                                  }}
+                                >
+                                  편의점
+                                </p>
+                              </div>
+                            );
                           case "온수":
                             return (
                               <div
@@ -737,54 +775,7 @@ function CampgroundSearchPage() {
                                 </p>
                               </div>
                             );
-                          case "마트":
-                            return (
-                              <div
-                                key={idx}
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Store
-                                  style={{ fontSize: "30px", color: "#9e9e9e" }}
-                                />
-                                <p
-                                  style={{
-                                    marginTop: "5px",
-                                    textAlign: "center",
-                                    color: "black",
-                                  }}
-                                >
-                                  마트
-                                </p>
-                              </div>
-                            );
-                          case "편의점":
-                            return (
-                              <div
-                                key={idx}
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Store
-                                  style={{ fontSize: "30px", color: "#607d8b" }}
-                                />
-                                <p
-                                  style={{
-                                    marginTop: "5px",
-                                    textAlign: "center",
-                                    color: "black",
-                                  }}
-                                >
-                                  편의점
-                                </p>
-                              </div>
-                            );
+
                           default:
                             return null;
                         }
@@ -815,7 +806,7 @@ function CampgroundSearchPage() {
         </div>
       </div>
 
-      
+    
     </>
   );
 }

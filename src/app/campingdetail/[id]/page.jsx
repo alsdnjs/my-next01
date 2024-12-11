@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import { Button } from "@mui/material";
 import { useRouter } from "next/navigation"; // 라우터 사용
+
 import "./styles.css";
 // import { useRouter } from "next/navigation";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -22,47 +23,62 @@ import {
 import HikingIcon from "@mui/icons-material/Hiking";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
+import { fetchCampgroundById } from "../../fetchCampgroundById/page";
 
 export default function CampingDetail({ params }) {
-  const { id } = use(params); // URL에서 받은 id 값
-  const [data, setData] = useState(null); // 상태 관리
+  const { id } = use(params); // URL에서 전달된 id 값
+  const [data, setData] = useState(null); // 캠핑장 데이터
   const [loading, setLoading] = useState(true); // 로딩 상태
   const [error, setError] = useState(null); // 에러 상태
   const router = useRouter();
-  // 추천하기 여부
+
+  // 추천 여부 및 저장 상태 관리
   const [isSaved, setIsSaved] = useState(false);
 
+  // 예약하기 버튼 클릭 처리
+  const reserveClick = () => {
+    // 예약 페이지로 이동하거나 예약 API 호출
+    console.log("예약하기 버튼 클릭");
+    alert("예약 페이지로 이동합니다."); // 테스트용 알림
+    // 예: 예약 페이지로 이동
+    // router.push("/reservation");
+  };
+
+  
+
+  // 찜하기 버튼 클릭 처리
+  const saveClick = () => {
+    setIsSaved((prevState) => !prevState); // 상태 반전
+    if (!isSaved) {
+      console.log("찜하기 추가");
+    } else {
+      console.log("찜하기 취소");
+    }
+  };
+
   useEffect(() => {
-    // 데이터를 비동기로 가져오는 함수
+    // 데이터를 가져오는 함수
     const fetchData = async () => {
       try {
-        // API URL을 동적으로 생성하여 fetch 호출
-        const response = await fetch(
-          `https://apis.data.go.kr/B551011/GoCamping/basedList?serviceKey=oJ92%2B%2B%2F21TTjpplTdJxaX5%2FoWlRWSvc8zFOZiNLOWepUxbQCy390qXcnw%2F3DhJa8U657fjJ%2FivV3vYmzto%2Bp4A%3D%3D&numOfRows=100&pageNo=1&MobileOS=ETC&MobileApp=AppTest&_type=json`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const campground = await fetchCampgroundById(id); // fetchCampgroundById 호출
+        if (!campground) {
+          throw new Error("캠핑장 데이터를 찾을 수 없습니다.");
         }
-        const result = await response.json();
-
-        // 캠핑장 데이터 중에서 해당 id에 맞는 데이터만 필터링
-        const campground = result.response.body.items.item.find(
-          (item) => item.contentId === id
-        );
-
         setData(campground); // 데이터 설정
       } catch (error) {
-        console.error("Error fetching data:", error); // 에러 처리
+        console.error("Error fetching data:", error);
         setError("데이터를 가져오는 데 실패했습니다.");
       } finally {
         setLoading(false); // 로딩 상태 종료
       }
     };
 
-    fetchData(); // 컴포넌트가 렌더링될 때 호출
+    fetchData(); // 데이터 가져오기
   }, [id]); // id가 변경되면 데이터 다시 가져오기
-  // 캠핑장 정보 탭 변경함수
+
+  // 탭 상태 관리
   const [activeTab, setActiveTab] = useState("intro");
+
   if (loading) {
     return <div>로딩 중...</div>;
   }
@@ -70,30 +86,28 @@ export default function CampingDetail({ params }) {
   if (error) {
     return <div style={{ color: "red" }}>{error}</div>;
   }
-  // 클릭 시 상태 변경
-  const reserveClick = () => {
-    setIsRecommended((prevState) => !prevState); // 상태를 반전시켜 추천 여부 변경
-  };
-  // 클릭 시 상태 변경
-  const saveClick = () => {
+
+  // 추천 상태 토글
+  const toggleRecommendation = () => {
     setIsSaved((prevState) => !prevState);
   };
+
   // 주요 시설 정보 매핑
   const getFacilityInfo = () => {
     const facilities = [];
-    if (data.induty.includes("일반 야영장")) {
+    if (data.induty?.includes("일반 야영장")) {
       facilities.push({ name: "일반 야영장", value: data.gnrlSiteCo });
     }
-    if (data.induty.includes("자동차 야영장")) {
+    if (data.induty?.includes("자동차 야영장")) {
       facilities.push({ name: "자동차 야영장", value: data.autoSiteCo });
     }
-    if (data.induty.includes("글램핑")) {
+    if (data.induty?.includes("글램핑")) {
       facilities.push({ name: "글램핑", value: data.glampSiteCo });
     }
-    if (data.induty.includes("카라반")) {
+    if (data.induty?.includes("카라반")) {
       facilities.push({ name: "카라반", value: data.caravSiteCo });
     }
-    if (data.induty.includes("개인 카라반")) {
+    if (data.induty?.includes("개인 카라반")) {
       facilities.push({ name: "개인 카라반", value: data.indvdlCaravSiteCo });
     }
     return facilities;
@@ -102,7 +116,7 @@ export default function CampingDetail({ params }) {
   const facilityInfo = getFacilityInfo();
   return (
     <div>
-    
+  
       {data ? (
         <>
           <div
@@ -674,7 +688,7 @@ export default function CampingDetail({ params }) {
       ) : (
         <p>로딩 중...</p>
       )}
-     
+      
     </div>
   );
 }

@@ -13,6 +13,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping'; // 카테고�
 import FestivalIcon from '@mui/icons-material/Festival'; // 카테고리 아이콘
 import { EffectFade, Navigation, Pagination, Autoplay, Virtual } from "swiper/modules";
 import './styles.css';
+import { useRouter } from "next/navigation";
 
 export default function App() {
     const [data, setData] = useState([]); // 캠핑장 데이터
@@ -24,6 +25,12 @@ export default function App() {
     const [showNavigation, setShowNavigation] = useState(false); // 네비게이션 버튼 상태
     const appendNumber = useRef(500);
     const prependNumber = useRef(1);
+    const router = useRouter();
+
+ // 상세 페이지로 이동
+ const handleDetailClick = (contentId) => {
+    router.push(`/campingdetail/${contentId}`); // 디테일 페이지로 이동
+  };
 
     const regions = [
         "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
@@ -217,6 +224,7 @@ export default function App() {
                             <SwiperSlide key={item.facltNm} virtualIndex={index}>
                                 <div className="camping-slide">
                                     <img
+                                         onClick={() => handleDetailClick(item.contentId)}
                                         src={item.firstImageUrl}
                                         alt={item.facltNm}
                                         className="camping-image"
