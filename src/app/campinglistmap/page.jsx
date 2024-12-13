@@ -430,9 +430,8 @@ const Map = () => {
         </div>
       </div>
     </div>
-  
-    {/* 필터링된 캠핑장 목록 출력 */}
-    <div className="camping-list" style={{ backgroundColor: "#f9f9f5" }}>
+      {/* 필터링된 캠핑장 목록 출력 */}
+      <div className="camping-list" style={{ backgroundColor: "#f9f9f5" }}>
       <div
         style={{
           backgroundColor: "white",
