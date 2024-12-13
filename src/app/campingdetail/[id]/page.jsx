@@ -24,6 +24,7 @@ import HikingIcon from "@mui/icons-material/Hiking";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { fetchCampgroundById } from "../../fetchCampgroundById/page";
+import KakaoMap from "@/app/kakaoMap/page";
 
 export default function CampingDetail({ params }) {
   const { id } = use(params); // URL에서 전달된 id 값
@@ -41,7 +42,7 @@ export default function CampingDetail({ params }) {
     console.log("예약하기 버튼 클릭");
     alert("예약 페이지로 이동합니다."); // 테스트용 알림
     // 예: 예약 페이지로 이동
-    // router.push("/reservation");
+    router.push("/reservation");
   };
 
   
@@ -72,12 +73,19 @@ export default function CampingDetail({ params }) {
         setLoading(false); // 로딩 상태 종료
       }
     };
-
+    
     fetchData(); // 데이터 가져오기
   }, [id]); // id가 변경되면 데이터 다시 가져오기
 
+  
+  
   // 탭 상태 관리
   const [activeTab, setActiveTab] = useState("intro");
+
+  //  새로 넣은거
+  const handleButtonClick = () => {
+    setActiveTab("location");
+  };
 
   if (loading) {
     return <div>로딩 중...</div>;
@@ -250,14 +258,19 @@ export default function CampingDetail({ params }) {
                 이용안내
               </Button>
               <Button
-                className={`tab-button ${
-                  activeTab === "location" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("location")}
-                sx={{ color: "black" }}
-              >
-                날씨/위치정보
-              </Button>
+        className={`tab-button ${activeTab === "location" ? "active" : ""}`}
+        onClick={handleButtonClick}
+      >
+        날씨/위치정보
+      </Button>
+
+      {activeTab === "location" && (
+  <>
+    {console.log(data.mapY, data.mapX)} {/* 위도와 경도 값 확인 */}
+   
+  </>
+)}
+    
               <Button
                 className={`tab-button ${
                   activeTab === "reviews" ? "active" : ""
@@ -663,10 +676,14 @@ export default function CampingDetail({ params }) {
 
             {activeTab === "location" && (
               <div id="location">
-                <h2>날씨/위치정보</h2>
+                 <h1>지도</h1>
+                 <KakaoMap
+                latitude={data.mapY} // DB에서 불러온 위도
+                 longitude={data.mapX} // DB에서 불러온 경도
+                />
                 <p>{data.addr1}</p>
-                <p>카카오맵</p>
                 <p>{data.direction}</p>
+              
               </div>
             )}
 

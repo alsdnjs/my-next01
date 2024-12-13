@@ -46,7 +46,7 @@ const Header = () => {
           <Toolbar className="toolbar-container">
             <Box className="toolbar-left">
               <p style={{ color: "#555555" }}>
-                KyungBin Camping. Contact us on 03-000-0000
+                Camplace. Contact us on 03-000-0000
               </p>
             </Box>
 
@@ -96,7 +96,7 @@ const Header = () => {
             )}
 
             <Box className="appbar-logo">
-              <ForestOutlinedIcon sx={{ fontSize: "40px", color: "#597445" }} />
+              <ForestOutlinedIcon  sx={{ fontSize: "40px", color: "#597445" }} />
             </Box>
 
             {!isSmallScreen && (
