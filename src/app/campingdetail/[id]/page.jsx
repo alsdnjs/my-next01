@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
-import { Button } from "@mui/material";
+import { Button, Link, TextField, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { useRouter } from "next/navigation"; // 라우터 사용
 
 import "./styles.css";
@@ -26,24 +26,40 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { fetchCampgroundById } from "../../fetchCampgroundById/page";
 import KakaoMap from "@/app/kakaoMap/page";
 
+import dynamic from 'next/dynamic';
+const SimpleMDE = dynamic(() => import('react-simplemde-editor'),{
+    ssr: false});
+import "easymde/dist/easymde.min.css";
+import { PiStarFill } from 'react-icons/pi'
+import axios from "axios";
+
 export default function CampingDetail({ params }) {
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
   const { id } = use(params); // URL에서 전달된 id 값
   const [data, setData] = useState(null); // 캠핑장 데이터
   const [loading, setLoading] = useState(true); // 로딩 상태
   const [error, setError] = useState(null); // 에러 상태
   const router = useRouter();
-
+  const [isWriteVisible, setIsWriteVisible] = useState(false); // 글쓰기 화면의 표시 여부
+  const [formData, setFormData] = useState({
+      title : '',
+      user_idx : '',
+      rating : '',
+      content : '',
+      file : null
+  });
+  const [rating, setRating] = useState(1)
   // 추천 여부 및 저장 상태 관리
   const [isSaved, setIsSaved] = useState(false);
 
-  // 예약하기 버튼 클릭 처리
-  const reserveClick = () => {
-    // 예약 페이지로 이동하거나 예약 API 호출
-    console.log("예약하기 버튼 클릭");
-    alert("예약 페이지로 이동합니다."); // 테스트용 알림
-    // 예: 예약 페이지로 이동
-    router.push("/reservation");
-  };
+// 예약하기 버튼 클릭 처리
+const reserveClick = (contentId) => {
+  // 예약 페이지로 이동하거나 예약 API 호출
+  console.log("예약하기 버튼 클릭");
+  alert("예약 페이지로 이동합니다."); // 테스트용 알림
+  // 예: 예약 페이지로 이동
+  router.push(`/reservation/${contentId}?name=${data?.facltNm}&price=${data?.price}`);
+};
 
   
 
@@ -103,10 +119,10 @@ export default function CampingDetail({ params }) {
   // 주요 시설 정보 매핑
   const getFacilityInfo = () => {
     const facilities = [];
-    if (data.induty?.includes("일반 야영장")) {
+    if (data.induty?.includes("일반야영장")) {
       facilities.push({ name: "일반 야영장", value: data.gnrlSiteCo });
     }
-    if (data.induty?.includes("자동차 야영장")) {
+    if (data.induty?.includes("자동차야영장")) {
       facilities.push({ name: "자동차 야영장", value: data.autoSiteCo });
     }
     if (data.induty?.includes("글램핑")) {
@@ -120,8 +136,94 @@ export default function CampingDetail({ params }) {
     }
     return facilities;
   };
-
   const facilityInfo = getFacilityInfo();
+
+  // 별점 선택 
+  ;
+  const MAX_RATING = 5;
+  const handleRatingClick = (newRating) => {
+    setRating(newRating); // 현재 별점을 업데이트
+    console.log(`새로운 별점: ${newRating}`);
+  };
+
+  // 글쓰기 버튼 클릭 시 화면 토글
+  const toggleWriteScreen = () => {
+    setIsWriteVisible(!isWriteVisible);
+  };
+  
+  const handleChange = (e) => {
+      const {name, value} = e.target;
+      setFormData((prev) => ({
+          ...prev, [name]:value
+      }));
+  }
+  // 파일 전송 
+  const handleFileChange = (e) => {
+      setFormData((prev) => ({
+          ...prev, file: e.target.files[0]
+      }));
+  }
+  // 리뷰 글쓰기 전송
+  const handleSubmit = async() => {
+      const API_URL = `${LOCAL_API_BASE_URL}/review/write`;
+      const formdata = new FormData();
+      formdata.append("title", formData.title)
+      formdata.append("user_idx", formData.user_idx)
+      formdata.append("rating", rating)
+      formdata.append("contentId", id)
+      formdata.append("content", formData.content)
+      if(formData.file){
+        formdata.append("file", formData.file)
+      }
+
+      try{
+          const response = await axios.post(API_URL, formdata, {
+              headers:{
+                  // Authorization: `Bearer ${token}`,
+                  "Content-Type" : "multipart/form-data"
+              }
+          });
+          if (response.formdata.success) {
+              alert(response.formdata.message);
+              setActiveTab("reviews")
+          }else{
+              alert(response.data.message);
+          }
+      } catch (error){
+          alert("오류발생")
+          console.log(error);
+      }
+  }   
+  // 리뷰 목록
+  // useEffect(() => {
+  //   // 데이터를 가져오는 함수
+  //   const fetchList = async () => {
+  //     try {
+  //         setLoading(true); // 로딩 상태 시작
+  //         const response = await fetch("http://localhost:8080/api/review/list"); // axios를 사용한 API 호출
+  //         if (!response.ok) {
+  //           throw new Error("Failed to fetch campground");
+  //         }
+  //         const List = response.json();
+  //         setList(data);
+  //         // setList([]); // 없을때 연습
+  //     } catch (err) {
+  //         console.error("Error fetching data:", err);
+  //         setError(err.message);
+  //     } finally {
+  //         setLoading(false); // 로딩 상태 종료
+  //     }
+  // };
+
+  //   fetchList(); // 데이터 가져오기
+  // }, [id]); // id가 변경되면 데이터 다시 가져오기
+
+   // const isFormValid = 
+  //       formData.gb_name.trim() !== "" &&
+  //       formData.gb_subject.trim() !== "" &&
+  //       formData.gb_content.trim() !== "" &&
+  //       formData.gb_pw.trim() !== "" &&
+  //       formData.gb_email.trim() !== "";
   return (
     <div>
   
@@ -138,7 +240,7 @@ export default function CampingDetail({ params }) {
             <div
               style={{
                 display: "flex",
-                backgroundImage: "url(/images/image.png)", // 배경 이미지
+                backgroundImage: "url(/images/cam1.webp)", // 배경 이미지
                 backgroundSize: "cover", // 이미지 크기 조정
                 backgroundPosition: "center",
                 height: "250px",
@@ -194,12 +296,12 @@ export default function CampingDetail({ params }) {
                         <td>{data.induty}</td>
                       </tr>
                       <tr>
-                        <th scope="col">운영기간</th>
-                        <td>{data.operPdCl}</td>
+                        <th scope="col">가격</th>
+                        <td>{data.price}원</td>
                       </tr>
                       <tr>
-                        <th scope="col">운영일</th>
-                        <td>{data.operDeCl}</td>
+                        <th scope="col">캠핑장 시설정보</th>
+                        <td>{data.sbrsCl}</td>
                       </tr>
                       <tr>
                         <th scope="col">홈페이지</th>
@@ -223,7 +325,7 @@ export default function CampingDetail({ params }) {
                     <Button
                       type="button"
                       className="reserve"
-                      onClick={reserveClick}
+                      onClick={() => reserveClick(id)}
                     >
                       <AddToHomeScreenIcon />
                       예약하기
@@ -260,6 +362,7 @@ export default function CampingDetail({ params }) {
               <Button
         className={`tab-button ${activeTab === "location" ? "active" : ""}`}
         onClick={handleButtonClick}
+        sx={{ color: "black" }}
       >
         날씨/위치정보
       </Button>
@@ -626,22 +729,43 @@ export default function CampingDetail({ params }) {
                               </span>
                             ))}
                           </td>
-                        </tr>
+                        </tr>      
                         <tr>
                           <th scope="col">기타 부대시설</th>
-                          <td>{data.tel}</td>
+                          <td>{data.sbrsEtc != "" ? data.sbrsEtc : '정보 없음'}</td>
                         </tr>
+                        {data.induty &&
+                      data.induty.split(",").map((facility, idx) => {
+                        switch (facility.trim()) {
+                          case "카라반":
+                            return (
+                              <tr key={idx}>
+                               <th scope="col">카라반 내부시설</th>
+                               <td>{data.caravInnerFclty}</td>
+                              </tr>
+                            );
+                          case "글램핑":
+                            return (
+                              <tr key={idx}>
+                               <th scope="col">{data.induty} 내부시설</th>
+                               <td>{data.glampInnerFclty}</td>
+                              </tr>
+                            )
+                          default:
+                            return null;
+                        }
+                      })}
                         <tr>
-                          <th scope="col">{data.induty} 내부시설</th>
-                          <td>{data.induty}</td>
+                          <th scope="col">입지 구분</th>
+                          <td>{data.lctCl}</td>
                         </tr>
                         <tr>
                           <th scope="col">반려동물 출입</th>
-                          <td>{data.operPdCl}</td>
+                          <td>{data.animalCmgCl}</td>
                         </tr>
                         <tr>
                           <th scope="col">화로대</th>
-                          <td>{data.operDeCl}</td>
+                          <td>{data.brazierCl}</td>
                         </tr>
                         <tr>
                           <th scope="col">안전시설현황</th>
@@ -690,14 +814,83 @@ export default function CampingDetail({ params }) {
             {activeTab === "reviews" && (
               <div id="reviews">
                 <h2>캠핑이용후기</h2>
-                <p>후기가 없습니다. 첫 리뷰를 남겨보세요!</p>
-              </div>
-            )}
-
-            {activeTab === "events" && (
-              <div id="events">
-                <h2>공지/이벤트</h2>
-                <p>현재 진행 중인 이벤트가 없습니다.</p>
+                {/* <TableContainer component={Paper} className="table-container">
+                <Table className="custom-table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell className="table-header">이름</TableCell>
+                            <TableCell className="table-header">제목</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {list.length === 0 ?
+                            <TableRow>
+                                <TableCell colSpan={2} style={{ textAlign: "center" }}>
+                                    <h3>등록된 정보가 존재하지 않습니다.</h3>
+                                </TableCell>
+                            </TableRow>
+                            : list.map((item) => (
+                                <TableRow key={item.review_idx}>
+                                    <TableCell className="table-cell">{item.user_id}</TableCell>
+                                    <TableCell className="table-cell">
+                                        <Link href={`/reviewDetails/${item.review_idx}`}>{item.review_title}</Link>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                    </TableBody>
+                </Table>
+            </TableContainer> */}
+            <Button 
+                  onClick={toggleWriteScreen}
+                  variant="contained" 
+                  color="primary"
+                  className="write-button"
+                >
+                글쓰기
+              </Button>
+              {isWriteVisible && (
+                <div className="review-write">
+                  <h2 className="review-title">
+                    <div><ChevronRightIcon className="rightIcon" /> 캠핑/여행후기</div>
+                    {/* 별점 표시 */}
+                    <div className="stars">
+                      {[...Array(MAX_RATING)].map((_, i) => (
+                        <PiStarFill
+                          key={i}
+                          className={i < rating ? "yellow-star" : "svg"}
+                          onClick={() => 
+                            handleRatingClick(i+1)
+                          }
+                        />
+                      ))}
+                      {rating}/{MAX_RATING}
+                    </div>
+                  </h2>
+                  <TextField
+                    label="제목"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange} // 값 처리 예시
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    label="이름"
+                    name="user_idx"
+                    onChange={handleChange} // 값 처리 예시
+                    fullWidth
+                    margin="normal"
+                  />
+                  <input type='file' onChange={handleFileChange} style={{marginBottom : "10px"}}/>
+                  <SimpleMDE 
+                    value={formData.content}
+                    onChange={(value)=>setFormData((prev)=>({...prev, content:value}))}
+                  />
+                  <Button variant="contained" color="primary" style={{ marginTop: "20px" }} onClick={handleSubmit}>
+                    저장
+                  </Button>
+                </div>
+              )}
               </div>
             )}
           </div>

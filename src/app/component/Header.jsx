@@ -83,13 +83,13 @@ const Header = () => {
               </IconButton>
             ) : (
               <Box className="appbar-left-menu">
-                <Link href="/" className="appbar-link">
+                <Link href="/authentication/signUp" className="appbar-link">
                   Sign in
                 </Link>
-                <Link href="/" className="appbar-link">
+                <Link href="/authentication/login" className="appbar-link">
                   Login
                 </Link>
-                <Link href="/notice" className="appbar-link">
+                <Link href="/customer-center" className="appbar-link">
                   Customer Service
                 </Link>
               </Box>
@@ -104,10 +104,10 @@ const Header = () => {
                 <Link href="/campinglist" className="appbar-link">
                   Camping GO
                 </Link>
-                <Link href="/" className="appbar-link">
+                <Link href="/MeetingGroup/meeting" className="appbar-link">
                   Together
                 </Link>
-                <Link href="/" className="appbar-link">
+                <Link href="/myPage/myUserInfo" className="appbar-link">
                   My Page
                 </Link>
               </Box>

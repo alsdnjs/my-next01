@@ -226,3 +226,37 @@
   .submit-button:hover {
     background-color: #1b4d3a;
   }
+  .review-title {
+    display: flex;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    justify-content: space-between;
+  }
+  .review-write {
+    position: relative;
+    width: 100%;
+    justify-content: center; /* 자식 요소를 수직 가운데 정렬 */
+    align-items: center;
+    margin: 20px auto;
+  }
+  .stars {
+    display: flex;
+    padding-top: 5px;
+  }
+
+  .stars svg {
+    color: gray;
+    cursor: pointer;
+  }
+
+  .stars:hover svg {
+    color: yellow;
+  }
+
+  .stars svg:hover ~ svg {
+    color: gray;
+  }
+
+  .stars .yellow-star {
+    color: yellow;
+  }
