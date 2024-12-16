@@ -32,6 +32,7 @@ const SimpleMDE = dynamic(() => import('react-simplemde-editor'),{
 import "easymde/dist/easymde.min.css";
 import { PiStarFill } from 'react-icons/pi'
 import axios from "axios";
+import Weather from "@/app/weather/page";
 
 export default function CampingDetail({ params }) {
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
@@ -61,6 +62,8 @@ const reserveClick = (contentId) => {
   router.push(`/reservation/${contentId}?name=${data?.facltNm}&price=${data?.price}`);
 };
 
+ // 캠핑장 위치 정보로 지역명 생성
+ const region = `${data?.doNm} ${data?.sigunguNm}`;
   
 
   // 찜하기 버튼 클릭 처리
@@ -110,6 +113,8 @@ const reserveClick = (contentId) => {
   if (error) {
     return <div style={{ color: "red" }}>{error}</div>;
   }
+
+  
 
   // 추천 상태 토글
   const toggleRecommendation = () => {
@@ -807,7 +812,8 @@ const reserveClick = (contentId) => {
                 />
                 <p>{data.addr1}</p>
                 <p>{data.direction}</p>
-              
+                <h1>날씨</h1>
+                <Weather region={region} />
               </div>
             )}
 
