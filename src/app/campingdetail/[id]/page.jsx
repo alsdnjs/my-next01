@@ -34,6 +34,7 @@ import { PiStarFill } from 'react-icons/pi'
 import axios from "axios";
 import Weather from "@/app/weather/page";
 
+
 export default function CampingDetail({ params }) {
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
   const { id } = use(params); // URL에서 전달된 id 값

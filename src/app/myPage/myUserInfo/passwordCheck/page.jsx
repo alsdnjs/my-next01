@@ -1,5 +1,5 @@
 "use client"
-import InputForm from '../../../components/InputForm'; 
+import InputForm from '../../../component/InputForm'; 
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, InputAdornment, Typography } from '@mui/material';
 import Link from 'next/link';

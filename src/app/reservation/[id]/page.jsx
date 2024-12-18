@@ -14,6 +14,7 @@ const PayCalendar = () => {
   const searchParams = useSearchParams(); // URL 쿼리 파라미터 접근
   const campName = searchParams.get("name"); // 캠핑장 이름
   const campPrice = searchParams.get("price") ? parseInt(searchParams.get("price"), 10) : 0; // 캠핑장 가격 (숫자 변환)
+ const contentId = searchParams.get("contentId"); // contentId 가져오기
 
   const [dateRange, setDateRange] = useState([null, null]); // 체크인/체크아웃 날짜 저장
   const [stayInfo, setStayInfo] = useState(""); // 몇 박 몇 일 계산 결과 저장
@@ -59,7 +60,7 @@ const PayCalendar = () => {
     // 결제 로직 추가
     console.log("결제 진행:", totalPrice);
     // 결제 페이지로 이동
-    router.push('/payment'); 
+    router.push(`/payment/${contentId}?totalPrice=${totalPrice}`)
   };
 
   return (
