@@ -10,6 +10,8 @@ function page(props) {
 
   const [password, setPassword] = useState();
   const router = useRouter();
+  const searchParams = useSearchParams();  // 쿼리 파라미터 접근
+  const action = searchParams.get('action');  // action 값 가져오기
 
   // 비밀번호 표시 상태 변경 함수
   const handleTogglePasswordVisibility = () => {
@@ -19,6 +21,18 @@ function page(props) {
   function handleConfirmBtnClick(){
     router.push('/myPage/myUserInfo/modifyUserInfo');
   }
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+  }
+
+  const handleSubmit = () => {
+    if (action === 'update') {
+      router.push('/myPage/myUserInfo/updateUserInfo');  // 수정 페이지로 이동
+    } else if (action === 'delete') {
+      router.push('/myPage/myUserInfo/deleteAccount');  // 삭제 페이지로 이동
+    }
+  };
 
   return (
     
@@ -60,7 +74,7 @@ function page(props) {
         type="password" // 보이는 상태에 따라 입력 타입 변경
         name="password"
         value={password}
-        // onChange={handleEmailChange}
+        onChange={handlePasswordChange}
       />
      <Button
        fullWidth
@@ -74,7 +88,7 @@ function page(props) {
          padding: "12px 10px",
          color: "#fff !important"
        }}
-       onClick={handleConfirmBtnClick}
+       onClick={handleSubmit}
      >
        Confirm
      </Button>

@@ -26,9 +26,7 @@ const Map = () => {
             minLevel: 13,
             maxLevel: 13,
           };
-
           const map = new window.kakao.maps.Map(mapContainer, mapOptions);
-
           // 광역시 마커 데이터 (서울, 부산, 대구, 인천, 광주 등)
           const markers = [
             { id: 1, name: "서울", lat: 37.5665, lng: 126.978 },
@@ -48,15 +46,16 @@ const Map = () => {
             { id: 15, name: "경남", lat: 35.4606, lng: 128.2132 },
             { id: 16, name: "제주", lat: 33.4996, lng: 126.5312 },
           ];
-
           // 마커 생성
           markers.forEach((markerData) => {
-            const position = new window.kakao.maps.LatLng(markerData.lat, markerData.lng);
+            const position = new window.kakao.maps.LatLng(
+              markerData.lat,
+              markerData.lng
+            );
             const marker = new window.kakao.maps.Marker({
               position,
               map,
             });
-
             // 마커에 지역 이름을 표시할 label 생성
             const label = new window.kakao.maps.CustomOverlay({
               position: position,
@@ -81,13 +80,10 @@ const Map = () => {
         console.error("카카오맵 API 로드 실패");
       }
     };
-
     script.onerror = () => {
       console.error("카카오맵 스크립트 로드 중 오류 발생");
     };
-
     document.head.appendChild(script);
-
     return () => {
       document.head.removeChild(script);
     };
@@ -101,19 +97,19 @@ const Map = () => {
       if (!response.ok) {
         throw new Error("네트워크 응답이 정상적이지 않습니다.");
       }
-
       const data = await response.json();
-
       // 지역에 맞는 캠핑장 데이터 필터링
       const filteredData = region
         ? data.filter((camp) => camp.addr1.includes(region))
         : data;
-
       setCampData(data);
       setFilteredCamps(filteredData);
       setCurrentPage(1);
     } catch (error) {
-      console.error("캠핑장 데이터를 가져오는 중 오류 발생:", error.message || error);
+      console.error(
+        "캠핑장 데이터를 가져오는 중 오류 발생:",
+        error.message || error
+      );
     }
   };
 
@@ -122,13 +118,11 @@ const Map = () => {
     return filteredCamps.slice(startIndex, startIndex + itemsPerPage);
   };
 
-    // 상세 페이지로 이동
-    const handleDetailClick = (contentId) => {
-      router.push(`/campingdetail/${contentId}`); // 디테일 페이지로 이동
-    };
-
+  // 상세 페이지로 이동
+  const handleDetailClick = (contentId) => {
+    router.push(`/campingdetail/${contentId}`); // 디테일 페이지로 이동
+  };
   const totalPages = Math.ceil(filteredCamps.length / itemsPerPage);
-
   const generatePageNumbers = () => {
     const pageNumbers = [];
     if (totalPages > 5) {
@@ -160,16 +154,19 @@ const Map = () => {
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <div id="map" style={{ width: "20%", height: "580px", marginRight: "35px" }}></div>
-      <div style={{ width: "20%" }}>
+    <div style={{ display: "flex", marginTop: "100px", marginBottom: "100px" }}>
+      <div
+        id="map"
+        style={{ width: "33%", height: "600px", marginRight: "35px" }}
+      ></div>
+      <div style={{ width: "60%" }}>
         <h3>캠핑장 정보 </h3>
         <p>총 캠핑장 수: {filteredCamps.length}</p>
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "10px",
+            gap: "20px",
           }}
         >
           {getCurrentPageData().length > 0 ? (
@@ -177,14 +174,14 @@ const Map = () => {
               <div key={camp.contentId} style={{ marginBottom: "20px" }}>
                 {camp.firstImageUrl ? (
                   <img
-                  onClick={() => handleDetailClick(camp.contentId)}
+                    onClick={() => handleDetailClick(camp.contentId)}
                     src={camp.firstImageUrl}
                     alt={camp.facltNm}
                     style={{
                       width: "100%",
                       height: "150px",
                       objectFit: "cover",
-                      borderRadius: "8px",
+                      borderRadius: "15px",
                     }}
                   />
                 ) : (
@@ -203,7 +200,7 @@ const Map = () => {
                   </div>
                 )}
                 <div style={{ marginTop: "10px" }}>
-                  <strong style={{color: "5A9F33"}}>{camp.facltNm}</strong>
+                  <strong>{camp.facltNm}</strong>
                   <div>{camp.addr1}</div>
                 </div>
               </div>
@@ -220,13 +217,15 @@ const Map = () => {
               style={{
                 margin: "0 5px",
                 padding: "5px 10px",
-                backgroundColor: currentPage === pageNum ? "#007bff" : "#f0f0f0",
+                backgroundColor:
+                  currentPage === pageNum ? "#007bff" : "#f0f0f0",
                 color: currentPage === pageNum ? "#fff" : "#000",
                 border: "1px solid #ddd",
                 borderRadius: "3px",
                 cursor: pageNum !== "..." ? "pointer" : "default",
               }}
-              disabled={pageNum === "..."} >
+              disabled={pageNum === "..."}
+            >
               {pageNum}
             </button>
           ))}

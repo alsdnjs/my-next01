@@ -24,7 +24,7 @@ import HikingIcon from "@mui/icons-material/Hiking";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { fetchCampgroundById } from "../../fetchCampgroundById/page";
-import KakaoMap from "@/app/kakaoMap/page";
+
 
 import dynamic from 'next/dynamic';
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'),{
@@ -32,6 +32,8 @@ const SimpleMDE = dynamic(() => import('react-simplemde-editor'),{
 import "easymde/dist/easymde.min.css";
 import { PiStarFill } from 'react-icons/pi'
 import axios from "axios";
+
+import KakaoMap from "@/app/kakaoMap/page";
 import Weather from "@/app/weather/page";
 
 

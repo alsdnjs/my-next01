@@ -6,9 +6,9 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import axios from "axios";
 import styles from "./Authentication.module.css";
-import InputForm from "../../../components/InputForm";
+import InputForm from "../../../component/InputForm";
 
-function SignupPage() {
+function updateUserInfoPage() {
   const [mId, setMId] = useState("");
   const [mPw, setMPw] = useState("");
   const [mPwConfirm, setMPwConfirm] = useState("");
@@ -38,9 +38,6 @@ function SignupPage() {
   
 
   // 입력 핸들러
-  const handleIdChange = (e) => setMId(e.target.value);
-  const handlePwChange = (e) => setMPw(e.target.value);
-  const handleMPwConfirmChange = (e) => setMPwConfirm(e.target.value);
   const handleNameChange = (e) => setName(e.target.value);
   const handlePhoneChange = (e) => setPhone(e.target.value);
   const handleEmailChange = (e) => setEmail(e.target.value);    // 이메일
@@ -471,4 +468,4 @@ function SignupPage() {
   );
 }
 
-export default SignupPage;
+export default updateUserInfoPage;

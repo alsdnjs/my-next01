@@ -12,7 +12,9 @@ import axios from "axios"; // axios 임포트
 const PayCalendar = () => {
   const searchParams = useSearchParams();
   const campName = searchParams.get("name");
-  const campPrice = searchParams.get("price") ? parseInt(searchParams.get("price"), 10) : 0;
+  const campPrice = searchParams.get("price")
+    ? parseInt(searchParams.get("price"), 10)
+    : 0;
   const contentId = searchParams.get("id");
 
   const [dateRange, setDateRange] = useState([null, null]);
@@ -25,11 +27,9 @@ const PayCalendar = () => {
 
   useEffect(() => {
     setHydrated(true);
-
     console.log("contentId:", contentId);
     console.log("campName:", campName);
     console.log("campPrice:", campPrice);
-
     const script = document.createElement("script");
     script.src = "https://js.tosspayments.com/v1";
     script.onload = () => {
@@ -49,7 +49,6 @@ const PayCalendar = () => {
   if (!hydrated) {
     return null; // 클라이언트가 준비되기 전 렌더링하지 않음
   }
-
   const onChange = (range) => {
     setDateRange(range);
 
@@ -78,10 +77,14 @@ const PayCalendar = () => {
         const orderId = `order-${Date.now()}`; // 고유한 주문 ID 생성
 
         if (!process.env.NEXT_PUBLIC_CLIENT_KEY) {
-          throw new Error("환경 변수에 클라이언트 키(NEXT_PUBLIC_CLIENT_KEY)가 설정되지 않았습니다.");
+          throw new Error(
+            "환경 변수에 클라이언트 키(NEXT_PUBLIC_CLIENT_KEY)가 설정되지 않았습니다."
+          );
         }
 
-        const tossPayments = window.TossPayments(process.env.NEXT_PUBLIC_CLIENT_KEY);
+        const tossPayments = window.TossPayments(
+          process.env.NEXT_PUBLIC_CLIENT_KEY
+        );
 
         // 결제 요청 후 paymentKey를 받아옴
         const { paymentKey } = await tossPayments.requestPayment("카드", {
@@ -89,14 +92,14 @@ const PayCalendar = () => {
           orderId,
           orderName: `${campName}`,
           customerName: "3조", // 로그인 후 실제 사용자명 사용
-          successUrl: `${window.location.origin}/reservation/success?orderId=${orderId}&amount=${totalPrice}`,
+          successUrl: `${window.location.origin}/reservation/success`,
           failUrl: `${window.location.origin}/reservation/fail`,
         });
 
         // 결제 후 서버로 결제 정보 저장
         const paymentData = {
           user_idx: 4, // 로그인 후 실제 user_idx로 변경 (예: session에서 가져오기)
-          action_type: '결제',
+          action_type: "결제",
           action_date: new Date().toISOString(),
           payment_amount: totalPrice,
           contentId, // 여기서 contentId 포함
@@ -105,22 +108,26 @@ const PayCalendar = () => {
           stayInfo,
         };
 
-        await axios.post("http://localhost:8080/api/camping/payments", paymentData)
-          .then(response => {
+        await axios
+          .post("http://localhost:8080/api/camping/payments", paymentData)
+          .then((response) => {
             console.log("결제 정보 저장 성공:", response.data);
           })
-          .catch(error => {
+          .catch((error) => {
             console.error("결제 정보 저장 실패:", error);
           });
 
         // 결제 확인 요청 (paymentKey 사용)
-        const paymentVerification = await tossPayments.verifyPayment(paymentKey);
+        const paymentVerification = await tossPayments.verifyPayment(
+          paymentKey
+        );
         console.log("결제 확인 결과:", paymentVerification);
 
         // 결제 성공 처리
         if (paymentVerification.status === "SUCCESS") {
           // 결제 성공 후 리다이렉트
-          router.push(`/reservation/success?orderId=${orderId}&amount=${totalPrice}`);
+          router.push(`/reservation/success`);
+          console.log("여기는 성공2");
         } else {
           alert("결제 실패: 상태 확인 필요");
         }
@@ -143,7 +150,10 @@ const PayCalendar = () => {
   return (
     <div className="pay-calendar-container">
       <h1>{campName || "캠핑장 이름 없음"}</h1>
-      <p>1박 기준 가격: {campPrice ? `${campPrice.toLocaleString()}원` : "정보 없음"}</p>
+      <p>
+        1박 기준 가격:{" "}
+        {campPrice ? `${campPrice.toLocaleString()}원` : "정보 없음"}
+      </p>
 
       <div className="pay-calendar-calendar-container">
         <Calendar

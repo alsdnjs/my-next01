@@ -19,23 +19,30 @@ import axios from "axios";
 
 
 
+
 const SignInForm = () => {
 
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL
-  const API_URL = `${LOCAL_API_BASE_URL}/members/login`;
-
-  const [mId, setMId] = useState("");
-  const [mPw, setMPw] = useState("");
-  const [error, setError] = useState("");
+  
   const router = useRouter();  // useRouter 초기화
 
   const { login } = useAuthStore(); // zustand login 함수 가져오기 
+
+  const initialize = useAuthStore((state) => state.initialize);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
 
   // 텍스트필드 초기화
   const initMvo = {
     m_id: "",
     m_pw: ""
   }
+
+  // 앱 초기화 시 쿠키에서 정보 가져오기
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   //사용자 정보
   const [mvo, setMvo] = useState(initMvo);
@@ -64,26 +71,10 @@ const SignInForm = () => {
     }));
   }
 
-  // 로그인 처리
-  // 서버에서 sendRedirect로 넘어오는 값을 받아서 로그인 처리
-  useEffect(() => {
-    // 주소창에 있는 파라미터 가져와서 로그인 처리한다.
-    const searchParams = new URLSearchParams(window.location.search);
-    const token = searchParams.get("token");
-    const m_id = searchParams.get("username");
-    const email = searchParams.get("email");
-
-    if(token && m_id && email){
-      alert("로그인 성공");
-      const user = {m_id, email}
-      login(user, token); // zustand에서 상태관리
-      router.push("/");
-    }
-
-  }, [login, router])
   function goServer() {
-      console.log(mvo);
-      
+    const API_URL = `${LOCAL_API_BASE_URL}/members/login`;
+    console.log(mvo);
+    
     axios.post(API_URL, mvo)
     .then(response => {
       console.log(response.data);
@@ -159,26 +150,6 @@ const SignInForm = () => {
                 Sign up
               </Link>
             </Typography>
-
-            {/* <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: "30px",
-              }}
-            >
-              
-              <Link href="#" className={styles.googleBtn} onClick={handleGoogleLogin} >
-                Sign in with Google
-              </Link>
-
-              <Link href="#" className={styles.fbBtn} >
-                <Image src="/images/fb-icon.png" width={20} height={20} />
-                
-                Sign in with Facebook
-              </Link>
-            </Box> */}
             <div className={styles.or}>
               <span>or</span>
             </div>
