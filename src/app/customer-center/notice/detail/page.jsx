@@ -2,58 +2,52 @@
 
 import React from "react";
 import { useSearchParams } from "next/navigation";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Paper, Divider } from "@mui/material";
 
 export default function NoticeDetailPage() {
   const searchParams = useSearchParams();
 
-  // 쿼리 파라미터에서 데이터 가져오기
-  const title = searchParams.get("title");
-  const content = searchParams.get("content");
-  const writer = searchParams.get("writer");
-  const date = searchParams.get("date");
+  const title = searchParams.get("title") || "제목 없음";
+  const writer = searchParams.get("writer") || "작성자 없음";
+  const date = searchParams.get("date") || "날짜 없음";
+  const content = searchParams.get("content") || "내용 없음";
   const image = searchParams.get("image");
 
-  // title 또는 content가 없을 경우 에러 메시지 표시
-  if (!title || !content) {
-    return (
-      <Box>
-        <Typography variant="h6" color="error">
-          공지사항을 찾을 수 없습니다.
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
-    <Box>
-      {/* 제목 */}
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
+    <Paper
+      sx={{
+        p: 4,
+        maxWidth: "900px",
+        margin: "auto",
+        mt: 5,
+        borderRadius: "12px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      }}
+    >
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
         {title}
       </Typography>
-      {/* 작성자 및 날짜 */}
-      <Typography variant="body2" color="textSecondary" gutterBottom>
-        {writer} - {date}
+      <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+        작성자: {writer} / 날짜: {date}
       </Typography>
-      {/* 이미지 */}
+      <Divider sx={{ mb: 3 }} />
       {image && (
         <Box
           component="img"
           src={image}
-          alt={title}
+          alt="공지사항 이미지"
           sx={{
             width: "100%",
-            maxHeight: "1100px",
+            maxHeight: "400px",
             objectFit: "cover",
             borderRadius: "8px",
-            margin: "16px 0",
+            mb: 3,
           }}
         />
       )}
-      {/* 내용용 */}
-      <Typography variant="body1" sx={{ mt: 2 }}>
+      <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
         {content}
       </Typography>
-    </Box>
+    </Paper>
   );
 }

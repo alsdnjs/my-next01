@@ -14,6 +14,9 @@ import {
   TextField,
   Button,
   IconButton,
+  Pagination,
+  Input,
+  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -21,40 +24,57 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 export default function RequestPage() {
   const [isWriting, setIsWriting] = useState(false);
+  const [isBusinessUser] = useState(true); // 사업자 여부 (true: 사업자, false: 일반 사용자)
   const [requests, setRequests] = useState([
     { id: 1, title: "서울 마포구 캠핑장 등록 부탁드립니다", writer: "관리자", date: "2020-03-10" },
     { id: 2, title: "경기도 수원 캠핑장 등록 부탁드립니다", writer: "들*", date: "2024-11-28" },
     { id: 3, title: "부산 서면 캠핑장 등록 부탁드립니다", writer: "짱*", date: "2024-11-27" },
   ]);
 
-  const [newRequest, setNewRequest] = useState({
-    title: "",
-    writer: "",
-    content: "",
-  });
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
 
-  const handleAddRequest = () => {
-    const newId = requests.length + 1;
-    const currentDate = new Date().toISOString().split("T")[0];
-    setRequests([
-      ...requests,
-      { id: newId, title: newRequest.title, writer: newRequest.writer, date: currentDate },
-    ]);
-    setIsWriting(false);
-    setNewRequest({ title: "", writer: "", content: "" });
-  };
+  const handlePageChange = (event, value) => setPage(value);
+
+  const paginatedRequests = requests.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+      {/* 제목 및 밑줄 */}
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        gutterBottom
+        sx={{ textAlign: "center", color: "#333" }}
+      >
+        캠핑장 등록 및 수정 요청
+      </Typography>
+      <Divider sx={{ mb: 3 }} />
+
+      {/* 사업자 전용 글쓰기 버튼 */}
       {!isWriting ? (
         <>
-          <Typography variant="h6" gutterBottom>
-            캠핑장 등록 및 수정 요청
-          </Typography>
-          <TableContainer component={Paper}>
+          {isBusinessUser && (
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+              <Button
+                startIcon={<AddIcon />}
+                variant="contained"
+                onClick={() => setIsWriting(true)}
+                sx={{ bgcolor: "#597445", "&:hover": { bgcolor: "#486936" } }}
+              >
+                글쓰기
+              </Button>
+            </Box>
+          )}
+
+          {/* 테이블 */}
+          <TableContainer
+            component={Paper}
+            sx={{ borderRadius: "10px", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}
+          >
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
                   <TableCell>번호</TableCell>
                   <TableCell>제목</TableCell>
                   <TableCell>작성자</TableCell>
@@ -63,14 +83,14 @@ export default function RequestPage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {requests.map((request) => (
-                  <TableRow key={request.id}>
+                {paginatedRequests.map((request) => (
+                  <TableRow key={request.id} hover>
                     <TableCell>{request.id}</TableCell>
                     <TableCell>{request.title}</TableCell>
                     <TableCell>{request.writer}</TableCell>
                     <TableCell>{request.date}</TableCell>
                     <TableCell align="center">
-                      <IconButton>
+                      <IconButton onClick={() => alert("디테일 페이지로 이동")}>
                         <MoreVertIcon />
                       </IconButton>
                     </TableCell>
@@ -79,14 +99,16 @@ export default function RequestPage() {
               </TableBody>
             </Table>
           </TableContainer>
-          <Button
-            startIcon={<AddIcon />}
-            variant="contained"
-            sx={{ mt: 2 }}
-            onClick={() => setIsWriting(true)}
-          >
-            글쓰기
-          </Button>
+
+          {/* 페이지네이션 */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <Pagination
+              count={Math.ceil(requests.length / rowsPerPage)}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+            />
+          </Box>
         </>
       ) : (
         <>
@@ -99,16 +121,12 @@ export default function RequestPage() {
               label="제목"
               margin="normal"
               variant="outlined"
-              value={newRequest.title}
-              onChange={(e) => setNewRequest({ ...newRequest, title: e.target.value })}
             />
             <TextField
               fullWidth
               label="작성자"
               margin="normal"
               variant="outlined"
-              value={newRequest.writer}
-              onChange={(e) => setNewRequest({ ...newRequest, writer: e.target.value })}
             />
             <TextField
               fullWidth
@@ -117,15 +135,18 @@ export default function RequestPage() {
               multiline
               rows={4}
               variant="outlined"
-              value={newRequest.content}
-              onChange={(e) => setNewRequest({ ...newRequest, content: e.target.value })}
             />
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body1" gutterBottom>
+                이미지 업로드
+              </Typography>
+              <Input type="file" inputProps={{ accept: "image/*" }} />
+            </Box>
             <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                onClick={handleAddRequest}
-                disabled={!newRequest.title || !newRequest.writer || !newRequest.content}
+                sx={{ bgcolor: "#597445", "&:hover": { bgcolor: "#486936" } }}
               >
                 제출
               </Button>

@@ -89,7 +89,7 @@ const Header = () => {
                 <Link href="/authentication/login" className="appbar-link">
                   Login
                 </Link>
-                <Link href="/customer-center" className="appbar-link">
+                <Link href="/customer-center/notice" className="appbar-link">
                   Customer Service
                 </Link>
               </Box>
