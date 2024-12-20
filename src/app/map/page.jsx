@@ -160,16 +160,16 @@ const Map = () => {
   };
 
   return (
-    <div style={{ display: "flex" }}>
-      <div id="map" style={{ width: "33%", height: "600px", marginRight: "35px" }}></div>
-      <div style={{ width: "60%" }}>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <div id="map" style={{ width: "20%", height: "580px", marginRight: "35px" }}></div>
+      <div style={{ width: "20%" }}>
         <h3>캠핑장 정보 </h3>
         <p>총 캠핑장 수: {filteredCamps.length}</p>
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "20px",
+            gap: "10px",
           }}
         >
           {getCurrentPageData().length > 0 ? (
@@ -184,7 +184,7 @@ const Map = () => {
                       width: "100%",
                       height: "150px",
                       objectFit: "cover",
-                      borderRadius: "15px",
+                      borderRadius: "8px",
                     }}
                   />
                 ) : (
@@ -203,7 +203,7 @@ const Map = () => {
                   </div>
                 )}
                 <div style={{ marginTop: "10px" }}>
-                  <strong>{camp.facltNm}</strong>
+                  <strong style={{color: "5A9F33"}}>{camp.facltNm}</strong>
                   <div>{camp.addr1}</div>
                 </div>
               </div>

@@ -55,17 +55,18 @@ export default function CampingDetail({ params }) {
   const [isSaved, setIsSaved] = useState(false);
 
 // 예약하기 버튼 클릭 처리
-const reserveClick = (contentId) => {
+const reserveClick = (id) => {
   // 예약 페이지로 이동하거나 예약 API 호출
   console.log("예약하기 버튼 클릭");
   alert("예약 페이지로 이동합니다."); // 테스트용 알림
   // 예: 예약 페이지로 이동
-  router.push(`/reservation/${contentId}?name=${data?.facltNm}&price=${data?.price}`);
+  
+  router.push(`/reservation?id=${id}&name=${encodeURIComponent(data?.facltNm)}&price=${data?.price}`);
 };
 
  // 캠핑장 위치 정보로 지역명 생성
  const region = `${data?.doNm} ${data?.sigunguNm}`;
-  
+
 
   // 찜하기 버튼 클릭 처리
   const saveClick = () => {
@@ -331,7 +332,7 @@ const reserveClick = (contentId) => {
                     <Button
                       type="button"
                       className="reserve"
-                      onClick={() => reserveClick(id)}
+                      onClick={() => reserveClick(data.contentId)}
                     >
                       <AddToHomeScreenIcon />
                       예약하기
