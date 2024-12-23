@@ -3,7 +3,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Grid, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-function InputForm({label, type="text", name, value, onChange, xs=12, disabled=false}) {
+function InputForm({label, type="text", name, value, onChange, xs=12, disabled=false, placeholder="", maxLength}) {
   const [showPassword, setShowPassword] = useState(false);
 
   // 비밀번호 표시 상태 변경 함수
@@ -25,8 +25,13 @@ function InputForm({label, type="text", name, value, onChange, xs=12, disabled=f
         value={value}
         onChange={onChange}
         disabled={disabled}
+        placeholder={placeholder}
         aria-readonly
+        inputProps={{
+          maxLength: maxLength,  // 최대 글자 수
+        }}
         InputProps={{
+          style: { borderRadius: 8 },
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
@@ -55,9 +60,13 @@ function InputForm({label, type="text", name, value, onChange, xs=12, disabled=f
         value={value}
         onChange={onChange}
         disabled={disabled}
+        placeholder={placeholder}
         aria-readonly
         InputProps={{
           style: { borderRadius: 8 }
+        }}
+        inputProps={{
+          maxLength: maxLength,  // 최대 글자 수
         }}
       />
       )

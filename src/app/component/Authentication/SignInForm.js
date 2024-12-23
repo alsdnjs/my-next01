@@ -9,7 +9,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import styles from "@/component/Authentication/Authentication.module.css";
+import styles from "@/components/Authentication/Authentication.module.css";
 import Image from "next/image";
 
 const SignInForm = () => {

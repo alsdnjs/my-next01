@@ -22,7 +22,6 @@ import "./styles.css";
 import { useRouter } from "next/navigation";
 import Map from "../map/page";
 
-
 export default function Main() {
   const [data, setData] = useState([]); // 캠핑장 데이터
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,6 +34,7 @@ export default function Main() {
   const prependNumber = useRef(1);
   const router = useRouter();
   const [swiperData, setSwiperData] = useState([]); // Swiper에서 사용할 데이터
+  const [activeCategory, setActiveCategory] = useState(null); // 현재 활성화된 카테고리
 
   // 상세 페이지로 이동
   const handleDetailClick = (contentId) => {
@@ -122,17 +122,11 @@ export default function Main() {
     setFilteredData(filtered);
   };
 
-  const handleCategoryClick = (category) => {
-    if (category === "카라반") {
-      const filtered = data.filter(
-        (item) =>
-          item.facltNm.includes(category) || item.addr1.includes(category)
-      );
-      setFilteredData(filtered);
-    } else {
-      const filtered = data.filter((item) => item.facltNm.includes(category));
-      setFilteredData(filtered);
-    }
+  const handleCategoryClick = (categoryName) => {
+    setActiveCategory(categoryName); // 활성화된 카테고리 설정
+
+    const filtered = data.filter((item) => item.induty === categoryName); // 카테고리에 따라 필터링
+    setFilteredData(filtered); // 필터링된 데이터를 상태에 업데이트
   };
 
   const prepend = () => {
@@ -251,17 +245,22 @@ export default function Main() {
         <div className="category-container">
           {categories.map((category, index) => (
             <React.Fragment key={index}>
-              <button className="category-button">
+              <button
+                className={`category-button ${
+                  activeCategory === category.name ? "active" : ""
+                }`}
+                onClick={() => handleCategoryClick(category.name)} // 클릭 시 필터링 함수 호출
+              >
                 {category.icon}
                 <span>{category.name}</span>
               </button>
               {index < categories.length - 1 && (
                 <div className="category-divider"></div>
-              )}{" "}
-              {/* 마지막 버튼 뒤에는 구분선 없음 */}
+              )}
             </React.Fragment>
           ))}
         </div>
+
         {/* 스와이퍼 */}
         <h1
           style={{

@@ -19,7 +19,6 @@ import axios from "axios";
 
 
 
-
 const SignInForm = () => {
 
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL
@@ -35,8 +34,8 @@ const SignInForm = () => {
 
   // 텍스트필드 초기화
   const initMvo = {
-    m_id: "",
-    m_pw: ""
+    id: "",
+    password: ""
   }
 
   // 앱 초기화 시 쿠키에서 정보 가져오기
@@ -53,12 +52,12 @@ const SignInForm = () => {
     // 주소창에 있는 파라미터 가져와서 로그인 처리한다.
     const searchParams = new URLSearchParams(window.location.search);
     const token = searchParams.get("token");
-    const m_id = searchParams.get("username");
+    const id = searchParams.get("username");
     const email = searchParams.get("email");
 
-    if(token && m_id && email){
+    if(token && id && email){
         alert("로그인 성공");
-        const user = {m_id, email}
+        const user = {id, email}
         login(user, token); // zustand에서 상태관리
         router.push("/");
     }
@@ -72,7 +71,7 @@ const SignInForm = () => {
   }
 
   function goServer() {
-    const API_URL = `${LOCAL_API_BASE_URL}/members/login`;
+    const API_URL = `${LOCAL_API_BASE_URL}/users/login`;
     console.log(mvo);
     
     axios.post(API_URL, mvo)
@@ -168,14 +167,14 @@ const SignInForm = () => {
 
                   <InputForm
                     label="아이디"
-                    name='m_id'
-                    value={mvo.m_id}
+                    name='id'
+                    value={mvo.id}
                     onChange={changeMvo}
                   />
                   <InputForm
                     label="비밀번호"
-                    name='m_pw'
-                    value={mvo.m_pw}
+                    name='password'
+                    value={mvo.password}
                     onChange={changeMvo}
                   />
                 </Grid>

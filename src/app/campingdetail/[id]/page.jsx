@@ -60,7 +60,7 @@ export default function CampingDetail({ params }) {
 const reserveClick = (id) => {
   // 예약 페이지로 이동하거나 예약 API 호출
   console.log("예약하기 버튼 클릭");
-  alert("예약 페이지로 이동합니다."); // 테스트용 알림
+  alert("예약 페이지로 이동합니다."); 
   // 예: 예약 페이지로 이동
   
   router.push(`/reservation?id=${id}&name=${encodeURIComponent(data?.facltNm)}&price=${data?.price}`);
@@ -246,35 +246,54 @@ const reserveClick = (id) => {
               color: "black",
             }}
           >
-            <div
+           <div
               style={{
                 display: "flex",
+                justifyContent: "center", // 수평 가운데 정렬
+                alignItems: "center", // 수직 가운데 정렬
                 backgroundImage: "url(/images/cam1.webp)", // 배경 이미지
                 backgroundSize: "cover", // 이미지 크기 조정
                 backgroundPosition: "center",
-                height: "250px",
-                flexDirection: "column", // 세로로 정렬
-                alignItems: "center",
+                height: "250px", // 부모 컨테이너 높이
+                flexDirection: "column", // 자식 요소를 세로로 정렬
               }}
             >
               <div
                 style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  height: "150px",
-                  width: "800px",
-                  marginTop: "70px",
+                  display: "flex", // 내부 콘텐츠를 정렬할 수 있게 설정
+                  flexDirection: "column", // 내부 요소를 세로로 정렬
+                  justifyContent: "center", // 내부 요소 수직 가운데 정렬
+                  alignItems: "center", // 내부 요소 수평 가운데 정렬
+                  backgroundColor: "rgba(255, 255, 255, 0.2)", // 반투명 배경색
+                  height: "150px", // 내부 컨테이너 높이
+                  width: "800px", // 내부 컨테이너 너비
+                  marginTop: "70px", // 위쪽 여백
                 }}
               >
-                <div
+                <p
                   style={{
                     color: "white",
                     fontWeight: "bold",
-                    textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)",
+                    textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)", // 텍스트 그림자
+                    fontSize: "2rem", // 제목 크기
+                    textAlign: "center", // 텍스트 가운데 정렬
+                    margin: 0, // 기본 여백 제거
                   }}
                 >
-                  <p style={{ fontSize: "2rem" }}>{data.facltNm}</p>
-                  <p style={{ fontSize: "20px" }}>{data.lineIntro}</p>
-                </div>
+                  {data.facltNm}
+                </p>
+                <p
+                  style={{
+                    color: "white",
+                    fontWeight: "bold",
+                    textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)", // 텍스트 그림자
+                    fontSize: "20px", // 설명 크기
+                    textAlign: "center", // 텍스트 가운데 정렬
+                    margin: 0, // 기본 여백 제거
+                  }}
+                >
+                  {data.lineIntro}
+                </p>
               </div>
             </div>
             <div className="camping_layout">

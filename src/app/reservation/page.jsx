@@ -99,7 +99,7 @@ const PayCalendar = () => {
         // 결제 후 서버로 결제 정보 저장
         const paymentData = {
           user_idx: 4, // 로그인 후 실제 user_idx로 변경 (예: session에서 가져오기)
-          action_type: "결제",
+          action_type: "예약",
           action_date: new Date().toISOString(),
           payment_amount: totalPrice,
           contentId, // 여기서 contentId 포함
@@ -116,6 +116,7 @@ const PayCalendar = () => {
           .catch((error) => {
             console.error("결제 정보 저장 실패:", error);
           });
+          console.log(paymentData);
 
         // 결제 확인 요청 (paymentKey 사용)
         const paymentVerification = await tossPayments.verifyPayment(

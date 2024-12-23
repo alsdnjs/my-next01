@@ -4,21 +4,18 @@ import useAuthStore from '../../../../store/authStore';
 import { useRouter } from 'next/navigation';
 
 
-
-
 function page(props) {
   const { login } = useAuthStore();
   const router = useRouter();
 
-
   useEffect(() => {
     
     const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get('name');
+    const username = urlParams.get('username');
     const email = urlParams.get('email');
     const id = urlParams.get('id');
     const userInfo = {
-      "name": name,
+      "username": username,
       "email": email,
       "id": id
     }

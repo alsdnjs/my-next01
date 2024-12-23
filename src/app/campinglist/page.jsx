@@ -41,9 +41,6 @@ function CampgroundSearchPage() {
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const itemsPerPage = 10; // 페이지당 아이템 수
 
-
-  
-
   // 필터링 로직
   const handleSearch = (e) => {
     e.preventDefault();
@@ -62,7 +59,8 @@ function CampgroundSearchPage() {
 
       // 반려동물 동반 가능 여부
       const matchesPetFriendly = isPetFriendly
-        ? campground.animalCmgCl === "가능"
+        ? campground.animalCmgCl === "가능" ||
+          campground.animalCmgCl === "가능(소형견)"
         : true;
 
       // 테마 필터링
@@ -102,12 +100,11 @@ function CampgroundSearchPage() {
     router.push(`/campingdetail/${contentId}`); // 디테일 페이지로 이동
   };
 
-   // 전체 캠핑장 데이터를 지도에 표시하는 페이지로 이동하는 함수
-   const handleMapClick = () => {
-    router.push("/campinglistmap");  // "/test" 지역 페이지 페이지로 이동하여 모든 캠핑장 데이터를 지도에 표시
+  // 전체 캠핑장 데이터를 지도에 표시하는 페이지로 이동하는 함수
+  const handleMapClick = () => {
+    router.push("/campinglistmap"); // "/test" 지역 페이지 페이지로 이동하여 모든 캠핑장 데이터를 지도에 표시
   };
 
-  
   // 검색
   // 엔터 키로 검색 처리
   const handleKeyPress = (e) => {
@@ -115,7 +112,7 @@ function CampgroundSearchPage() {
       handleSearch(e);
     }
   };
-  
+
   // 검색 초기화 기능
   const handleReset = () => {
     setSearchTerm(""); // 검색어 초기화
@@ -126,7 +123,7 @@ function CampgroundSearchPage() {
     setFilteredData(data); // 필터링된 데이터 초기화 (모든 데이터 표시)
     setCurrentPage(1);
   };
-  
+
   const regions = [
     "서울",
     "부산",
@@ -160,7 +157,6 @@ function CampgroundSearchPage() {
 
   return (
     <>
-  
       {/* Search Bar Section */}
       <div
         style={{
@@ -172,7 +168,6 @@ function CampgroundSearchPage() {
           backgroundSize: "cover", // 이미지 크기 조정
           backgroundPosition: "center", // 이미지 위치 중앙
           padding: "20px",
-         
         }}
       >
         <div
@@ -381,21 +376,21 @@ function CampgroundSearchPage() {
             <option value="">찜 많은 순</option>
           </select>
           <button
-        style={{
-          backgroundColor: "#efefef",
-          padding: "10px",
-          position: "absolute",
-          right: "30px",
-          top: "4px",
-          borderRadius: "5px",
-          border: "1px solid white",
-          cursor: "pointer",
-        }}
-        onClick={handleMapClick}
-      >
-        지도로 보기
-      </button>
-    </div>
+            style={{
+              backgroundColor: "#efefef",
+              padding: "10px",
+              position: "absolute",
+              right: "30px",
+              top: "4px",
+              borderRadius: "5px",
+              border: "1px solid white",
+              cursor: "pointer",
+            }}
+            onClick={handleMapClick}
+          >
+            지도로 보기
+          </button>
+        </div>
         {currentData && currentData.length > 0 ? (
           currentData.map((item, index) => (
             <div key={index} className="camping-item">
@@ -431,7 +426,7 @@ function CampgroundSearchPage() {
                   >
                     찜 (예시)개
                   </span>
-                  {item.animalCmgCl == "가능" && (
+                  {item.animalCmgCl === "가능" ? (
                     <span
                       style={{
                         color: "black",
@@ -443,7 +438,19 @@ function CampgroundSearchPage() {
                     >
                       반려동물 동반 가능
                     </span>
-                  )}
+                  ) : item.animalCmgCl === "가능(소형견)" ? (
+                    <span
+                      style={{
+                        color: "black",
+                        fontSize: "12px",
+                        backgroundColor: "lightblue",
+                        marginLeft: "10px",
+                        padding: "3px",
+                      }}
+                    >
+                      반려동물 동반 가능 (소형견)
+                    </span>
+                  ) : null}
                   <span
                     style={{
                       color: "black",
@@ -814,8 +821,6 @@ function CampgroundSearchPage() {
           </Stack>
         </div>
       </div>
-
-    
     </>
   );
 }
