@@ -8,6 +8,8 @@ import dayjs from "dayjs";
 import moment from "moment";
 import "./paycalendar.css"; // CSS 파일 임포트
 import axios from "axios"; // axios 임포트
+import { getCookie } from "cookies-next"; // 쿠키에서 값 가져오는 함수
+import useAuthStore from "store/authStore";
 
 const PayCalendar = () => {
   const searchParams = useSearchParams();
@@ -19,23 +21,50 @@ const PayCalendar = () => {
 
   const [dateRange, setDateRange] = useState([null, null]);
   const [stayInfo, setStayInfo] = useState("");
-  const [hydrated, setHydrated] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [isPaymentReady, setIsPaymentReady] = useState(false);
+  const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
+  const [userIdx, setUserIdx] = useState(null);
+  const [userName, setUserName] = useState("");
 
   const router = useRouter();
 
   useEffect(() => {
-    setHydrated(true);
-    console.log("contentId:", contentId);
-    console.log("campName:", campName);
-    console.log("campPrice:", campPrice);
+    const token = getCookie("token");
+    if (token) {
+      getUserIdx(); // 토큰이 있으면 사용자 user_idx 가져오기
+    }
+  }, []);
+
+  const getUserIdx = async () => {
+    try {
+      const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT 토큰 사용
+        },
+      });
+  
+      if (response.data.success) {
+        const userIdx = response.data.data.user_idx; // user_idx 추출
+        const userName = response.data.data.username;
+        setUserName(userName);
+        setUserIdx(userIdx); // response에서 받아온 userIdx를 설정
+        console.log(userIdx);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+ 
+
+  useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://js.tosspayments.com/v1";
     script.onload = () => {
       if (window.TossPayments) {
         setIsPaymentReady(true);
-        console.log("TossPayments SDK 로드 완료");
       } else {
         console.error("TossPayments SDK 로드 실패");
       }
@@ -44,11 +73,6 @@ const PayCalendar = () => {
     document.body.appendChild(script);
   }, []);
 
-  console.log("ContentId: ", contentId);
-
-  if (!hydrated) {
-    return null; // 클라이언트가 준비되기 전 렌더링하지 않음
-  }
   const onChange = (range) => {
     setDateRange(range);
 
@@ -72,9 +96,12 @@ const PayCalendar = () => {
   };
 
   const handlePayment = async () => {
+    console.log("contentId:", contentId);
+    console.log("user_idx:", userIdx); // user_idx만 가져오기
     if (isPaymentReady) {
       try {
         const orderId = `order-${Date.now()}`; // 고유한 주문 ID 생성
+        console.log("isPaymentReady 상태:", isPaymentReady);
 
         if (!process.env.NEXT_PUBLIC_CLIENT_KEY) {
           throw new Error(
@@ -91,18 +118,18 @@ const PayCalendar = () => {
           amount: totalPrice,
           orderId,
           orderName: `${campName}`,
-          customerName: "3조", // 로그인 후 실제 사용자명 사용
+          customerName: userName, // 사용자 이름 가져오기
           successUrl: `${window.location.origin}/reservation/success`,
           failUrl: `${window.location.origin}/reservation/fail`,
         });
 
         // 결제 후 서버로 결제 정보 저장
         const paymentData = {
-          user_idx: 4, // 로그인 후 실제 user_idx로 변경 (예: session에서 가져오기)
+          id: userIdx, // user_idx만 가져오기
           action_type: "예약",
           action_date: new Date().toISOString(),
           payment_amount: totalPrice,
-          contentId, // 여기서 contentId 포함
+          contentId, // contentId 포함
           orderId,
           campName,
           stayInfo,
@@ -116,24 +143,18 @@ const PayCalendar = () => {
           .catch((error) => {
             console.error("결제 정보 저장 실패:", error);
           });
-          console.log(paymentData);
 
         // 결제 확인 요청 (paymentKey 사용)
-        const paymentVerification = await tossPayments.verifyPayment(
-          paymentKey
-        );
+        const paymentVerification = await tossPayments.verifyPayment(paymentKey);
         console.log("결제 확인 결과:", paymentVerification);
 
         // 결제 성공 처리
         if (paymentVerification.status === "SUCCESS") {
-          // 결제 성공 후 리다이렉트
           router.push(`/reservation/success`);
-          console.log("여기는 성공2");
         } else {
           alert("결제 실패: 상태 확인 필요");
         }
 
-        console.log("결제 요청 성공");
       } catch (error) {
         console.error("결제 실패:", {
           code: error?.code || "UNKNOWN",

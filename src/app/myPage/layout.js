@@ -3,6 +3,7 @@
 import React from 'react';
 import { Box, Button } from '@mui/material';
 import Sidebar from './components/Sidebar';
+import UserInfoSidebar from './components/UserInfoSidebar'
 
 const App = ({children}) => {
   return (
@@ -40,6 +41,7 @@ const App = ({children}) => {
           {children}
         </Box>
       </Box>
+      <UserInfoSidebar/>
     </Box>
   );
 };

@@ -3,7 +3,7 @@ import InputForm from '../../../component/InputForm';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, InputAdornment, Typography } from '@mui/material';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
 
 function page(props) {
@@ -17,10 +17,6 @@ function page(props) {
   const handleTogglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
-
-  function handleConfirmBtnClick(){
-    router.push('/myPage/myUserInfo/modifyUserInfo');
-  }
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);

@@ -19,7 +19,9 @@ const FacilityItem = ({ icon: Icon, color, label }) => (
   </div>
 );
 
-function Facilities({ facilities }) {
+
+
+function Facilities( facilities ) {
   return (
     <Box>
       {facilities.split(",").map((facility, idx) => {

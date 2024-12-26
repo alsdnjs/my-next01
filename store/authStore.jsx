@@ -34,10 +34,18 @@ const useAuthStore = create(
         });
       },
 
-      // 토큰 삭제
+     // 토큰 삭제
       removeToken: () => {
         set({ token: '' });
         Cookies.remove('token'); // 쿠키에서 토큰 제거
+        Cookies.remove('user'); // 쿠키에서 유저 정보 제거
+      },
+      // 로그아웃 처리
+      logout: () => {
+        set({ user: null, token: '', isAuthenticated: false });
+        Cookies.remove('token'); // 쿠키 삭제
+        Cookies.remove('user'); // 'user' 쿠키 삭제
+        console.log('Token removed from cookie');
       },
 
       // 로그인 처리

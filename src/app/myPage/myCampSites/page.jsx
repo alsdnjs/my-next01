@@ -30,7 +30,7 @@ import HikingIcon from "@mui/icons-material/Hiking";
 import { useRouter } from "next/navigation";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { fetchCampgrounds } from "./CampGround";
-import { Avatar, Box, Button, IconButton, Pagination, Stack, SvgIcon, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, IconButton, Pagination, Paper, Stack, SvgIcon, TextField, Typography } from "@mui/material";
 import './styles.css'
 
 function CampgroundSearchPage() {
@@ -132,7 +132,7 @@ function CampgroundSearchPage() {
       >
         {currentData && currentData.length > 0 ? (
           currentData.map((item, index) => (
-            <Box key={index} className="camping-item" style={{width:"100%", height:"100%" , marginTop:"10px"}}>
+            <Paper key={index} className="camping-item" style={{width:"100%", height:"100%" , marginTop:"10px"}}>
               <div className="camping-item-content">
                 {/* 이미지가 없을 경우 Avatar와 기본 아이콘을 표시 */}
                 {item.firstImageUrl ? (
@@ -153,28 +153,35 @@ function CampgroundSearchPage() {
                   </Avatar>
                 )}
                 <div className="camping-item-text">
-                  <span
-                    style={{
-                      color: "black",
-                      fontSize: "12px",
-                      backgroundColor: "pink",
-                      padding: "3px",
+                  <Box 
+                    sx={{
+                      display: 'flex'
                     }}
                   >
-                    찜 (예시)개
-                  </span>
+                    <Typography
+                      style={{
+                        color: "black",
+                        fontSize: "12px",
+                        backgroundColor: "pink",
+                        padding: "3px",
+                        borderRadius: "5px"
+                      }}
+                    >
+                      찜 (예시)개
+                    </Typography>
 
-                  <span
-                    style={{
-                      color: "black",
-                      fontSize: "12px",
-                      backgroundColor: "#FFF5D7",
-                      marginLeft: "10px",
-                      padding: "3px",
-                    }}
-                  >
-                    리뷰 (예시)개
-                  </span>
+                    <Typography
+                      style={{
+                        color: "black",
+                        fontSize: "12px",
+                        backgroundColor: "#FFF5D7",
+                        marginLeft: "10px",
+                        padding: "3px",
+                      }}
+                    >
+                      리뷰 (예시)개
+                    </Typography>
+                  </Box>
                   <h1
                     className="camping-item-title"
                     style={{ cursor: "pointer" }}
@@ -520,7 +527,7 @@ function CampgroundSearchPage() {
                     </SvgIcon>
                 </Button>
               </div>
-            </Box>
+            </Paper>
           ))
         ) : (
           <p style={{ color: "black" }}>조건에 맞는 캠핑장이 없습니다.</p>
