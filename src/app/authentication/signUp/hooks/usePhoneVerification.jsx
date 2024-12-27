@@ -14,8 +14,21 @@ function usePhoneVerification(props) {
 
   // 인증번호 발송
   const sendOtp = async () => {
+
+    if(!phone){
+      alert('전화번호를 입력해주세요.');
+      return;
+    }
+    // 전화번호 유효성 검증
+    if (phone.length !== 11) {
+      alert('전화번호를 끝까지 입력해주세요.');
+      return; // 조건 만족하지 않으면 실행 중단
+    }
+
     try {
-      const response = await axios.post(`${LOCAL_API_BASE_URL}/sms/send-otp`, {phone});
+      console.log(phone);
+      
+      const response = await axios.post(`${LOCAL_API_BASE_URL}/sms/send-otp`, {phone :phone});
       console.log(response);
       // alert("인증번호가 발송되었습니다.");alert(response.ok);
       if(response.data.success){

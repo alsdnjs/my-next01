@@ -10,6 +10,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Typography,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
@@ -25,16 +26,34 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CloseIcon from "@mui/icons-material/Close";
 import { useMediaQuery } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import useAuthStore from "../../../store/authStore";
 import "./styles.css";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
   const theme = createTheme(); // 테마 생성
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
+  const router = useRouter();
+  const {isAuthenticated, removeToken, logout} = useAuthStore();
   // 테마를 사용하여 미디어 쿼리
   const isSmallScreen = useMediaQuery("(max-width: 900px)");
 
   const toggleDrawer = (open) => () => setIsDrawerOpen(open);
+
+  const goMyPage = () => {
+    if(!isAuthenticated){
+      alert("로그인이 필요합니다.");
+      router.push('/authentication/login?from=myPage/myUserInfo');
+      return;
+    }
+    router.push('/myPage/myUserInfo');
+  }
+
+  const logoutEvent = () => {
+    removeToken();
+    logout();
+    router.push('/');
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -83,12 +102,42 @@ const Header = () => {
               </IconButton>
             ) : (
               <Box className="appbar-left-menu">
-                <Link href="/authentication/signUp" className="appbar-link">
-                  Sign in
+                  {!isAuthenticated ? <>
+                <Link
+                  href="/authentication/signUp"
+                  className="appbar-link"
+                  style={{
+                    textDecoration: "none",
+                    color: "black",
+                    fontSize: "18px",
+                  }}
+                >
+                  Sign up
                 </Link>
-                <Link href="/authentication/login" className="appbar-link">
+                <Link
+                  href="/authentication/login"
+                  className="appbar-link"
+                  style={{
+                    textDecoration: "none",
+                    color: "black",
+                    fontSize: "18px",
+                  }}
+                  >
                   Login
-                </Link>
+                </Link></> :
+                <Typography
+                  onClick={logoutEvent}
+                  className="appbar-link"
+                  style={{
+                    textDecoration: "none",
+                    color: "black",
+                    fontSize: "18px",
+                    cursor: 'pointer'
+                  }}
+                >
+                  Logout
+                </Typography>
+                }
                 <Link href="/customer-center/notice" className="appbar-link">
                   Customer Service
                 </Link>

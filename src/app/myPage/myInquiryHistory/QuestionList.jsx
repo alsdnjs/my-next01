@@ -1,12 +1,12 @@
 
-import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
+import { Accordion, AccordionSummary, AccordionDetails, Typography, Box } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const QuestionList = ({ questions }) => {
   return (
-    <div>
+    <Box width='500px'>
       {questions.map((question) => (
-        <Accordion key={question.id}>
+        <Accordion  key={question.id}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h6" width="100%">{question.title}</Typography>
           </AccordionSummary>
@@ -20,7 +20,7 @@ const QuestionList = ({ questions }) => {
           </AccordionDetails>
         </Accordion>
       ))}
-    </div>
+    </Box>
   );
 };
 

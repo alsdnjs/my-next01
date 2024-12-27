@@ -173,6 +173,7 @@ const SignInForm = () => {
                   />
                   <InputForm
                     label="비밀번호"
+                    type="password"
                     name='password'
                     value={mvo.password}
                     onChange={changeMvo}
