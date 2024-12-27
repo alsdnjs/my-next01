@@ -1,52 +1,93 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { Button, Box, Typography, Checkbox, FormControlLabel, List, ListItem, ListItemText, Collapse, Grid } from "@mui/material";
-import { useRouter } from "next/navigation";
+"use client"
+import React, { useEffect, useState } from 'react';
+import { Box, Button, Checkbox, Collapse, FormControlLabel, Grid, List, ListItem, ListItemText, Typography } from '@mui/material';
+import LockIcon from '@mui/icons-material/Lock';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import { useRouter } from 'next/navigation';
 
-import useSignup from "../../../authentication/signUp/hooks/useSignUP";
-import CommonUserForm from "../../../component/CommonUserForm";
+
 
 function updateUserInfoPage() {
-
-
   const router = useRouter();
 
-  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
-  
-  const {
-    id, password, passwordConfirm, username, 
-    zipcode, address, addressDetail, agreed, idStatus, passwordCheck,
-    handleIdChange, handlePasswordChange, handlePasswordConfirmChange, handleUsernameChange,
-    handleAgreeChange, handleZipcodeChange, handleAddressChange, handleAddressDetailChange,  //주소
-    setError, handlePostCode,
-    setUserType, userType
-  } = useSignup(LOCAL_API_BASE_URL);
-
-  useEffect(() => {
-    // 카카오 주소 검색 스크립트 추가
-    const script = document.createElement("script");
-    script.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-  
-
-  //회원가입 버튼 클릭 이벤트
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-  };
+  const changePassword = () => {
+    router.push(`updateUserInfo/changePassword`);
+  }
 
   return (
-    <CommonUserForm/>
+    
+    <Box
+      component="main"
+      sx={{
+        maxWidth: "510px",
+        ml: "auto",
+        mr: "auto",
+        padding: "50px 0 100px",
+      }}
+    >
+    <Grid item xs={12} md={12} lg={12} xl={12}>
+      <Typography mb="20px">
+        회원정보 수정
+      </Typography>
+      <Box>
+        {/* (아이콘, 이름, URL) */}
+        {updateUserInfoForm(<LockIcon sx={{fontSize: '20px', mr:'10px'}}/>, '비밀번호 변경', 'updateUserInfo/changePassword')}
+        {updateUserInfoForm(<EmailIcon sx={{fontSize: '20px', mr:'10px'}}/>, '이메일 변경', 'updateUserInfo/changeEmail')}
+        {updateUserInfoForm(<PhoneIphoneIcon sx={{fontSize: '20px', mr:'10px'}}/>, '전화번호 변경', 'updateUserInfo/changePhone')}
+      </Box>
+    </Grid>
+  </Box>
   );
 }
+
+// 버튼 폼 return하는 메서드
+function updateUserInfoForm(icon, name, routerURL){
+  const router = useRouter();
+  const onClickEvent = () => {
+    router.push(`${routerURL}`);
+  }
+
+  return(
+    <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+      <Typography
+        variant="button"
+        sx={{ 
+          margin: '0 10px', 
+          border: '1px solid skyblue',
+          borderRadius: '10px',
+          padding: '20px',
+          minWidth: '500px'
+        }}
+      >
+        <Box 
+          sx={{
+            display:'flex',
+            justifyContent: "space-between",
+            alignItems: 'center'
+          }}
+          onClick={onClickEvent}
+        >
+          <Typography
+            sx={{
+              fontSize: "20px",
+              fontWeight: 'bold'
+            }}
+          >
+            {icon}
+            {name}
+          </Typography>
+          <KeyboardArrowRightIcon
+            sx={{
+              fontSize: '20px'
+            }}
+          />
+        </Box>
+      </Typography>
+    </Box>
+  )
+}
+
 
 export default updateUserInfoPage;

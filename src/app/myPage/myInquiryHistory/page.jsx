@@ -33,8 +33,8 @@ const Page = () => {
   };
 
   return (
-    <div className="app-container">
-      <Box>
+    <Box>
+      <Box display='flex' flexDirection='column' alignItems='center' sx={{ position: 'relative' }}>
       <Typography variant="h4" gutterBottom>
         1대1 문의
       </Typography>
@@ -47,13 +47,13 @@ const Page = () => {
         variant="contained"
         color="primary"
         onClick={() => setIsModalOpen(true)}
-        style={{ 
-          position: "fixed", 
-          bottom: 20, 
-          right: 20,
+        sx={{
+          position: "absolute",  // 절대 위치로 설정
+          bottom: 0,              // 아래쪽 여백
+          right: 0,             // 오른쪽 여백
           width: "150px",
           height: "50px",
-          fontSize: '20px'
+          fontSize: '20px',
         }}
       >
         문의하기
@@ -95,7 +95,7 @@ const Page = () => {
         </DialogActions>
       </Dialog>
       </Box>
-    </div>
+    </Box>
   );
 };
 
