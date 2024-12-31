@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
-import dayjs from "dayjs";
 import { getCookie } from "cookies-next"; // 쿠키에서 값 가져오는 함수
 import useAuthStore from "store/authStore"; // Zustand store 사용
 
@@ -13,6 +12,10 @@ const SuccessPage = () => {
   const amount = searchParams.get("amount");
 
   const [loading, setLoading] = useState(true);
+  const [facltNm, setFacltNm] = useState(null); // 캠핑장 이름 저장
+  const [useDate, setUseDate] = useState(null); // 이용 날짜 저장
+  const [checkinDate, setCheckinDate] = useState(null); // 체크인 날짜
+  const [checkoutDate, setCheckoutDate] = useState(null); // 체크아웃 날짜
 
   const router = useRouter();
   const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
@@ -30,7 +33,7 @@ const SuccessPage = () => {
       }
 
       try {
-        // 1. 사용자 정보 가져오기
+        // 사용자 정보 가져오기
         const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
         console.log("유저 정보 요청 URL:", API_URL);
 
@@ -49,24 +52,46 @@ const SuccessPage = () => {
 
           // 2. 결제 데이터 가져오기
           const paymentDataString = localStorage.getItem("paymentData");
-          if (!paymentDataString) {
-            console.error("로컬 스토리지에 결제 데이터가 없습니다.");
-            alert("결제 데이터가 존재하지 않습니다.");
+          const campingInfoString = localStorage.getItem("campingInfo");
+
+          if (!paymentDataString || !campingInfoString) {
+            console.error("로컬 스토리지에 결제 데이터 또는 캠핑장 정보가 없습니다.");
+            alert("결제 데이터 또는 캠핑장 정보가 존재하지 않습니다.");
             router.push("/"); // 적절한 페이지로 리디렉션
             return;
           }
 
           const paymentData = JSON.parse(paymentDataString);
+          const campingInfo = JSON.parse(campingInfoString);
 
-          // 3. 결제 데이터 백엔드로 전송
+          // 3. 캠핑장 이름과 이용 날짜 설정
+          setFacltNm(campingInfo.facltNm);
+          setUseDate(campingInfo.useDate);
+
+          // 4. 체크인/체크아웃 날짜 계산 (useDate가 "YYYY-MM-DD ~ YYYY-MM-DD" 형태라고 가정)
+          if (campingInfo.useDate) {
+            const dateRange = campingInfo.useDate.split(" ~ ");
+            if (dateRange.length === 2) {
+              setCheckinDate(dateRange[0]);
+              setCheckoutDate(dateRange[1]);
+            }
+          }
+
+          // 5. 결제 데이터 백엔드로 전송
           if (orderId && amount && fetchedUserIdx) {
             // 결제 데이터에 필요한 필드를 추가적으로 설정
             paymentData.user_idx = fetchedUserIdx;
             paymentData.action_type = "예약";
-            paymentData.action_date = dayjs(new Date()).format("YYYY-MM-DD"); // 현재 날짜
-
+  
+            // 결제 데이터에 필요한 checkinDate와 checkoutDate만 포함
+            if (checkinDate && checkoutDate) {
+              console.log("체크인 날짜:", checkinDate, "체크아웃 날짜:", checkoutDate); // 설정되는 날짜 확인
+              paymentData.checkin = checkinDate; // 체크인 날짜
+              paymentData.checkout = checkoutDate; // 체크아웃 날짜
+            }
+  
             console.log("백엔드로 전송할 결제 데이터:", paymentData);
-
+  
             const paymentResponse = await axios.post(
               `${LOCAL_API_BASE_URL}/camping/payments`,
               paymentData,
@@ -120,6 +145,9 @@ const SuccessPage = () => {
       <h1>결제 성공!</h1>
       <p>주문 번호: {orderId}</p>
       <p>결제 금액: {parseInt(amount, 10).toLocaleString()}원</p>
+      {facltNm && <p>캠핑장: {facltNm}</p>} {/* 캠핑장 이름 추가 */}
+      {checkinDate && <p>체크인 날짜: {checkinDate} </p>} {/* 체크인 날짜 추가 */}
+      {checkoutDate && <p>체크아웃 날짜: {checkoutDate}</p>} {/* 체크아웃 날짜 추가 */}
     </div>
   );
 };

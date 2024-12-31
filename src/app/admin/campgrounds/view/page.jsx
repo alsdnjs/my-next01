@@ -43,6 +43,8 @@ import LogoutIcon from "@mui/icons-material/ExitToApp";
 import { useRouter } from "next/navigation";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { fetchCampgrounds } from "@/app/fetchCampData/page";
+import useAuthStore from "../../../../../store/authStore";
+import axios from "axios";
 
 const menuItems = [
   {
@@ -129,16 +131,13 @@ export default function Page() {
   // 필터링 로직
   const handleSearch = (e) => {
     e.preventDefault();
-
     const filteredResults = data.filter((campground) => {
       // 캠핑장 이름 검색
       const matchesSearchTerm = searchTerm
         ? campground.facltNm?.toLowerCase().includes(searchTerm.toLowerCase())
         : true;
-
       // 지역 필터링
       const matchesRegion = region ? campground.doNm?.includes(region) : true;
-
       // 시/군 필터링
       const matchesCity = city ? campground.sigunguNm?.includes(city) : true;
 
@@ -146,15 +145,12 @@ export default function Page() {
       const matchesPetFriendly = isPetFriendly
         ? campground.animalCmgCl === "가능"
         : true;
-
       // 테마 필터링
       const matchesTheme = theme ? campground.lctCl?.includes(theme) : true;
-
       // 캠핑장 종류 필터링
       const matchesCampingType = type
         ? campground.induty?.includes(type)
         : true;
-
       // 모든 조건을 만족하는 캠핑장만 반환
       return (
         matchesSearchTerm &&
@@ -213,7 +209,36 @@ export default function Page() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   // 관리자 이름(아이디)
-  const [adminName] = React.useState("홍길동");
+  // 토큰
+  const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
+  const [adminName, setAdminName] = useState(""); // 관리자 이름 상태
+  const [userIdx, setUserIdx] = useState("");
+  const getUserIdx = async () => {
+    try {
+      const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT 토큰 사용
+        },
+      });
+      if (response.data.success) {
+        const userIdx = response.data.data.user_idx; // `user_idx` 추출
+        const adminName = response.data.data.username;
+        setAdminName(adminName);
+        setUserIdx(userIdx);
+      } else {
+        console.error("프로필 가져오기 실패:", response.data.message);
+      }
+    } catch (error) {
+      console.error("프로필 요청 오류:", error);
+    }
+  };
+  useEffect(() => {
+    if (token) {
+      getUserIdx(); // 토큰이 있으면 사용자 `user_idx` 가져오기
+    }
+  }, [token]);
 
   // 화면 크기 체크 (1000px 이하에서 텍스트 숨기기)
   const isSmallScreen = useMediaQuery("(max-width:1000px)");

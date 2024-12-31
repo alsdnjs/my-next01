@@ -28,31 +28,75 @@ import {
 } from "@mui/icons-material";
 import HikingIcon from "@mui/icons-material/Hiking";
 import { useRouter } from "next/navigation";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { fetchCampgrounds } from "./CampGround";
 import { Avatar, Box, Button, IconButton, Pagination, Paper, Stack, SvgIcon, TextField, Typography } from "@mui/material";
 import './styles.css'
+import axios from "axios";
+import useAuthStore from "../../../../store/authStore";
 
 function CampgroundSearchPage() {
   // 데이터 불러오기
   const [data, setData] = useState(null); // 캠핑장 데이터를 저장
   const [filteredData, setFilteredData] = useState([]); // 필터링된 데이터
-
-  // detail로 가기 위함
+  const token = useAuthStore((state) => state.token);  // zustand에서 token 값 가져오기
   const router = useRouter();
+
   // 페이지
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const itemsPerPage = 10; // 페이지당 아이템 수
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
 
-  // 컴포넌트가 마운트될 때 API 호출
+  // 내 캠프사이트 가져오기
+  const getData = async () => {
+    const API_URL = `${LOCAL_API_BASE_URL}/myPage/getMyFavoriteCampingSites`
+    try {
+      const response = await axios.get(API_URL, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json', // JSON 형식 명시
+        }
+      })
+      if(response.data.success){
+        setData(response.data.data);
+        setFilteredData(response.data.data);
+        console.log(response.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+  }
   useEffect(() => {
-    const getData = async () => {
-      const campgrounds = await fetchCampgrounds(); // fetchCampgrounds 함수 사용
-      setData(campgrounds); // 데이터를 상태에 저장
-      setFilteredData(campgrounds); // 초기에는 모든 데이터 표시
-    };
     getData();
-  }, []);
+  }, [])
+
+  const deleteCampSite = async (contentId) => {
+
+    if(!window.confirm("삭제하시겠습니까?")){
+      return;
+    }
+    
+    const API_URL = `${LOCAL_API_BASE_URL}/myPage/deleteMyCampingSite`
+    console.log(contentId);
+    
+    try {
+      const response = await axios.get(API_URL, {
+        params: { contentId },
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json', // JSON 형식 명시
+        }
+      })
+      if(response.data.success){
+        alert("성공적으로 삭제되었습니다.");
+        getData();
+      } else {
+
+      }
+    } catch (error) {
+      
+    }
+  }
 
   // 상세 페이지로 이동
   const handleDetailClick = (contentId) => {
@@ -521,7 +565,8 @@ function CampgroundSearchPage() {
                       })}
                   </div>
                 </div>
-                <Button>
+                {/* 삭제 버튼 */}
+                <Button onClick={() => deleteCampSite(item.contentId)}>
                     <SvgIcon>
                       <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                     </SvgIcon>

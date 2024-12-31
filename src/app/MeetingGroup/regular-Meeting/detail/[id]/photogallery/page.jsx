@@ -23,14 +23,15 @@ import "../../../../../globals.css";
 export default function PhotoGallery() {
   const photos = [
     { id: 1, image: "/images/다운로드.jpg", alt: "사진 1" },
-    { id: 2, image: "/images/다운로드55 (1).jpg", alt: "사진 1" },
-    { id: 3, image: "/images/im562652ages.jpg", alt: "사진 1" },
-    { id: 4, image: "/images/campingnav.gif", alt: "사진 1" },
-    { id: 6, image: "/images/camping1.png", alt: "사진 1" },
-    { id: 7, image: "/images/car2.jpg", alt: "사진 1" },
-    { id: 8, image: "/images/car1.jpg", alt: "사진 1" },
-    { id: 9, image: "/images/bg-dark.jpg", alt: "사진 1" },
+    { id: 2, image: "/images/다운로드55 (1).jpg", alt: "사진 2" },
+    { id: 3, image: "/images/im562652ages.jpg", alt: "사진 3" },
+    { id: 4, image: "/images/campingnav.gif", alt: "사진 4" },
+    { id: 6, image: "/images/camping1.png", alt: "사진 5" },
+    { id: 7, image: "/images/car2.jpg", alt: "사진 6" },
+    { id: 8, image: "/images/car1.jpg", alt: "사진 7" },
+    { id: 9, image: "/images/bg-dark.jpg", alt: "사진 8" },
   ];
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [currentPhoto, setCurrentPhoto] = useState(null);
@@ -39,7 +40,6 @@ export default function PhotoGallery() {
     setDrawerOpen(!drawerOpen);
   };
 
-  // 사진 크게 보기
   const handleClickOpen = (photo) => {
     setCurrentPhoto(photo);
     setOpen(true);
@@ -120,7 +120,6 @@ export default function PhotoGallery() {
             backgroundColor: "black",
           }}
         >
-
           {/* 닫기 버튼 */}
           <IconButton
             onClick={handleClose}
@@ -146,10 +145,8 @@ export default function PhotoGallery() {
               }}
             />
           )}
-
         </DialogContent>
       </Dialog>
-
 
       {/* Drawer */}
       <Drawer
@@ -159,13 +156,13 @@ export default function PhotoGallery() {
         PaperProps={{
           sx: {
             position: "absolute",
-            top: "25vh", // 화면 위에서 25% 떨어진 위치
-            height: "40vh", // 드로어 높이
-            width: "300px", // 드로어 너비
+            top: "25vh",
+            height: "40vh",
+            width: "300px",
             margin: "0 auto",
             backgroundColor: "rgba(255, 255, 255, 0.9)",
-            borderRadius: "16px", // 둥근 모서리
-            backdropFilter: "blur(10px)", // 블러
+            borderRadius: "16px",
+            backdropFilter: "blur(10px)",
           },
         }}
       >
@@ -183,20 +180,21 @@ export default function PhotoGallery() {
           >
             <CloseIcon />
           </IconButton>
+
           {/* 네비게이션 리스트 */}
-          <List
-            sx={{
-              padding: 0, // 내부 여백 제거
-              margin: 0, // 외부 여백 제거
-            }}
-          >
+          <List>
             {[
               { label: "홈", href: "/meet" },
-              { label: "게시판", href: "/meet/bulletinboard" },
-              { label: "사진첩", href: "/meet/photogallery" },
-              { label: "채팅", href: "/meet/chat" },
+              { label: "게시판", href: "/MeetingGroup/regular-Meeting/detail/1/bulletinboard" },
+              { label: "사진첩", href: "/MeetingGroup/regular-Meeting/detail/1/photogallery" },
+              { label: "채팅", href: "/MeetingGroup/regular-Meeting/detail/1/chat" },
             ].map((item) => (
-              <Link key={item.label} href={item.href} passHref style={{ textDecoration: "none" }}>
+              <Link
+                key={item.label}
+                href={item.href}
+                passHref
+                style={{ textDecoration: "none" }}
+              >
                 <ListItem
                   button
                   onClick={handleDrawerToggle}
@@ -210,8 +208,7 @@ export default function PhotoGallery() {
                     sx={{
                       textAlign: "center",
                       fontWeight: "bold",
-                      color: "#333", // 글꼴 색상
-                      textDecoration: "none"
+                      color: "#333",
                     }}
                   />
                 </ListItem>

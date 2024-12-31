@@ -43,6 +43,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { fetchMembers } from "../fetchMemberList/page";
 import { fetchOperators } from "../fetchOperatorList/page";
 import "./styles.css";
+import useAuthStore from "../../../../../store/authStore";
+import axios from "axios";
 const menuItems = [
   {
     label: "회원 관리",
@@ -123,13 +125,11 @@ export default function Page() {
     };
     getData();
   }, []);
-
   useEffect(() => {
     const getOperators = async () => {
       const operatorData = await fetchOperators(); // fetchOperators 호출
       setFilteredOperators(operatorData); // 가져온 데이터를 상태에 저장
     };
-
     getOperators(); // 호출
   }, []);
   // 페이징
@@ -137,7 +137,6 @@ export default function Page() {
   const handleMemberPageChange = (event, value) => {
     setCurrentMemberPage(value);
   };
-
   const handleOperatorPageChange = (event, value) => {
     setCurrentOperatorPage(value);
   };
@@ -167,12 +166,6 @@ export default function Page() {
     if (e.key === "Enter") {
       handleSearch(e);
     }
-  };
-  const handleReset = () => {
-    setSearchTerm(""); // 검색어 초기화
-    setFilteredMembers(data); // 회원 데이터 초기화
-    setFilteredOperators(operators); // 사업자 데이터 초기화
-    setCurrentPage(1);
   };
 
   const maskMiddleName = (name) => {
@@ -214,18 +207,44 @@ export default function Page() {
   const startMemberIndex = (currentMemberPage - 1) * itemsPerPage;
   const endMemberIndex = startMemberIndex + itemsPerPage;
   const pagedMembers = filteredMembers.slice(startMemberIndex, endMemberIndex);
-
   const startOperatorIndex = (currentOperatorPage - 1) * itemsPerPage;
   const endOperatorIndex = startOperatorIndex + itemsPerPage;
   const pagedOperators = filteredOperators.slice(
     startOperatorIndex,
     endOperatorIndex
   );
-  // 전체 페이지 수 계산
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   // 관리자 이름(아이디)
-  const [adminName] = React.useState("홍길동");
+  // 토큰
+  const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
+  const [adminName, setAdminName] = useState(""); // 관리자 이름 상태
+  const [userIdx, setUserIdx] = useState("");
+  const getUserIdx = async () => {
+    try {
+      const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT 토큰 사용
+        },
+      });
+      if (response.data.success) {
+        const userIdx = response.data.data.user_idx; // `user_idx` 추출
+        const adminName = response.data.data.username;
+        setAdminName(adminName);
+        setUserIdx(userIdx);
+      } else {
+        console.error("프로필 가져오기 실패:", response.data.message);
+      }
+    } catch (error) {
+      console.error("프로필 요청 오류:", error);
+    }
+  };
+  useEffect(() => {
+    if (token) {
+      getUserIdx(); // 토큰이 있으면 사용자 `user_idx` 가져오기
+    }
+  }, [token]);
 
   // 화면 크기 체크 (1000px 이하에서 텍스트 숨기기)
   const isSmallScreen = useMediaQuery("(max-width:1000px)");

@@ -424,7 +424,7 @@ function CampgroundSearchPage() {
                       padding: "3px",
                     }}
                   >
-                    찜 (예시)개
+                   찜 {item.likeCount}개
                   </span>
                   {item.animalCmgCl === "가능" ? (
                     <span
@@ -460,7 +460,7 @@ function CampgroundSearchPage() {
                       padding: "3px",
                     }}
                   >
-                    리뷰 (예시)개
+                    리뷰 {item.reviewCount}개
                   </span>
                   <h1
                     className="camping-item-title"

@@ -9,6 +9,7 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  TextField,
   Typography,
   useMediaQuery,
 } from "@mui/material";
@@ -16,41 +17,23 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { fetchInquiryDetail } from "../../fetchInquiryDetail/page";
 import axios from "axios";
+import useAuthStore from "store/authStore";
 
 export default function CampingDetail({ params }) {
   const { inquiry_idx } = use(params); // URL에서 전달된 id 값
   const [data, setData] = useState(null); // 문의 데이터
   const [error, setError] = useState(null); // 에러 상태
-  const [answer, setAnswer] = useState(null); // 답변 데이터
+  const [formData, setFormData] = useState({
+    answer: "",
+    admin_idx: "",
+  }); // 답변 수정 폼 데이터
+  const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
   const router = useRouter();
 
-  const handleAnswerClick = (inquiry_idx) => {
-    router.push(`/admin/inquiries/write/${inquiry_idx}`); // 답변 페이지로 이동
-  };
-
-  const handleUpdateClick = (inquiry_idx) => {
-    router.push(`/admin/inquiries/update/${inquiry_idx}`); // 수정 페이지로 이동
-  };
-
-  const maskMiddleName = (name) => {
-    if (!name || name.length === 0) return "";
-    const length = name.length;
-
-    if (length === 1) {
-      return name;
-    } else if (length === 2) {
-      return name[0] + "*";
-    } else {
-      const firstChar = name[0];
-      const lastChar = name[length - 1];
-      const maskedMiddle = "*".repeat(length - 2);
-      return firstChar + maskedMiddle + lastChar;
-    }
-  };
-
-  // 화면 크기 체크 (1000px 이하에서 텍스트 숨기기)
   const isSmallScreen = useMediaQuery("(max-width:1000px)");
 
+  // 데이터 로드
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -59,11 +42,17 @@ export default function CampingDetail({ params }) {
           throw new Error("데이터를 찾을 수 없습니다.");
         }
         setData(inquiry);
-        // 답변 데이터 가져오기
+
+        // 기존 답변 데이터 가져오기
         const response = await axios.get(
           `http://localhost:8080/api/inquiry/inquiries/answer/${inquiry_idx}`
         );
-        setAnswer(response.data);
+        if (response.data) {
+          setFormData({
+            answer: response.data.answer || "",
+            admin_idx: response.data.admin_idx || "",
+          });
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
         setError(error.message || "데이터를 가져오는 데 실패했습니다.");
@@ -74,6 +63,44 @@ export default function CampingDetail({ params }) {
       fetchData();
     }
   }, [inquiry_idx]);
+
+  const handleSubmit = async () => {
+    if (!formData.answer) {
+      alert("답변 내용을 입력해주세요.");
+      return;
+    }
+    if (!formData.admin_idx) {
+      alert("관리자 ID가 설정되지 않았습니다.");
+      return;
+    }
+
+    const url = `http://localhost:8080/api/inquiry/inquiries/answer/update/${inquiry_idx}`;
+    const formdata = new FormData();
+
+    // 모든 데이터를 FormData로 변환
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== "" && value !== undefined && value !== null) {
+        formdata.append(key, value);
+      }
+    });
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formdata,
+      });
+      if (response.ok) {
+        alert("답변 수정이 완료되었습니다.");
+        router.push("/admin/inquiries");
+      } else {
+        const error = await response.text();
+        alert(`업데이트 실패: ${error}`);
+      }
+    } catch (err) {
+      console.error("업데이트 중 오류 발생:", err);
+      alert("업데이트 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div>
@@ -116,7 +143,7 @@ export default function CampingDetail({ params }) {
           >
             <p>[목록으로 돌아가기]</p>
           </Link>
-          <hr></hr>
+          <hr />
           {data ? (
             <>
               <TableContainer>
@@ -128,7 +155,7 @@ export default function CampingDetail({ params }) {
                     </TableRow>
                     <TableRow>
                       <TableCell>작성자</TableCell>
-                      <TableCell>{maskMiddleName(data.username)}</TableCell>
+                      <TableCell>{data.username}</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>제목</TableCell>
@@ -145,7 +172,8 @@ export default function CampingDetail({ params }) {
                   </TableBody>
                 </Table>
               </TableContainer>
-              {/* 답변 내용 */}
+
+              {/* 답변 수정 */}
               <Box
                 sx={{
                   marginTop: "20px",
@@ -156,31 +184,19 @@ export default function CampingDetail({ params }) {
                 }}
               >
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  답변
+                  답변 수정
                 </Typography>
-                {answer ? (
-                  <>
-                    <Typography variant="body1" sx={{ color: "#333" }}>
-                      {answer.answer}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "#007bff",
-                        marginTop: "5px",
-                        fontStyle: "italic",
-                      }}
-                    >
-                      답변한 관리자 ID : {answer.admin_idx || "정보 없음"}
-                      <br></br>
-                      답변일자 : {answer.created_at}
-                    </Typography>
-                  </>
-                ) : (
-                  <Typography variant="body1" sx={{ color: "red" }}>
-                    답변이 아직 등록되지 않았습니다.
-                  </Typography>
-                )}
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  value={formData.answer} // 기존 답변 내용을 value에 설정
+                  onChange={(e) =>
+                    setFormData({ ...formData, answer: e.target.value })
+                  } // 입력값이 반영되도록 업데이트
+                  placeholder="답변 내용을 입력하세요."
+                />
               </Box>
 
               <Box
@@ -194,25 +210,14 @@ export default function CampingDetail({ params }) {
                     취소
                   </Button>
                 </Link>
-                {answer ? (
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleUpdateClick(data.inquiry_idx)}
-                  >
-                    답변 수정
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleAnswerClick(data.inquiry_idx)}
-                  >
-                    답변하기
-                  </Button>
-                )}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSubmit}
+                >
+                  수정완료
+                </Button>
               </Box>
             </>
           ) : (

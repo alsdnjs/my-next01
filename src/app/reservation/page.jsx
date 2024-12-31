@@ -108,17 +108,27 @@ const PayCalendar = () => {
         const orderId = `order-${Date.now()}`; // 고유한 주문 ID 생성
         const formattedActionDate = dayjs(new Date()).format("YYYY-MM-DD"); // MySQL 형식 변환
 
-        // 결제 데이터를 로컬 스토리지에 저장
+        // 결제 데이터를 저장
         const paymentData = {
           user_idx: userIdx,
           action_type: "예약",
-          action_date: formattedActionDate, // 변환된 날짜
           payment_amount: totalPrice,
           contentId,
           orderId,
           campName,
           stayInfo,
+          checkin: formatDate(dateRange[0]), // 체크인 날짜
+          checkout: formatDate(dateRange[1]), // 체크아웃 날짜
         };
+
+        const campingInfo = {
+          facltNm: campName,
+          useDate:  `${formatDate(dateRange[0])} ~ ${formatDate(dateRange[1])}`, // 캠핑장 이용 날짜
+        };
+        
+        // 로컬 스토리지에 데이터 저장
+        localStorage.setItem("paymentData", JSON.stringify(paymentData));
+        localStorage.setItem("campingInfo", JSON.stringify(campingInfo));
 
         console.log("전송할 데이터:", paymentData);
         localStorage.setItem("paymentData", JSON.stringify(paymentData));

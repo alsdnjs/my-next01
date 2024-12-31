@@ -1,7 +1,12 @@
-import React from 'react';
+"use client"
+import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button } from '@mui/material';
+import axios from 'axios';
+import useAuthStore from '../../../../store/authStore';
 
 function ReservationHistory() {
+  const token = useAuthStore((state) => state.token);  // zustand에서 token 값 가져오기
+  const [data, setData] = useState([]);
   // 예시 데이터
   const reservationData = [
     {
@@ -23,6 +28,29 @@ function ReservationHistory() {
       status: '이용완료',
     },
   ];
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
+
+  useEffect(() => {
+    getData();
+  }, [])
+
+  const getData = async () => {
+    const API_URL = `${LOCAL_API_BASE_URL}/myPage/getUsageHistory`;
+    try {
+      const response = await axios.get(API_URL, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json', // JSON 형식 명시
+        }
+      })
+      if(response.data.success){
+        setData(response.data.data);
+        console.log(response.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
 
   // // 후기쓰기 버튼 클릭 핸들러
@@ -38,56 +66,36 @@ function ReservationHistory() {
       textAlign: "center",
       
     }}>
-      예약/이용 내역  
+      예약/이용 내역
     </Typography>
 
       <TableContainer component={Paper}
         sx={{
           textAlign: "center"
         }}
-      > 
+      >
         <Table sx={{ minWidth: 650 }} aria-label="예약/이용 내역 표">
           <TableHead>
             <TableRow>
               <TableCell>캠핑장 이름</TableCell>
-              <TableCell align="left">이용 기간</TableCell>
+              <TableCell  align="center">이용 기간</TableCell>
               <TableCell align="left">결제 금액</TableCell>
               <TableCell align="center">상태</TableCell>
               <TableCell align="center">후기</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {reservationData.map((row, index) => (
-
-
+            {data.map((row, index) => (
               <TableRow key={index}>
                 <TableCell component="th" scope="row">
-                  {row.campground}
+                  {row.facltNm}
                 </TableCell>
-                <TableCell align="left">{row.period}</TableCell>
-                <TableCell align="left">{row.price}</TableCell>
-                <TableCell align="center">{row.status}</TableCell>
+                <TableCell align="center">{row.checkin} ~ {row.checkout}</TableCell>
+                <TableCell align="left">{row.payment_amount}</TableCell>
+                <TableCell align="center">{row.action_type}</TableCell>
                 <TableCell align="center">
                   {
-                    row.status == "이용완료" ? <Button variant='contained'>후기작성</Button> : ""
-                  }
-
-                </TableCell>
-              </TableRow>
-            ))}
-            {reservationData.map((row, index) => (
-
-
-              <TableRow key={index}>
-                <TableCell component="th" scope="row">
-                  {row.campground}
-                </TableCell>
-                <TableCell align="left">{row.period}</TableCell>
-                <TableCell align="left">{row.price}</TableCell>
-                <TableCell align="center">{row.status}</TableCell>
-                <TableCell align="center">
-                  {
-                    row.status == "이용완료" ? <Button variant='contained'>후기작성</Button> : ""
+                    row.action_type == "이용" ? <Button variant='contained'>후기작성</Button> : ""
                   }
 
                 </TableCell>

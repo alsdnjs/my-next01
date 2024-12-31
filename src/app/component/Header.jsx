@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   AppBar,
@@ -29,6 +29,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import useAuthStore from "../../../store/authStore";
 import "./styles.css";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const Header = () => {
   const theme = createTheme(); // 테마 생성
@@ -36,9 +37,12 @@ const Header = () => {
   const router = useRouter();
   const {isAuthenticated, removeToken, logout} = useAuthStore();
   // 테마를 사용하여 미디어 쿼리
+
   const isSmallScreen = useMediaQuery("(max-width: 900px)");
 
   const toggleDrawer = (open) => () => setIsDrawerOpen(open);
+
+
 
   const goMyPage = () => {
     if(!isAuthenticated){
@@ -54,7 +58,49 @@ const Header = () => {
     logout();
     router.push('/');
   }
+  
+  const [isAdmin, setIsAdmin] = useState(false); // 관리자 여부 상태 추가
+  const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
+  const checkAdmin = async (userIdx) => {
+    try {
+      const API_URL = `${LOCAL_API_BASE_URL}/admin/admins/check-id?user_idx=${userIdx}`;
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization:` Bearer ${token}`, // JWT 토큰 사용
+        },
+      });
+      setIsAdmin(response.data); // API 응답 값에 따라 관리자 여부 설정
+    } catch (error) {
+      console.error("관리자 여부 확인 실패:", error);
+    }
+  };
 
+  useEffect(() => {
+    if (token) {
+      getUserIdx(); // 토큰이 있으면 사용자 user_idx 가져오기
+    }
+  }, [token]);
+
+  const getUserIdx = async () => {
+    try {
+      const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT 토큰 사용
+        },
+      });
+      if (response.data.success) {
+        const userIdx = response.data.data.user_idx; // user_idx 추출
+        checkAdmin(userIdx); // 관리자 여부 확인 호출
+      } else {
+        console.error("프로필 가져오기 실패:", response.data.message);
+      }
+    } catch (error) {
+      console.error("프로필 요청 오류:", error);
+    }
+  };
+  
   return (
     <ThemeProvider theme={theme}>
       {" "}
@@ -70,9 +116,11 @@ const Header = () => {
             </Box>
 
             <Box className="toolbar-right">
-              <Link href="/admin" underline="none">
-                <PersonIcon className="icon" />
-              </Link>
+            {isAdmin && ( // 관리자일 때만 링크 표시
+                <Link href="/admin" underline="none">
+                  <PersonIcon className="icon" />
+                </Link>
+              )}
               <Link href="/" underline="none">
                 <AssignmentTurnedInIcon className="icon" />
               </Link>

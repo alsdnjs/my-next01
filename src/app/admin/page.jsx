@@ -41,6 +41,8 @@ import { useRouter } from "next/navigation";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { fetchAdminss } from "./admin/fetchAdmins/page";
 import "./styles.css";
+import useAuthStore from "store/authStore";
+import axios from "axios";
 
 const menuItems = [
   {
@@ -94,10 +96,16 @@ export default function Page() {
   // 페이지
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const itemsPerPage = 5; // 페이지당 아이템 수
+  // 관리자 유형
+  const [adminName, setAdminName] = useState(""); // 관리자 이름 상태
+  const [adminType, setAdminType] = useState(""); // 관리자 타입 상태
+  const [userIdx, setUserIdx] = useState("");
   // 검색기능
   const [searchTerm, setSearchTerm] = useState(""); // 캠핑장 이름 검색
   // detail로 가기 위함
   const router = useRouter();
+  const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
   // 상세 페이지로 이동
   const handleDetailClick = (admin_idx) => {
     router.push(`/admin/admin/detail/${admin_idx}`); // 디테일 페이지로 이동
@@ -122,7 +130,6 @@ export default function Page() {
   // 필터링 로직
   const handleSearch = (e) => {
     e.preventDefault();
-
     const filteredResults = data.filter((admins) => {
       // 캠핑장 이름 검색
       const matchesSearchTerm = searchTerm
@@ -132,7 +139,6 @@ export default function Page() {
       // 모든 조건을 만족하는 캠핑장만 반환
       return matchesSearchTerm;
     });
-
     setFilteredData(filteredResults);
   };
   // 검색
@@ -142,15 +148,6 @@ export default function Page() {
       handleSearch(e);
     }
   };
-  // 검색 초기화 기능
-  const handleReset = () => {
-    setSearchTerm(""); // 검색어 초기화
-    setRegion(""); // 지역 필터 초기화
-    setIsPetFriendly(false); // 반려동물 동반 필터 초기화
-    setTheme(""); // 테마 필터 초기화
-    setFilteredData(data); // 필터링된 데이터 초기화 (모든 데이터 표시)
-    setCurrentPage(1);
-  };
 
   // 현재 페이지에 해당하는 데이터 계산
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -159,8 +156,57 @@ export default function Page() {
   // 전체 페이지 수 계산
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
-  // 관리자 이름(아이디)
-  const [adminName] = React.useState("홍길동");
+  // 토큰
+  const getUserIdx = async () => {
+    try {
+      const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT 토큰 사용
+        },
+      });
+      if (response.data.success) {
+        const userIdx = response.data.data.user_idx; // `user_idx` 추출
+        const adminName = response.data.data.username;
+        setAdminName(adminName);
+        setUserIdx(userIdx);
+      } else {
+        console.error("프로필 가져오기 실패:", response.data.message);
+      }
+    } catch (error) {
+      console.error("프로필 요청 오류:", error);
+    }
+  };
+  useEffect(() => {
+    if (token) {
+      getUserIdx(); // 토큰이 있으면 사용자 `user_idx` 가져오기
+    }
+  }, [token]);
+
+  const checkManagerType = async (userIdx) => {
+    try {
+      const API_URL = `${LOCAL_API_BASE_URL}/admin/admins/check-type?user_idx=${userIdx}`;
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT 토큰 사용
+        },
+      });
+      if (response.data) {
+        const type = response.data.admin_type; // `type` 값을 추출
+        setAdminType(type === "super" ? "super" : "common"); // adminType 설정
+      } else {
+        console.error("관리자 타입 가져오기 실패");
+      }
+    } catch (error) {
+      console.error("관리자 타입 요청 오류:", error);
+    }
+  };
+  // userIdx가 설정된 이후 관리자 타입 확인
+  useEffect(() => {
+    if (userIdx) {
+      checkManagerType(userIdx); // userIdx를 기반으로 관리자 타입 확인
+    }
+  }, [userIdx]);
 
   // 화면 크기 체크 (1000px 이하에서 텍스트 숨기기)
   const isSmallScreen = useMediaQuery("(max-width:1000px)");
@@ -410,46 +456,65 @@ export default function Page() {
             }}
           >
             <h3 style={{ color: "black" }}>권한 관리</h3>
-            <TableContainer
-              component={Paper}
-              sx={{ boxShadow: 0, borderRadius: 2 }}
-            >
-              {currentData && currentData.length > 0 ? (
-                <Table className="camping-table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>관리자 IDX</TableCell>
-                      <TableCell>이름</TableCell>
-                      <TableCell>이메일</TableCell>
-                      <TableCell>전화번호</TableCell>
-                      <TableCell>유형</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {currentData.map((item, index) => (
-                      <TableRow
-                        key={index}
-                        onClick={() => handleDetailClick(item.admin_idx)}
-                      >
-                        <TableCell>{item.admin_idx}</TableCell>
-                        <TableCell>{item.username}</TableCell>
-                        <TableCell>{item.email}</TableCell>
-                        <TableCell>{item.phone}</TableCell>
-                        <TableCell>
-                          {item.admin_type === "super"
-                            ? "슈퍼관리자"
-                            : item.admin_type === "common"
-                            ? "일반관리자"
-                            : "알 수 없음"}
-                        </TableCell>
+            {adminType === "super" ? (
+              <TableContainer
+                component={Paper}
+                sx={{ boxShadow: 0, borderRadius: 2 }}
+              >
+                {currentData && currentData.length > 0 ? (
+                  <Table className="camping-table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>관리자 IDX</TableCell>
+                        <TableCell>이름</TableCell>
+                        <TableCell>이메일</TableCell>
+                        <TableCell>전화번호</TableCell>
+                        <TableCell>유형</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p>데이터 없음</p>
-              )}
-            </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {currentData.map((item, index) => (
+                        <TableRow
+                          key={index}
+                          onClick={() => handleDetailClick(item.admin_idx)}
+                        >
+                          <TableCell>{item.admin_idx}</TableCell>
+                          <TableCell>{item.username}</TableCell>
+                          <TableCell>{item.email}</TableCell>
+                          <TableCell>{item.phone}</TableCell>
+                          <TableCell>
+                            {item.admin_type === "super"
+                              ? "슈퍼관리자"
+                              : item.admin_type === "common"
+                              ? "일반관리자"
+                              : "알 수 없음"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p>데이터 없음</p>
+                )}
+              </TableContainer>
+            ) : (
+              <Box
+                sx={{
+                  backgroundColor: "#f9f9f9",
+                  borderRadius: 2,
+                  boxShadow: 1,
+                  p: 2,
+                  textAlign: "center",
+                  marginTop: "20px",
+                }}
+              >
+                <Typography variant="h6" color="error">
+                  관리자님은 해당 정보에 대한 접근 권한이 없습니다.
+                </Typography>
+              </Box>
+            )}
+          </Box>
+          {adminType === "super" ? (
             <Box
               sx={{
                 display: "flex",
@@ -472,26 +537,28 @@ export default function Page() {
                 </Button>
               </Link>
             </Box>
-            <div
-              className="pagination"
-              style={{ display: "flex", justifyContent: "center" }}
-            >
-              <Stack spacing={2}>
-                <Pagination
-                  count={totalPages} // 전체 페이지 수
-                  page={currentPage} // 현재 페이지
-                  onChange={handlePageChange} // 페이지 변경 처리
-                  color="primary"
-                  showFirstButton
-                  showLastButton
-                  boundaryCount={2}
-                  siblingCount={4}
-                  hideNextButton={currentPage === totalPages}
-                  hidePrevButton={currentPage === 1} // 첫 페이지에서 '이전' 버튼 숨기기
-                />
-              </Stack>
-            </div>
-          </Box>
+          ) : (
+            <p></p>
+          )}
+          <div
+            className="pagination"
+            style={{ display: "flex", justifyContent: "center" }}
+          >
+            <Stack spacing={2}>
+              <Pagination
+                count={totalPages} // 전체 페이지 수
+                page={currentPage} // 현재 페이지
+                onChange={handlePageChange} // 페이지 변경 처리
+                color="primary"
+                showFirstButton
+                showLastButton
+                boundaryCount={2}
+                siblingCount={4}
+                hideNextButton={currentPage === totalPages}
+                hidePrevButton={currentPage === 1} // 첫 페이지에서 '이전' 버튼 숨기기
+              />
+            </Stack>
+          </div>
         </Box>
       </Box>
     </>

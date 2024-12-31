@@ -281,6 +281,7 @@ export default function Main() {
             pagination={{
               type: "fraction",
             }}
+            
             navigation={showNavigation}
             virtual
             className="swiper2"

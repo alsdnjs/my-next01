@@ -9,7 +9,7 @@ import useAuthStore from '../../../../../../store/authStore';
 
 export default function ChangePassword() {
     const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
-    const {token} = useAuthStore();
+    const {token} = useAuthStore((state) => state);
     const router = useRouter();
 
 

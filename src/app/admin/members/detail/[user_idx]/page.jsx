@@ -29,7 +29,6 @@ export default function CampingDetail({ params }) {
 
   const maskMiddleName = (name) => {
     if (!name || name.length === 0) return ""; // 빈 문자열 처리
-
     const length = name.length;
 
     if (length === 1) {

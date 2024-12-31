@@ -142,10 +142,10 @@ export default function MeetPage() {
               }}
             >
               {[
-                { label: "홈", href: "/meet" },
-                { label: "게시판", href: "`/MeetingGroup/regular-Meeting/detail/${post.id}/bulletinboard`" },
+                { label: "홈", href: `/MeetingGroup/regular-Meeting/detail/${posts.id}`},
+                { label: "게시판", href: `/MeetingGroup/regular-Meeting/detail/${posts.id}/bulletinboard` },
                 { label: "사진첩", href: `/MeetingGroup/regular-Meeting/detail/${posts.id}/photogallery` },
-                { label: "채팅", href: "`/MeetingGroup/regular-Meeting/detail/${post.id}/chat`" },
+                { label: "채팅", href: `/MeetingGroup/regular-Meeting/detail/${posts.id}/chat` },
               ].map((item) => (
                 <Link key={item.label} href={item.href} passHref>
                   <ListItem
@@ -435,7 +435,7 @@ export default function MeetPage() {
             >
               게시판
             </Typography>
-            <Link href="/meet/bulletinboard" passHref>
+            <Link href={`/MeetingGroup/regular-Meeting/detail/${posts.id}/bulletinboard`} passHref>
               <Button
                 endIcon={<ArrowForwardIosIcon fontSize="small" />}
                 sx={{

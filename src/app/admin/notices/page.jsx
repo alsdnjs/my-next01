@@ -26,7 +26,6 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import PeopleIcon from "@mui/icons-material/People";
-import { Image as ImageIcon } from "@mui/icons-material";
 import CampgroundIcon from "@mui/icons-material/NaturePeople";
 import EventIcon from "@mui/icons-material/Event";
 import MailIcon from "@mui/icons-material/Mail";
@@ -41,9 +40,9 @@ import LogoutIcon from "@mui/icons-material/ExitToApp";
 import { useRouter } from "next/navigation";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import "./styles.css";
-import { fetchInquiries } from "./fetchInquiryList/page";
-import useAuthStore from "store/authStore";
 import axios from "axios";
+import useAuthStore from "store/authStore";
+import { fetchNoticeList } from "./fetchNoticeList/page";
 
 const menuItems = [
   {
@@ -92,59 +91,51 @@ export default function Page() {
   const [activeSubMenu, setActiveSubMenu] = React.useState(null);
   const [activeProfile, setActiveProfile] = React.useState(true);
   // 데이터
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(null); // 캠핑장 데이터를 저장
   const [filteredData, setFilteredData] = useState([]); // 필터링된 데이터
   // 페이지
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
-  const [currentMemberPage, setCurrentMemberPage] = useState(1); // 회원 페이지
-  const itemsPerPage = 10; // 페이지당 아이템 수
+  const itemsPerPage = 5; // 페이지당 아이템 수
   // 검색기능
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // 캠핑장 이름 검색
   // detail로 가기 위함
   const router = useRouter();
   // 상세 페이지로 이동
-  const handleDetailClick = (inquiry_idx) => {
-    router.push(`/admin/inquiries/detail/${inquiry_idx}`); // 디테일 페이지로 이동
+  const handleDetailClick = (notice_idx) => {
+    router.push(`/admin/notices/detail/${notice_idx}`); // 디테일 페이지로 이동
   };
 
   // 컴포넌트가 마운트될 때 API 호출
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const inquiries = await fetchInquiries();
-        if (Array.isArray(inquiries)) {
-          setData(inquiries);
-          setFilteredData(inquiries);
-        }
-      } catch (error) {
-        console.error("Error fetching inquiries:", error);
-      }
+    const getData = async () => {
+      const notices = await fetchNoticeList();
+      setData(notices); // 데이터를 상태에 저장
+      setFilteredData(notices); // 초기에는 모든 데이터 표시
     };
-
-    fetchData();
+    getData();
   }, []);
-  useEffect(() => {
-    if (data.length > 0) {
-      updateStatusMap();
-    }
-  }, [data]); // data가 변경될 때 updateStatusMap 호출
 
   // 페이징
   // 페이지 변경 시 호출되는 함수
-  const handleMemberPageChange = (event, value) => {
-    setCurrentMemberPage(value);
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value); // 페이지 상태 업데이트
   };
 
+  // 필터링 로직
   const handleSearch = (e) => {
     e.preventDefault();
-    // 데이터 필터링 - 검색
-    const filteredMemberResults = data.filter((inquiries) =>
-      searchTerm
-        ? inquiries.subject?.toLowerCase().includes(searchTerm.toLowerCase())
-        : true
-    );
-    setFilteredData(filteredMemberResults);
-    setCurrentMemberPage(1); // 페이지 초기화
+    const filteredResults = data.filter((notices) => {
+      // 검색
+      const matchesSearchTerm = searchTerm
+        ? notices.notice_subject
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        : true;
+      // 반환
+      return matchesSearchTerm;
+    });
+
+    setFilteredData(filteredResults);
   };
   // 검색
   // 엔터 키로 검색 처리
@@ -155,10 +146,9 @@ export default function Page() {
   };
 
   // 현재 페이지에 해당하는 데이터 계산
-  const startMemberIndex = (currentMemberPage - 1) * itemsPerPage;
-  const endMemberIndex = startMemberIndex + itemsPerPage;
-  const pagedMembers = filteredData.slice(startMemberIndex, endMemberIndex);
-
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
   // 전체 페이지 수 계산
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -166,7 +156,6 @@ export default function Page() {
   // 토큰
   const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
-  const [statusMap, setStatusMap] = useState({}); // 문의 상태 맵
   const [adminName, setAdminName] = useState(""); // 관리자 이름 상태
   const [userIdx, setUserIdx] = useState("");
   const getUserIdx = async () => {
@@ -201,46 +190,15 @@ export default function Page() {
   const handleLogout = () => {
     console.log("로그아웃");
   };
+
   // 메뉴 토글
   const handleSubMenuToggle = (index) => {
     setActiveSubMenu(activeSubMenu === index ? null : index);
   };
+
   // 프로필 토글
   const handleProfileToggle = () => {
     setActiveProfile(!activeProfile);
-  };
-
-  // 문의 상태 확인 API 호출
-  const checkAnswerStatus = async (inquiry_idx) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:8080/api/inquiry/inquiries/check-answer`,
-        { params: { inquiry_idx } }
-      );
-      return response.data; // true(답변 완료) 또는 false(답변 없음)
-    } catch (error) {
-      console.error(`Error checking status for inquiry ${inquiry_idx}:`, error);
-      return false; // 기본값으로 false 설정
-    }
-  };
-  const updateStatusMap = async () => {
-    if (!Array.isArray(data) || data.length === 0) {
-      console.warn("No data available to update status map");
-      return;
-    }
-    const newStatusMap = {};
-    for (const item of data) {
-      try {
-        const status = await checkAnswerStatus(item.inquiry_idx);
-        newStatusMap[item.inquiry_idx] = status ? "답변 완료" : "답변 전";
-      } catch (error) {
-        console.error(
-          `Error updating status for inquiry ${item.inquiry_idx}:`,
-          error
-        );
-      }
-    }
-    setStatusMap(newStatusMap);
   };
 
   return (
@@ -417,7 +375,7 @@ export default function Page() {
             <ChevronRightIcon sx={{ mx: 1, color: "#808D7C" }} />{" "}
             {/* 아이콘 삽입 */}
             <Typography variant="body1" sx={{ color: "#808D7C" }}>
-              1:1문의
+              공지사항
             </Typography>
           </Box>
           {/* 검색 바 */}
@@ -468,42 +426,31 @@ export default function Page() {
               flexDirection: "column", // 세로 방향 정렬
             }}
           >
-            <h3 style={{ color: "black" }}>1:1문의 관리</h3>
+            <h3 style={{ color: "black" }}>공지사항 관리</h3>
             <TableContainer
               component={Paper}
               sx={{ boxShadow: 0, borderRadius: 2 }}
             >
-              {pagedMembers && pagedMembers.length > 0 ? (
+              {currentData && currentData.length > 0 ? (
                 <Table className="camping-table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>문의 번호</TableCell>
-                      <TableCell>문의 작성자 ID</TableCell>
-                      <TableCell>문의 제목</TableCell>
-                      <TableCell>문의 작성일자</TableCell>
-                      <TableCell>답변 여부</TableCell>
+                      <TableCell>IDX</TableCell>
+                      <TableCell>제목</TableCell>
+                      <TableCell>작성한 관리자</TableCell>
+                      <TableCell>작성일자</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {pagedMembers.map((item, index) => (
+                    {currentData.map((item, index) => (
                       <TableRow
                         key={index}
-                        onClick={() => handleDetailClick(item.inquiry_idx)}
+                        onClick={() => handleDetailClick(item.notice_idx)}
                       >
-                        <TableCell>{item.inquiry_idx}</TableCell>
+                        <TableCell>{item.notice_idx}</TableCell>
+                        <TableCell>{item.notice_subject}</TableCell>
                         <TableCell>{item.id}</TableCell>
-                        <TableCell>{item.subject}</TableCell>
                         <TableCell>{item.created_at}</TableCell>
-                        <TableCell
-                          sx={{
-                            color:
-                              statusMap[item.inquiry_idx] === "답변 완료"
-                                ? "black"
-                                : "blue",
-                          }}
-                        >
-                          {statusMap[item.inquiry_idx] || "확인 중..."}
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -512,19 +459,44 @@ export default function Page() {
                 <p>데이터 없음</p>
               )}
             </TableContainer>
-
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                mt: 2,
+                width: "100%",
+              }}
+            >
+              <Link href="/admin/notices/write" passHref>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    backgroundColor: "#333333",
+                    color: "white",
+                    marginBottom: "20px",
+                  }}
+                >
+                  공지사항 등록하기
+                </Button>
+              </Link>
+            </Box>
             <div
               className="pagination"
               style={{ display: "flex", justifyContent: "center" }}
             >
               <Stack spacing={2}>
                 <Pagination
-                  count={Math.ceil(filteredData.length / itemsPerPage)}
-                  page={currentMemberPage}
-                  onChange={handleMemberPageChange}
+                  count={totalPages} // 전체 페이지 수
+                  page={currentPage} // 현재 페이지
+                  onChange={handlePageChange} // 페이지 변경 처리
                   color="primary"
                   showFirstButton
                   showLastButton
+                  boundaryCount={2}
+                  siblingCount={4}
+                  hideNextButton={currentPage === totalPages}
+                  hidePrevButton={currentPage === 1} // 첫 페이지에서 '이전' 버튼 숨기기
                 />
               </Stack>
             </div>

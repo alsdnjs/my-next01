@@ -1,40 +1,53 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, IconButton, Avatar, Paper, TextField, Button } from '@mui/material';
-import VideocamIcon from '@mui/icons-material/Videocam';
-import CallIcon from '@mui/icons-material/Call';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Box, Typography, Paper, TextField, Button } from '@mui/material';
 import SockJS from 'sockjs-client';
 import { Stomp } from '@stomp/stompjs';
 import ChatInput from './ChatInput';
 
-const ChatRoom = () => {
+const ChatRoom = ({ params }) => {
+    // params에서 room ID 가져오기
+    const roomId = params?.id; // 안전하게 접근
+
+    if (!roomId) {
+        return <div>Error: Room ID is undefined</div>; // 에러 처리
+    }
+
     const [messages, setMessages] = useState([]);
     const [stompClient, setStompClient] = useState(null);
-    const [nickname, setNickname] = useState(''); // 닉네임 상태 추가
-    const [nicknameSet, setNicknameSet] = useState(false); // 닉네임 입력 여부
+    const [isConnected, setIsConnected] = useState(false);
+    const [nickname, setNickname] = useState('');
+    const [nicknameSet, setNicknameSet] = useState(false);
 
     useEffect(() => {
-        if (!nicknameSet) return; // 닉네임이 설정되지 않으면 WebSocket 연결하지 않음
+        if (!nicknameSet) return;
 
-        const socket = new SockJS('http://localhost:8080/ws/chat'); // WebSocket 서버 URL
+        const socket = new SockJS('http://localhost:8080/ws/chat');
         const client = Stomp.over(socket);
 
-        client.connect({}, () => {
-            console.log('Connected to WebSocket');
-            client.subscribe('/topic/messages', (message) => {
-                const receivedMessage = JSON.parse(message.body);
-                setMessages((prev) => [...prev, receivedMessage]);
-            });
-        });
+        client.connect(
+            {},
+            () => {
+                console.log('Connected to WebSocket');
+                setIsConnected(true);
+                client.subscribe('/topic/messages', (message) => {
+                    const receivedMessage = JSON.parse(message.body);
+                    setMessages((prev) => [...prev, receivedMessage]);
+                });
+            },
+            (error) => {
+                console.error('WebSocket connection error:', error);
+                setIsConnected(false);
+            }
+        );
 
         setStompClient(client);
 
         return () => {
             if (client) client.disconnect();
         };
-    }, [nicknameSet]); // nicknameSet이 변경될 때만 WebSocket 연결
+    }, [nicknameSet]);
 
     const handleSetNickname = () => {
         if (nickname.trim()) {
@@ -43,20 +56,25 @@ const ChatRoom = () => {
     };
 
     const sendMessage = (content) => {
-        if (stompClient && content.trim()) {
+        if (isConnected && stompClient && roomId) {
             stompClient.send(
                 '/app/message',
                 {},
                 JSON.stringify({
+                    roomIdx: roomId, // roomId는 ChatRoom 컴포넌트에서 전달받는 props
                     sender: nickname,
                     content,
-                    timestamp: new Date().toLocaleTimeString(),
+                    messageType: 'text', // 메시지 유형 (text, image, file 등)
+                    fileUrl: null, // 파일이 없는 경우 null로 설정
+                    timestamp: new Date().toISOString(), // ISO 8601 형식의 타임스탬프
                 })
             );
+            
+        } else {
+            console.error('STOMP client is not connected or roomId is invalid.');
         }
     };
 
-    // 닉네임 입력 화면
     if (!nicknameSet) {
         return (
             <Box
@@ -101,95 +119,18 @@ const ChatRoom = () => {
                 backgroundColor: '#fff',
             }}
         >
-            {/* 헤더 */}
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '10px 15px',
-                    borderBottom: '1px solid #F5F4F6',
-                }}
-            >
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar src="/images/user1.png" alt="user1" />
-                    <Box sx={{ marginLeft: '10px' }}>
-                        <Typography variant="h6" fontWeight="bold">
-                            Chat Room
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                            Active Now
-                        </Typography>
-                    </Box>
-                </Box>
-                <Box>
-                    <IconButton>
-                        <VideocamIcon />
-                    </IconButton>
-                    <IconButton>
-                        <CallIcon />
-                    </IconButton>
-                    <IconButton>
-                        <MoreVertIcon />
-                    </IconButton>
-                </Box>
-            </Box>
-
-            {/* 메시지 리스트 */}
-            <Box sx={{ flex: 1, overflowY: 'auto', padding: '15px', backgroundColor: "#FAFAFA" }}>
+            <Box sx={{ flex: 1, overflowY: 'auto', padding: '15px', backgroundColor: '#FAFAFA' }}>
                 {messages.map((msg, index) => (
-                    <Box
-                        key={index}
-                        sx={{
-                            display: 'flex',
-                            justifyContent:
-                                msg.sender === nickname ? 'flex-end' : 'flex-start',
-                            alignItems: 'center',
-                            marginBottom: '10px',
-                        }}
-                    >
-                        {msg.sender !== nickname && (
-                            <Avatar
-                                src="/images/user2.png"
-                                alt="user2"
-                                sx={{ width: 35, height: 35, marginRight: '10px' }}
-                            />
-                        )}
-                        <Paper
-                            sx={{
-                                padding: '10px',
-                                maxWidth: '60%',
-                                borderRadius: '10px',
-                                backgroundColor:
-                                    msg.sender === nickname ? '#CFE9BA' : '#F5F5F5',
-                                color: msg.sender === nickname ? '#000' : '#555',
-                            }}
-                        >
-                            <Typography variant="body1">{msg.content}</Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    display: 'block',
-                                    textAlign: 'right',
-                                    marginTop: '5px',
-                                    color: '#888',
-                                }}
-                            >
-                                {msg.timestamp}
-                            </Typography>
-                        </Paper>
-                        {msg.sender === nickname && (
-                            <Avatar
-                                src="/images/user1.png"
-                                alt="user1"
-                                sx={{ width: 35, height: 35, marginLeft: '10px' }}
-                            />
-                        )}
-                    </Box>
+                    <Paper key={index} sx={{ padding: '10px', marginBottom: '10px' }}>
+                        <Typography>
+                            {msg.sender}: {msg.content}
+                        </Typography>
+                        <Typography variant="caption" color="gray">
+                            {msg.timestamp}
+                        </Typography>
+                    </Paper>
                 ))}
             </Box>
-
-            {/* 메시지 입력 */}
             <ChatInput onSend={sendMessage} />
         </Box>
     );

@@ -28,7 +28,7 @@ function updateUserInfoPage() {
       }}
     >
     <Grid item xs={12} md={12} lg={12} xl={12}>
-      <Typography mb="20px">
+      <Typography variant='h5' sx={{fontWeight:"bold"}} mb="20px">
         회원정보 수정
       </Typography>
       <Box>
