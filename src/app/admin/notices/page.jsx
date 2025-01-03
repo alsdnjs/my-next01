@@ -43,6 +43,8 @@ import "./styles.css";
 import axios from "axios";
 import useAuthStore from "store/authStore";
 import { fetchNoticeList } from "./fetchNoticeList/page";
+import { fetchPopupList } from "./fetchPopups/page";
+import { NoLuggageOutlined } from "@mui/icons-material";
 
 const menuItems = [
   {
@@ -77,7 +79,10 @@ const menuItems = [
     label: "1:1 문의",
     icon: <MailIcon />,
     path: "/admin/inquiries",
-    subItems: null,
+    subItems: [
+      { label: "1:1 문의", path: "/admin/inquiries" },
+      { label: "캠핑장 등록/수정", path: "/admin/inquiries/campground/view" },
+    ],
   },
   {
     label: "공지사항",
@@ -93,9 +98,13 @@ export default function Page() {
   // 데이터
   const [data, setData] = useState(null); // 캠핑장 데이터를 저장
   const [filteredData, setFilteredData] = useState([]); // 필터링된 데이터
+  const [filteredPopup, setFilteredPopup] = useState([]);
+  const [popup, setPopup] = useState(null);
   // 페이지
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
+  const [currentPopupPage, serCurrentPopupPage] = useState(1);
   const itemsPerPage = 5; // 페이지당 아이템 수
+
   // 검색기능
   const [searchTerm, setSearchTerm] = useState(""); // 캠핑장 이름 검색
   // detail로 가기 위함
@@ -114,11 +123,23 @@ export default function Page() {
     };
     getData();
   }, []);
+  useEffect(() => {
+    const getData = async () => {
+      const popups = await fetchPopupList();
+      setPopup(popups); // 데이터를 상태에 저장
+      setFilteredPopup(popups); // 초기에는 모든 데이터 표시
+    };
+    getData();
+  }, []);
 
   // 페이징
   // 페이지 변경 시 호출되는 함수
   const handlePageChange = (event, value) => {
     setCurrentPage(value); // 페이지 상태 업데이트
+  };
+
+  const handlePopupPageChange = (event, value) => {
+    serCurrentPopupPage(value); // 페이지 상태 업데이트
   };
 
   // 필터링 로직
@@ -149,8 +170,13 @@ export default function Page() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
+
+  const startPopupIndex = (currentPopupPage - 1) * itemsPerPage;
+  const endPopupIndex = startPopupIndex + itemsPerPage;
+  const currentPopup = filteredPopup.slice(startPopupIndex, endPopupIndex);
   // 전체 페이지 수 계산
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPopupPages = Math.ceil(filteredPopup.length / itemsPerPage);
 
   // 관리자 이름(아이디)
   // 토큰
@@ -199,6 +225,55 @@ export default function Page() {
   // 프로필 토글
   const handleProfileToggle = () => {
     setActiveProfile(!activeProfile);
+  };
+
+  const handleDelete = async (popupIdx) => {
+    const confirmDelete = window.confirm("정말로 이 항목을 삭제하시겠습니까?");
+    if (!confirmDelete) {
+      return; // 사용자가 취소 버튼을 누른 경우
+    }
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/notice/popup/delete/${popupIdx}`
+      );
+      if (response.status === 200) {
+        alert("삭제가 성공적으로 완료되었습니다.");
+        router.push("/admin/notices");
+      } else {
+        alert(`삭제에 실패했습니다: ${response.data}`);
+      }
+    } catch (error) {
+      console.error("삭제 요청 중 오류 발생:", error);
+      alert(`오류 발생: ${error.response?.data || error.message}`);
+    }
+  };
+
+  const toggleVisibility = async (popupIdx, currentVisibility) => {
+    // 상태 전환: "표시" -> "숨김", "숨김" -> "표시"
+    const newVisibility = currentVisibility === "표시" ? "숨김" : "표시";
+    console.log("idx값 : " + popupIdx);
+    try {
+      // 서버 요청
+      const response = await axios.post(
+        `http://localhost:8080/api/notice/popup/update-visibility/${popupIdx}/${newVisibility}`
+      );
+      if (response.status === 200) {
+        alert(`팝업 상태가 "${newVisibility}"로 변경되었습니다.`);
+        // filteredPopup 업데이트
+        setFilteredPopup((prev) =>
+          prev.map((popup) =>
+            popup.popup_idx === popupIdx
+              ? { ...popup, is_hidden: newVisibility }
+              : popup
+          )
+        );
+      } else {
+        alert("상태 업데이트에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("상태 업데이트 중 오류 발생:", error);
+      alert("오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -493,10 +568,133 @@ export default function Page() {
                   color="primary"
                   showFirstButton
                   showLastButton
-                  boundaryCount={2}
-                  siblingCount={4}
-                  hideNextButton={currentPage === totalPages}
-                  hidePrevButton={currentPage === 1} // 첫 페이지에서 '이전' 버튼 숨기기
+                />
+              </Stack>
+            </div>
+          </Box>
+
+          {/* 두 번째 박스 */}
+          <Box
+            sx={{
+              backgroundColor: "#f9f9f9",
+              borderRadius: 2,
+              boxShadow: 1,
+              p: 2,
+              mb: 3,
+              marginTop: "10px",
+              paddingLeft: "30px",
+              paddingRight: "30px",
+              display: "flex", // Flexbox 사용
+              alignItems: "center", // 세로 방향 가운데 정렬
+              flexDirection: "column", // 세로 방향 정렬
+            }}
+          >
+            <h3 style={{ color: "black" }}>팝업 관리</h3>
+            <TableContainer
+              component={Paper}
+              sx={{ boxShadow: 0, borderRadius: 2 }}
+            >
+              {currentPopup && currentPopup.length > 0 ? (
+                <Table className="camping-table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>IDX</TableCell>
+                      <TableCell>팝업 이름</TableCell>
+                      <TableCell>작성한 관리자</TableCell>
+                      <TableCell>너비</TableCell>
+                      <TableCell>높이</TableCell>
+                      <TableCell>간격(위)</TableCell>
+                      <TableCell>간격(좌)</TableCell>
+                      <TableCell>작성일자</TableCell>
+                      <TableCell>숨김여부</TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {currentPopup.map((popup) => (
+                      <TableRow key={popup.popup_idx || `popup-${popup.id}`}>
+                        {/* 고유 key 설정 */}
+                        <TableCell>{popup.popup_idx}</TableCell>
+                        <TableCell>{popup.popup_name}</TableCell>
+                        <TableCell>{popup.id}</TableCell>
+                        <TableCell>{popup.width}</TableCell>
+                        <TableCell>{popup.height}</TableCell>
+                        <TableCell>{popup.top_space}</TableCell>
+                        <TableCell>{popup.left_space}</TableCell>
+                        <TableCell>{popup.created_at}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="text"
+                            onClick={() =>
+                              toggleVisibility(popup.popup_idx, popup.is_hidden)
+                            }
+                            sx={{
+                              color:
+                                popup.is_hidden === "표시" ? "green" : "red",
+                              textTransform: "none",
+                            }}
+                          >
+                            {popup.is_hidden === "표시" ? "표시" : "숨김"}
+                          </Button>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                              backgroundColor: "#808d7c",
+                              color: "white",
+                              "&:hover": { backgroundColor: "grey" },
+                              marginLeft: "5px",
+                              padding: "2px",
+                            }}
+                            onClick={() => handleDelete(popup.popup_idx)}
+                          >
+                            삭제
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p>데이터 없음</p>
+              )}
+            </TableContainer>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                mt: 2,
+                width: "100%",
+              }}
+            >
+              <Link href="/admin/notices/popup/write" passHref>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    backgroundColor: "#333333",
+                    color: "white",
+                    marginBottom: "20px",
+                  }}
+                >
+                  팝업 등록하기
+                </Button>
+              </Link>
+            </Box>
+            <div
+              className="pagination"
+              style={{ display: "flex", justifyContent: "center" }}
+            >
+              <Stack spacing={2}>
+                <Pagination
+                  count={totalPopupPages} // 전체 페이지 수
+                  page={currentPopupPage} // 현재 페이지
+                  onChange={handlePopupPageChange} // 페이지 변경 처리
+                  color="primary"
+                  showFirstButton
+                  showLastButton
                 />
               </Stack>
             </div>

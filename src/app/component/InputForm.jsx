@@ -1,9 +1,9 @@
 "use client"
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Grid, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
+import { Button, Grid, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-function InputForm({label, type="text", name, value, onChange, xs=12, disabled=false, placeholder="", maxLength}) {
+function InputForm({label="", type="text", name="", value="", onChange="", required=false, onKeyDown=() => {}, xs=12, disabled=false, placeholder="", maxLength=50, autoFocus, endAdornment, onClick}) {
   const [showPassword, setShowPassword] = useState(false);
 
   // 비밀번호 표시 상태 변경 함수
@@ -18,6 +18,7 @@ function InputForm({label, type="text", name, value, onChange, xs=12, disabled=f
         <TextField
         name={name}
         type={showPassword ? "text" : "password"}
+        autoFocus={autoFocus}
         required
         fullWidth
         id={name}
@@ -26,10 +27,8 @@ function InputForm({label, type="text", name, value, onChange, xs=12, disabled=f
         onChange={onChange}
         disabled={disabled}
         placeholder={placeholder}
+        onKeyDown={onKeyDown}
         aria-readonly
-        inputProps={{
-          maxLength: maxLength,  // 최대 글자 수
-        }}
         InputProps={{
           style: { borderRadius: 8 },
           endAdornment: (
@@ -53,20 +52,28 @@ function InputForm({label, type="text", name, value, onChange, xs=12, disabled=f
         <TextField
         name={name}
         type={type}
-        required
         fullWidth
+        required={required}
         id={name}
         label={label}
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         disabled={disabled}
         placeholder={placeholder}
         aria-readonly
         InputProps={{
-          style: { borderRadius: 8 }
-        }}
-        inputProps={{
+          style: { borderRadius: 8 },
           maxLength: maxLength,  // 최대 글자 수
+          endAdornment:  endAdornment ? (             // 텍스트 안에 버튼
+              <InputAdornment position="end">
+                  <Button
+                    variant="contained"
+                    onClick={onClick}
+                    disabled={disabled}
+                  > {endAdornment}</Button>
+              </InputAdornment>
+          ) : null
         }}
       />
       )

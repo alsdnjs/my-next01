@@ -78,7 +78,10 @@ const menuItems = [
     label: "1:1 문의",
     icon: <MailIcon />,
     path: "/admin/inquiries",
-    subItems: null,
+    subItems: [
+      { label: "1:1 문의", path: "/admin/inquiries" },
+      { label: "캠핑장 등록/수정", path: "/admin/inquiries/campground/view" },
+    ],
   },
   {
     label: "공지사항",

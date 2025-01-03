@@ -1,6 +1,5 @@
-import { Box, Button, Grid, Typography } from "@mui/material"
-import InputForm from "./InputForm"
-import useEmailVerification from "../authentication/signUp/hooks/useEmailVerification";
+import { Box, Button, Grid, IconButton, InputAdornment, TextField, Typography } from "@mui/material"
+import InputForm from "../../../component/InputForm"
 
 function EmailVerificationForm({
     email,
@@ -20,8 +19,7 @@ function EmailVerificationForm({
                 background: "#fff",
                 padding: "30px 20px",
                 borderRadius: "10px",
-                width: '500px',
-                mb: "20px",
+                maxWidth: "510px",
             }}
             className="bg-black"
         >
@@ -32,8 +30,10 @@ function EmailVerificationForm({
                     value={email}
                     onChange={handleEmailChange}
                     disabled={emailVerified}
+                    endAdornment="인증번호 발송"
+                    onClick={sendVerificationCode}
                 />
-                <Button
+                {/* <Button
                     fullWidth
                     variant="contained"
                     sx={{
@@ -52,33 +52,16 @@ function EmailVerificationForm({
                     disabled={emailVerified}
                 >
                 인증번호 보내기
-                </Button>
+                </Button> */}
                 <InputForm
                     label="인증 코드"
                     name="verificationCode"
                     value={verificationCode}
                     onChange={handleVerificationCodeChange}
-                />
-                <Button
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                        mt: 2,
-                        mb: 2,
-                        textTransform: "capitalize",
-                        borderRadius: "8px",
-                        fontWeight: "500",
-                        fontSize: "16px",
-                        ml:"20px",
-                        mr:"2px",
-                        padding: "10px 10px",
-                        color: "#fff !important",
-                    }}
+                    endAdornment="인증하기"
                     onClick={verifyCode}
                     disabled={emailVerified}
-                >
-                    인증번호 확인
-                </Button>
+                />
                 <Typography color="textSecondary" sx={{ mt: 3, ml: 3 }}>
                     {emailVerified
                         ? '인증 완료되었습니다.'

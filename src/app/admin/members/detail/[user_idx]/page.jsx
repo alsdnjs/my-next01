@@ -84,6 +84,27 @@ export default function CampingDetail({ params }) {
     return <div style={{ color: "red" }}>{error}</div>;
   }
 
+  const handleDelete = async (user_idx) => {
+    const confirmDelete = window.confirm("정말로 이 회원을 삭제하시겠습니까?");
+    if (!confirmDelete) {
+      return; // 사용자가 취소 버튼을 누른 경우
+    }
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/member/members/delete/${user_idx}`
+      );
+      if (response.status === 200) {
+        alert("회원이 성공적으로 삭제되었습니다.");
+        router.push("/admin/members/view");
+      } else {
+        alert(`회원 삭제에 실패했습니다: ${response.data}`);
+      }
+    } catch (error) {
+      console.error("회원 삭제 요청 중 오류 발생:", error);
+      alert(`오류 발생: ${error.response?.data || error.message}`);
+    }
+  };
+
   return (
     <div>
       <Box
@@ -296,6 +317,19 @@ export default function CampingDetail({ params }) {
                     onClick={() => handleDetailClick(data.user_idx)}
                   >
                     수정
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "grey",
+                      color: "white",
+                      "&:hover": { backgroundColor: "#9A0007" },
+                      marginLeft: "15px",
+                    }}
+                    onClick={() => handleDelete(data.user_idx)} // user_idx 전달
+                  >
+                    회원 삭제
                   </Button>
                 </Box>
               </Box>

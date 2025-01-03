@@ -119,8 +119,12 @@ export default function CampingDetail({ params }) {
                         <TableCell>{data.action_type}</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell>여행일자</TableCell>
-                        <TableCell>{data.action_date}</TableCell>
+                        <TableCell>체크인</TableCell>
+                        <TableCell>{data.checkin}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>체크아웃</TableCell>
+                        <TableCell>{data.checkout}</TableCell>
                       </TableRow>
                       <TableRow>
                         <TableCell>예약일자</TableCell>

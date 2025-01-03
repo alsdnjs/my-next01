@@ -25,16 +25,42 @@ function Page() {
   const [adminIdx, setAdminIdx] = useState("");
   const [noticeSubject, setNoticeSubject] = useState("");
   const [noticeContent, setNoticeContent] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null); // 파일 상태 추가
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
+      let fileIdx = null;
+      // 1. 파일 업로드 (선택된 파일이 있는 경우)
+      if (selectedFile) {
+        const fileFormData = new FormData();
+        fileFormData.append("file", selectedFile);
+        const fileResponse = await axios.post(
+          `http://localhost:8080/api/files/admin/upload`,
+          fileFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (fileResponse.status === 200) {
+          fileIdx = fileResponse.data.file_idx; // 서버에서 반환된 file_idx
+          console.log("파일 업로드 성공: file_idx =", fileIdx); // 확인용 로그
+        } else {
+          throw new Error("파일 업로드 실패");
+        }
+      }
+
+      // 2. 공지사항 등록
       const formData = new FormData();
       formData.append("notice_subject", noticeSubject);
       formData.append("notice_content", noticeContent);
       formData.append("admin_idx", adminIdx); // 관리자 ID
-
+      if (fileIdx) {
+        formData.append("image_idx", fileIdx); // 업로드된 파일 ID 추가
+      }
       const response = await axios.post(
         `http://localhost:8080/api/notice/notices/insert`,
         formData,
@@ -55,6 +81,11 @@ function Page() {
       console.error("등록 중 문제가 발생했습니다:", error);
       alert("등록 중 문제가 발생했습니다.");
     }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file); // 선택된 파일 저장
   };
 
   const handleNoticeSubjectChange = (e) => {
@@ -80,6 +111,8 @@ function Page() {
       }
     } catch (error) {
       console.error("프로필 요청 오류:", error);
+      alert("로그인이 만료되었습니다. 로그인 후 이용해주세요.");
+      router.push("/");
     }
   };
 
@@ -133,7 +166,7 @@ function Page() {
           backgroundColor: "#f9f9f9",
           borderRadius: 2,
           boxShadow: 1,
-          maxWidth: "600px",
+          width: "1000px",
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
@@ -172,50 +205,19 @@ function Page() {
                     value={noticeContent}
                     onEditorChange={handleContentChange}
                     init={{
-                      height: 300,
+                      height: 500,
                       menubar: false,
                       toolbar:
                         "undo redo | formatselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist | removeformat",
-                      file_picker_callback: (callback, value, meta) => {
-                        if (meta.filetype === "image") {
-                          const input = document.createElement("input");
-                          input.setAttribute("type", "file");
-                          input.setAttribute("accept", "image/*"); // 이미지 파일만 허용
-                          input.onchange = async (e) => {
-                            const file = e.target.files[0];
-
-                            // 파일 업로드 로직
-                            const formData = new FormData();
-                            formData.append("file", file);
-
-                            try {
-                              const response = await axios.post(
-                                `${LOCAL_API_BASE_URL}/api/files/upload`, // 업로드 API 엔드포인트
-                                formData,
-                                {
-                                  headers: {
-                                    "Content-Type": "multipart/form-data",
-                                    Authorization: `Bearer ${token}`,
-                                  },
-                                }
-                              );
-
-                              if (response.status === 200) {
-                                const fileUrl = response.data.url; // 서버에서 반환된 파일 URL
-                                callback(fileUrl, { alt: file.name });
-                              } else {
-                                alert("파일 업로드 실패");
-                              }
-                            } catch (error) {
-                              console.error("파일 업로드 에러:", error);
-                              alert("파일 업로드 중 문제가 발생했습니다.");
-                            }
-                          };
-                          input.click();
-                        }
-                      },
                     }}
                   />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>파일 첨부</TableCell>
+                <TableCell>
+                  <input type="file" onChange={handleFileChange} />
+                  {selectedFile && <p>선택된 파일: {selectedFile.name}</p>}
                 </TableCell>
               </TableRow>
             </TableBody>

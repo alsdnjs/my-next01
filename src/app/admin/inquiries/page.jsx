@@ -78,7 +78,10 @@ const menuItems = [
     label: "1:1 문의",
     icon: <MailIcon />,
     path: "/admin/inquiries",
-    subItems: null,
+    subItems: [
+      { label: "1:1 문의", path: "/admin/inquiries" },
+      { label: "캠핑장 등록/수정", path: "/admin/inquiries/campground/view" },
+    ],
   },
   {
     label: "공지사항",
@@ -95,7 +98,6 @@ export default function Page() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]); // 필터링된 데이터
   // 페이지
-  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const [currentMemberPage, setCurrentMemberPage] = useState(1); // 회원 페이지
   const itemsPerPage = 10; // 페이지당 아이템 수
   // 검색기능

@@ -70,7 +70,7 @@ function usePhoneVerification(props) {
       console.error(error);
     }
   };
- 
+
   return {
     phone,
     otp,
@@ -81,7 +81,6 @@ function usePhoneVerification(props) {
     sendOtp,
     verifyOtp,
   }
-
 }
 
 

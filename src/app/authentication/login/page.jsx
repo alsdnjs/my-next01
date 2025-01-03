@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Grid from "@mui/material/Grid";
-import { Grid2, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { Box } from "@mui/system";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";

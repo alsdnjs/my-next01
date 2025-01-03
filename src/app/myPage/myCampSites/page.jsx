@@ -1,14 +1,3 @@
-// import React from 'react';
-
-// function page(props) {
-//   return (
-//     <div>
-      
-//     </div>
-//   );
-// }
-
-// export default page;
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -33,6 +22,7 @@ import { Avatar, Box, Button, IconButton, Pagination, Paper, Stack, SvgIcon, Tex
 import './styles.css'
 import axios from "axios";
 import useAuthStore from "../../../../store/authStore";
+import useApi from "../../component/useApi";
 
 function CampgroundSearchPage() {
   // 데이터 불러오기
@@ -41,33 +31,16 @@ function CampgroundSearchPage() {
   const token = useAuthStore((state) => state.token);  // zustand에서 token 값 가져오기
   const router = useRouter();
 
+  const {getData, postData} = useApi(token, setFilteredData); // api 요청 처리리
+
   // 페이지
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
   const itemsPerPage = 10; // 페이지당 아이템 수
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
 
   // 내 캠프사이트 가져오기
-  const getData = async () => {
-    const API_URL = `${LOCAL_API_BASE_URL}/myPage/getMyFavoriteCampingSites`
-    try {
-      const response = await axios.get(API_URL, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json', // JSON 형식 명시
-        }
-      })
-      if(response.data.success){
-        setData(response.data.data);
-        setFilteredData(response.data.data);
-        console.log(response.data.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-
-  }
   useEffect(() => {
-    getData();
+    getData("/myPage/getMyFavoriteCampingSites");
   }, [])
 
   const deleteCampSite = async (contentId) => {
@@ -198,9 +171,7 @@ function CampgroundSearchPage() {
                 )}
                 <div className="camping-item-text">
                   <Box 
-                    sx={{
-                      display: 'flex'
-                    }}
+                    sx={{display: 'flex'}}
                   >
                     <Typography
                       style={{

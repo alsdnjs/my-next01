@@ -8,34 +8,19 @@ import InputForm from './InputForm';
 import api from "../../../services/axios";
 import { useRouter } from 'next/navigation';
 import AgreementForm from './AgreementForm';
+import EmailVerificationForm from '../authentication/signUp/components/EmailVerificaionForm';
+import PhoneVerificaionForm from '../authentication/signUp/components/PhoneVerificationForm'
+import axios from 'axios';
 
+//agreement 는 이용약관
 function CommonForm({agreement}, type) {
 
   const router = useRouter();
 
-  const {
-    phone,
-    otp,
-    phoneVerified,
-    otpSended,
-    handlePhoneChange,
-    handleOtpChange,
-    sendOtp,
-    verifyOtp
-  } = usePhoneVerification();
+    const phoneVerificaion = usePhoneVerification();
+
     // 이메일 커스텀 훅
-    const {
-      email,
-      verificationCode,
-      verificationSent,
-      emailVerified,
-      countdown,
-      error,
-      handleVerificationCodeChange,
-      handleEmailChange,
-      verifyCode,
-      sendVerificationCode,
-    } = useEmailVerification();
+    const emailVerificaion = useEmailVerification();
   
     const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
   
@@ -44,7 +29,7 @@ function CommonForm({agreement}, type) {
       zipcode, address, addressDetail, agreed, idStatus, passwordCheck,
       handleIdChange, handlePasswordChange, handlePasswordConfirmChange, handleUsernameChange,
       handleAgreeChange, handleZipcodeChange, handleAddressChange, handleAddressDetailChange,  //주소
-      setError, handlePostCode,
+      handlePostCode,
       setUserType, userType
     } = useSignup(LOCAL_API_BASE_URL);
 
@@ -87,6 +72,7 @@ function CommonForm({agreement}, type) {
         }
         if(!validated){
           alert('사업자 인증을 완료해주세요.');
+          return;
         }
       }
   
@@ -101,19 +87,20 @@ function CommonForm({agreement}, type) {
         alert("비밀번호가 일치하지 않습니다.");
         return;
       }
-      if (!emailVerified) {
+      if (!emailVerificaion.emailVerified) {
         alert("이메일 인증을 완료해주세요.");
         return;
       }
       if (!agreed) {
         alert("약관에 동의해주세요." + agreed);
+      }
 
         const userData = {
             id: id,
             username: username,
             password: password,
-            email: email,
-            phone: phone,
+            email: emailVerificaion.email,
+            phone: phoneVerificaion.phone,
             zipcode: zipcode,
             address: address,
             address_detail: addressDetail,
@@ -122,44 +109,7 @@ function CommonForm({agreement}, type) {
             started_date: startedDate,
             type : userType
         };
-    
-    
-        try {
-          const response = await api.post('/api/users/join', userData, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          console.log(response);
-          if(response.data.success){
-            console.log(response.data);
-            router.push('/');
-          }
-        } catch (error) {
-          alert('회원가입 실패' + error);
-        }   
-
-        return;
-      }
-
-      console.log(password);
-  
-      
-        const userData = {
-          id: id,
-          username,
-          password: password,
-          email: email,
-          phone: phone,
-          zipcode: zipcode,
-          address: address,
-          address_detail: addressDetail,
-          business_number: businessNumber,
-          business_ceo: ceoName,
-          started_date: startedDate,
-          type: userType
-      };
-  
+      console.log(userData);
   
       try {
         const response = await api.post('/api/users/join', userData, {
@@ -175,14 +125,14 @@ function CommonForm({agreement}, type) {
         }
       } catch (error) {
         alert('회원가입 실패' + error);
-      }   
+      }
     };
 
 
 
   return (
     <Box
-        component="main"  
+        component="main"
         sx={{
           maxWidth: "510px",
           ml: "auto",
@@ -218,7 +168,7 @@ function CommonForm({agreement}, type) {
               }}
               sx={{ margin: '0 10px' }}
             >
-              사업자 가입자 
+              사업자 가입자
             </Button>
           </Box>
           <Box>
@@ -285,7 +235,7 @@ function CommonForm({agreement}, type) {
                   
                   </Grid>
                 
-                </Box>      
+                </Box>
               </Box>
             )}
           </Box>
@@ -313,6 +263,7 @@ function CommonForm({agreement}, type) {
               <InputForm
                 label="아이디"
                 name="id"
+                required={true}
                 value={id}
                 onChange={handleIdChange}
               />
@@ -353,131 +304,28 @@ function CommonForm({agreement}, type) {
             }}
             className="bg-black"
           >
+
             <Grid container alignItems="center" spacing={2}>
               <InputForm
                 label="이름" 
                 name="username"
+                required={true}
                 value={username}
                 onChange={handleUsernameChange}
               />
-              <InputForm
-                label="휴대폰번호"
-                name="phone"
-                value={phone}
-                onChange={handlePhoneChange}
-                xs={12}
-                disabled={phoneVerified}
-              />
-              <Button
-                xs={4}
-                variant="outlined"
-                color="primary"
-                fullWidth
-                onClick={sendOtp}
-                disabled={phoneVerified}
-              >
-                휴대폰 인증하기
-              </Button> 
-              <InputForm
-                label="인증번호"
-                name="otp"
-                value={otp}
-                onChange={handleOtpChange}
-                //otp 발송 전과 인증 후에 disabled
-                disabled={!otpSended || phoneVerified}
-                xs={12}
-              />
-              <Button
-                xs={4}
-                variant="outlined"
-                color="primary"
-                fullWidth
-                disabled={!otpSended || phoneVerified}
-                onClick={verifyOtp}
-              >
-                확인
-              </Button> 
             </Grid>
           </Box>
+          {/* 핸드폰 번호 인증 폼 */}
+          <PhoneVerificaionForm {...phoneVerificaion}/>
+          {/* 이메일 폼 */}
+          <EmailVerificationForm {...emailVerificaion}/>
+
           <Box
             sx={{
               background: "#fff",
               padding: "30px 20px",
               borderRadius: "10px",
-              mb: "20px",
-            }}
-            className="bg-black"
-          >
-            <Grid container alignItems="center" spacing={2}>
-              <InputForm
-                label="이메일"
-                name="email"
-                value={email}
-                onChange={handleEmailChange}
-                disabled={emailVerified}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                sx={{
-                  mt: 2,
-                  mb: 2,
-                  textTransform: "capitalize",
-                  borderRadius: "8px",
-                  fontWeight: "500",
-                  fontSize: "16px",
-                  ml:"20px",
-                  mr:"2px",
-                  padding: "10px 10px",
-                  color: "#fff !important",
-                }}
-                onClick={sendVerificationCode}
-                disabled={emailVerified}
-              >
-              인증번호 보내기
-              </Button>
-              <InputForm
-                label="인증 코드"
-                name="verificationCode"
-                value={verificationCode}
-                onChange={handleVerificationCodeChange}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                sx={{
-                  mt: 2,
-                  mb: 2,
-                  textTransform: "capitalize",
-                  borderRadius: "8px",
-                  fontWeight: "500",
-                  fontSize: "16px",
-                  ml:"20px",
-                  mr:"2px",
-                  padding: "10px 10px",
-                  color: "#fff !important",
-                }}
-                onClick={verifyCode}
-                disabled={emailVerified}
-              >
-                인증번호 확인
-              </Button>
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 3, ml: 3 }}>
-                {emailVerified
-                  ? '인증 완료되었습니다.'
-                  : verificationSent
-                  ? `인증 코드가 이메일로 발송되었습니다. 남은 시간: ${Math.floor(countdown / 60)}:${countdown % 60}`
-                  : null}
-              </Typography>
-            
-            </Grid>
-          
-          </Box>            
-          <Box
-            sx={{
-              background: "#fff",
-              padding: "30px 20px",
-              borderRadius: "10px",
+              mt:"20px",
               mb: "20px",
             }}
             className="bg-black"
@@ -529,13 +377,6 @@ function CommonForm({agreement}, type) {
         {
           agreement ? <AgreementForm agreed={agreed} handleAgreeChange={handleAgreeChange}/> : ""
         }
-
-        {/* 에러 메시지 */}
-        {error && (
-          <Typography color="error" sx={{ marginTop: 2 }}>
-            {error}
-          </Typography>
-        )}
 
         {/* 회원가입 버튼 */}
         <Button

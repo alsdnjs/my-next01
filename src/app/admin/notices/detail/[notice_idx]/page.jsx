@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Editor } from "@tinymce/tinymce-react"; // TinyMCE Editor import
-import { fetchNoticeDetail } from "../../fetchNoticeDetail/page";
+import { Editor } from "@tinymce/tinymce-react";
+import axios from "axios";
 
 export default function NoticeDetail({ params }) {
   const { notice_idx } = use(params); // URL에서 전달된 id 값
@@ -23,16 +23,37 @@ export default function NoticeDetail({ params }) {
   const [noticeContent, setNoticeContent] = useState(""); // 수정된 내용
   const router = useRouter();
 
-  const handleDetailClick = () => {
-    router.push(`/admin/notices/update/${notice_idx}`); // 수정 페이지로 이동
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("정말로 이 항목을 삭제하시겠습니까?");
+    if (!confirmDelete) {
+      return; // 사용자가 취소 버튼을 누른 경우
+    }
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/notice/notices/delete/${notice_idx}`
+      );
+      if (response.status === 200) {
+        alert("삭제가 성공적으로 완료되었습니다.");
+        router.push("/admin/notices");
+      } else {
+        alert(`삭제에 실패했습니다: ${response.data}`);
+      }
+    } catch (error) {
+      console.error("삭제 요청 중 오류 발생:", error);
+      alert(`오류 발생: ${error.response?.data || error.message}`);
+    }
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const detail = await fetchNoticeDetail(notice_idx);
-        if (!detail) {
+        const response = await fetch(
+          `http://localhost:8080/api/notice/notices/${notice_idx}`
+        );
+        if (!response.ok) {
           throw new Error("데이터를 찾을 수 없습니다.");
         }
+        const detail = await response.json();
         setData(detail);
         setNoticeContent(detail.notice_content); // 초기값 설정
       } catch (error) {
@@ -49,32 +70,8 @@ export default function NoticeDetail({ params }) {
     return <div style={{ color: "red" }}>{error}</div>;
   }
 
-  const handleEditorChange = (content) => {
-    setNoticeContent(content); // TinyMCE 내용 업데이트
-  };
-
-  const handleSave = async () => {
-    try {
-      // 저장 로직
-      const response = await fetch(`/api/notices/update/${notice_idx}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          notice_content: noticeContent,
-        }),
-      });
-      if (response.ok) {
-        alert("수정되었습니다.");
-        router.push("/admin/notices");
-      } else {
-        alert("수정 실패");
-      }
-    } catch (error) {
-      console.error("Error saving data:", error);
-      alert("저장 중 문제가 발생했습니다.");
-    }
+  const handleSave = (notice_idx) => {
+    router.push(`/admin/notices/update/${notice_idx}`); // 디테일 페이지로 이동
   };
 
   return (
@@ -118,7 +115,7 @@ export default function NoticeDetail({ params }) {
           >
             <p>[목록으로 돌아가기]</p>
           </Link>
-          <hr></hr>
+          <hr />
           {data ? (
             <>
               <TableContainer>
@@ -136,6 +133,33 @@ export default function NoticeDetail({ params }) {
                       <TableCell>제목</TableCell>
                       <TableCell>{data.notice_subject}</TableCell>
                     </TableRow>
+                    {data.file_name && (
+                      <TableRow>
+                        <TableCell>첨부 파일</TableCell>
+                        <TableCell>
+                          {data.file_path.endsWith(".jpg") ||
+                          data.file_path.endsWith(".png") ||
+                          data.file_path.endsWith(".jpeg") ||
+                          data.file_path.endsWith(".gif") ? (
+                            // 이미지 파일인 경우 렌더링
+                            <img
+                              src={`http://localhost:8080/uploads/${data.file_name}`}
+                              alt={data.file_name}
+                              style={{ width: "300px", maxHeight: "300px" }}
+                            />
+                          ) : (
+                            // 이미지가 아닌 경우 다운로드 링크 제공
+                            <a
+                              href={`http://localhost:8080/uploads/${data.file_path}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {data.file_name}
+                            </a>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -162,9 +186,22 @@ export default function NoticeDetail({ params }) {
                   type="button"
                   variant="contained"
                   color="primary"
-                  onClick={handleSave}
+                  onClick={() => handleSave(data.notice_idx)}
                 >
                   수정
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "lightblue",
+                    color: "white",
+                    "&:hover": { backgroundColor: "grey" },
+                    marginLeft: "15px",
+                  }}
+                  onClick={handleDelete}
+                >
+                  삭제
                 </Button>
               </Box>
             </>

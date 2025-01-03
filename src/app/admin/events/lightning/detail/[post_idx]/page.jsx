@@ -14,9 +14,8 @@ import {
   Paper,
   Divider,
 } from "@mui/material";
-import { useRouter } from "next/navigation"; // 라우터 사용
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { fetchMeetingDetail } from "../../fetchMeetingDetail/page";
 import axios from "axios";
 
 export default function CampingDetail({ params }) {
@@ -31,39 +30,66 @@ export default function CampingDetail({ params }) {
       const response = await axios.get(
         `http://localhost:8080/api/meeting/comment/${post_idx}`
       );
-      setComments(response.data);
+      const nestedComments = buildCommentTree(response.data);
+      setComments(nestedComments);
     } catch (error) {
       console.error("댓글 데이터를 가져오는 중 오류 발생:", error);
       setComments([]);
     }
   };
 
-  const handleDetailClick = (post_idx) => {
-    router.push(`/admin/events/lightning/update/${post_idx}`); // 수정 페이지로 이동
-  };
+  const buildCommentTree = (comments) => {
+    const commentMap = new Map();
+    comments.forEach((comment) =>
+      commentMap.set(comment.comment_idx, { ...comment, replies: [] })
+    );
+    const rootComments = [];
 
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm("정말로 이 항목을 삭제하시겠습니까?");
-    if (!confirmDelete) {
-      return; // 사용자가 취소 버튼을 누른 경우
-    }
-    try {
-      const response = await axios.delete(
-        `http://localhost:8080/api/meeting/meetings/delete/${post_idx}`
-      );
-      if (response.status === 200) {
-        alert("삭제가 성공적으로 완료되었습니다.");
-        router.push("/admin/events/lightning/view");
+    comments.forEach((comment) => {
+      if (comment.parent_id) {
+        const parent = commentMap.get(comment.parent_id);
+        if (parent) {
+          parent.replies.push(commentMap.get(comment.comment_idx));
+        }
       } else {
-        alert(`삭제에 실패했습니다: ${response.data}`);
+        rootComments.push(commentMap.get(comment.comment_idx));
       }
-    } catch (error) {
-      console.error("삭제 요청 중 오류 발생:", error);
-      alert(`오류 발생: ${error.response?.data || error.message}`);
-    }
+    });
+
+    return rootComments;
   };
 
-  const handleDeleteComment = async (comment_idx) => {
+  const renderComments = (comments, level = 0) => {
+    return comments.map((comment) => (
+      <React.Fragment key={comment.comment_idx}>
+        <TableRow>
+          <TableCell sx={{ paddingLeft: `${level * 20}px` }} width={"15%"}>
+            {comment.writer_idx}
+          </TableCell>
+          <TableCell>{comment.content}</TableCell>
+          <TableCell width={"20%"}>{comment.created_at}</TableCell>
+          <TableCell width={"10%"}>
+            <Button
+              type="submit"
+              style={{
+                height: "30px",
+                borderColor: "#555",
+                color: "white",
+                backgroundColor: "#333",
+              }}
+              onClick={() => handleDeleteComment(comment.comment_idx)}
+            >
+              삭제
+            </Button>
+          </TableCell>
+        </TableRow>
+        {comment.replies.length > 0 &&
+          renderComments(comment.replies, level + 1)}
+      </React.Fragment>
+    ));
+  };
+
+  const handleDelete = async (comment_idx) => {
     const confirmDelete = window.confirm("정말로 이 댓글을 삭제하시겠습니까?");
     if (!confirmDelete) {
       return; // 사용자가 취소 버튼을 누른 경우
@@ -87,11 +113,10 @@ export default function CampingDetail({ params }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const meetings = await fetchMeetingDetail(post_idx);
-        if (!meetings) {
-          throw new Error("데이터를 찾을 수 없습니다.");
-        }
-        setData(meetings);
+        const response = await axios.get(
+          `http://localhost:8080/api/meeting/meetings/${post_idx}`
+        );
+        setData(response.data);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError(error.message || "데이터를 가져오는 데 실패했습니다.");
@@ -202,35 +227,7 @@ export default function CampingDetail({ params }) {
                         <TableCell></TableCell>
                       </TableRow>
                     </TableHead>
-                    <TableBody>
-                      {comments.map((comment) => (
-                        <TableRow key={comment.comment_idx}>
-                          <TableCell width={"15%"}>
-                            {comment.writer_idx}
-                          </TableCell>
-                          <TableCell>{comment.content}</TableCell>
-                          <TableCell width={"20%"}>
-                            {comment.created_at}
-                          </TableCell>
-                          <TableCell width={"10%"}>
-                            <Button
-                              type="submit"
-                              style={{
-                                height: "30px",
-                                borderColor: "#555",
-                                color: "white",
-                                backgroundColor: "#333",
-                              }}
-                              onClick={() =>
-                                handleDeleteComment(comment.comment_idx)
-                              }
-                            >
-                              삭제
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
+                    <TableBody>{renderComments(comments)}</TableBody>
                   </Table>
                 </TableContainer>
               ) : (

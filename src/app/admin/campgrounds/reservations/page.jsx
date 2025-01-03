@@ -444,7 +444,8 @@ export default function Page() {
                       <TableCell>예약 번호</TableCell>
                       <TableCell>예약자</TableCell>
                       <TableCell>예약 캠핑장</TableCell>
-                      <TableCell>여행일자</TableCell>
+                      <TableCell>체크인</TableCell>
+                      <TableCell>체크아웃</TableCell>
                       <TableCell>예약일자</TableCell>
                       <TableCell>결제 가격</TableCell>
                     </TableRow>
@@ -458,7 +459,8 @@ export default function Page() {
                         <TableCell>{item.history_idx}</TableCell>
                         <TableCell>{item.username}</TableCell>
                         <TableCell>{item.facltNm}</TableCell>
-                        <TableCell>{item.action_date}</TableCell>
+                        <TableCell>{item.checkin}</TableCell>
+                        <TableCell>{item.checkout}</TableCell>
                         <TableCell>{item.created_at}</TableCell>
                         <TableCell>{item.payment_amount}</TableCell>
                       </TableRow>

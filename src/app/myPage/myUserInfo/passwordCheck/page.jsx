@@ -18,6 +18,14 @@ function page(props) {
   const searchParams = useSearchParams();  // 쿼리 파라미터 접근
   const action = searchParams.get('action');  // action 값 가져오기
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      // e.preventDefault(); // 기본 Enter 동작 막기 (필요시)
+      passwordCheck();
+      console.log("keydown");
+    }
+  };
+
 
   //서버에 요청한다.
   const passwordCheck = async () => {
@@ -45,6 +53,7 @@ function page(props) {
         }
       } else{
         alert("비밀번호가 틀립니다.")
+        setPassword("");
       }
     } catch (error) {
     }
@@ -91,8 +100,10 @@ function page(props) {
         label="비밀번호"
         type="password" // 보이는 상태에 따라 입력 타입 변경
         name="password"
+        autoFocus = "true"
         value={password}
         onChange={handlePasswordChange}
+        onKeyDown={handleKeyDown}
       />
       <Button
         fullWidth

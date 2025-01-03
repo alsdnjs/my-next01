@@ -132,7 +132,7 @@ const Sidebar = () => {
           boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Avatar src="/profile.jpg" alt="Jane Doe" sx={{ marginRight: "10px" }} />
+        <Avatar src="" alt="Jane Doe" sx={{ marginRight: "10px" }} />
         <Box>
           <Typography variant="body1" fontWeight="bold">
             Jane Doe

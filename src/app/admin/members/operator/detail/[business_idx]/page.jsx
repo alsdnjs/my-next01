@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation"; // 라우터 사용
 import Link from "next/link";
 import { fetchOperatorDetail } from "../../fetchOperatorDetail/page";
+import axios from "axios";
 
 export default function CampingDetail({ params }) {
   const { business_idx } = use(params); // URL에서 전달된 id 값
@@ -55,6 +56,31 @@ export default function CampingDetail({ params }) {
     if (!phone || phone.length < 2) return ""; // 빈 값 또는 너무 짧은 값 처리
     const visiblePart = phone.slice(0, -2); // 뒤의 두 자리를 제외한 부분
     return visiblePart + "**"; // 마지막 두 자리 마스킹
+  };
+
+  const handleDelete = async (business_idx) => {
+    const confirmDelete = window.confirm(
+      "정말로 이 사업자를 삭제하시겠습니까?"
+    );
+    if (!confirmDelete) {
+      return; // 사용자가 취소 버튼을 누른 경우
+    }
+    // 숫자를 문자열로 변환
+    const businessIdxAsString = business_idx.toString();
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/member/operators/delete/${businessIdxAsString}`
+      );
+      if (response.status === 200) {
+        alert("사업자가 성공적으로 삭제되었습니다.");
+        router.push("/admin/members/view");
+      } else {
+        alert(`사업자 삭제에 실패했습니다: ${response.data}`);
+      }
+    } catch (error) {
+      console.error("사업자 삭제 요청 중 오류 발생:", error);
+      alert(`오류 발생: ${error.response?.data || error.message}`);
+    }
   };
 
   // 화면 크기 체크 (1000px 이하에서 텍스트 숨기기)
@@ -254,6 +280,19 @@ export default function CampingDetail({ params }) {
                     onClick={() => handleDetailClick(data.user_idx)}
                   >
                     수정
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "grey",
+                      color: "white",
+                      "&:hover": { backgroundColor: "#9A0007" },
+                      marginLeft: "15px",
+                    }}
+                    onClick={() => handleDelete(data.business_idx)} // business_idx 전달
+                  >
+                    사업자에서 제거
                   </Button>
                 </Box>
               </Box>
