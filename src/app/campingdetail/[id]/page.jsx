@@ -1160,8 +1160,8 @@ const reserveClick = (id) => {
 
 
 
-            {activeTab === "reviews" && (
-              <div id="reviews">
+{activeTab === "reviews" && (
+              <div id="reviews" style={{position:"relative", overflow:"hidden"}}>
                 <div className="review-option">
                 <h2>캠핑이용후기</h2>
                 <div className="sort-buttons">
@@ -1215,44 +1215,52 @@ const reserveClick = (id) => {
                             </div>
                             : list.map((item) => (
                                 <div key={item.review_idx} className="review-box">
-                                    <h2 className="review-info">
-                                      <div>{item.username}</div>
+                                   
                                       <div className="review-stars">
-                                        {[...Array(MAX_RATING)].map((_, i) => (
-                                          <PiStarFill
-                                            key={i}
-                                            className={i < `${item.rating}` ? "yellow-star" : "svg"}
-                                          />
-                                        ))}
-                                        {item.rating}/{MAX_RATING}
+                                          {[...Array(MAX_RATING)].map((_, i) => (
+                                            <PiStarFill
+                                              key={i}
+                                              className={i < `${item.rating}` ? "yellow-star" : "svg"}
+                                            />
+                                          ))}
+                                          <span className="review-rating">{item.rating}/{MAX_RATING}</span>
                                       </div>
-                                    </h2>
-                                    <div className="review-title">
-                                      {item.title}
+                              
+                                    <div className="review-writer">
+                                      {item.username} {item.created_at}
                                     </div>
-                                    <div className="review-img">
-                                      {item.file_name ? (
-                                        <img src={`http://localhost:8080/upload/${item.file_name}`} alt="uploaded image" style={{width: "400px", height:"300px"}}/>
-                                      ) : (
-                                        // 파일이 없으면 이미지 부분을 아예 렌더링하지 않음
-                                        <p></p> // 이 부분은 선택 사항입니다. 파일이 없을 때의 대체 콘텐츠를 추가할 수 있습니다.
-                                      )}
+                                    <div className="review-body">
+                                          <div className="title-content">
+                                            <h3 className="review-title">
+                                              {item.title}
+                                            </h3>
+                                            
+                                            <div className="review-content">
+                                              {item.content}
+                                            </div>
+                                          </div>
+                                          <div className="review-img">
+                                            {item.file_name ? (
+                                              <img src={`http://localhost:8080/images/${item.file_name}`} alt="uploaded image"/>
+                                            ) : (
+                                              // 파일이 없으면 이미지 부분을 아예 렌더링하지 않음
+                                              <p></p> // 이 부분은 선택 사항입니다. 파일이 없을 때의 대체 콘텐츠를 추가할 수 있습니다.
+                                            )}
+                                          </div>
                                     </div>
-                                    <div className="review-content">
-                                      {item.content}
                                       <div className="update-delete">
                                         {logInIdx === item.user_idx && (
                                             <>
                                               <Button
                                                 variant="contained"
-                                                color="primary"
+                                                style={{backgroundColor:"#375b9c", margin : "5px"}}
                                                 onClick={() => handleUpdate(item.review_idx, item)}
                                               >
                                                 수정
                                               </Button>
                                               <Button
                                                 variant="contained"
-                                                color="error"
+                                                style={{backgroundColor:"#e87373"}}
                                                 onClick={() => handleDelete(item.review_idx)}
                                               >
                                                 삭제
@@ -1260,7 +1268,6 @@ const reserveClick = (id) => {
                                             </>
                                           )}
                                       </div>
-                                    </div>
                                     <div>
                                       {isUpdateVisible[item.review_idx] && (
                                         <div className="review-write">
@@ -1301,7 +1308,7 @@ const reserveClick = (id) => {
                                               <div onClick={() => handleImageClick(item.review_idx)} style={{ cursor: 'pointer' }}>
                                                   {previewImage[item.review_idx] || item.file_name ? (
                                                   <Image
-                                                      src={previewImage[item.review_idx] || `http://localhost:8080/upload/${item.file_name}`}
+                                                      src={previewImage[item.review_idx] || `http://localhost:8080/images/${item.file_name}`}
                                                       alt="Uploaded Image"
                                                       width={300}
                                                       height={200}
@@ -1336,8 +1343,7 @@ const reserveClick = (id) => {
                                           />
                                           <Button 
                                             variant="contained" 
-                                            color="primary" 
-                                            style={{ marginTop: "20px" }} 
+                                            style={{ marginTop: "20px", float : "right", margin : "10px"}} 
                                             onClick={() => handleUpdateSubmit(item.review_idx, item.file_idx)}
                                           >
                                             저장
@@ -1351,14 +1357,14 @@ const reserveClick = (id) => {
                             ))}
               {isAuthenticated && (
               <Button 
-                  onClick={toggleWriteScreen}
-                  variant="contained" 
-                  color="primary"
-                  className="write-button"
-                >
-                글쓰기
-              </Button>
-              )}
+              onClick={toggleWriteScreen}
+              variant="contained" 
+              className="write-button"
+              style={{float:"right", margin : "10px", backgroundColor:"#375b9c"}}
+            >
+            글쓰기
+          </Button>
+          )}
               {isWriteVisible && (
                 <div className="review-write">
                   <h2 className="write-title">

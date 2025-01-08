@@ -237,7 +237,7 @@
   width: 100%;
   justify-content: center; /* 자식 요소를 수직 가운데 정렬 */
   align-items: center;
-  margin: 20px auto;
+  margin: 75px 0px 10px 0px;
 }
 .stars {
   display: flex;
@@ -260,41 +260,50 @@
 .stars .yellow-star {
   color: yellow;
 }
-
-.review-stars {
-  display: flex;
-  padding-top: 5px;
-}
-.review-stars .yellow-star {
-  color: yellow;
-}
 .review-box{
   border-bottom: 1px solid gray;
-  padding: 10px;
   width: 100%; /* 너비를 적절히 조정하세요 */
-}
-.review-title{
-  font-weight: bold;
-  color: #333;
-  height: 30px;
-  margin-bottom: 10px;
-}
-.review-info{
-  display: flex;
-  align-items: center;
-  font-size: 1.3rem;
-  color: #555;
-  justify-content: space-between;
-  margin: 10px 0px;
+  position: relative;
+  overflow: hidden;
 }
 .review-option{
   display: flex;
   justify-content: space-between;
+  margin : 5px;
 }
-.review-content img{
+.review-stars {
+  display: flex;
+  padding-top: 5px;
+  margin: 0px;
+  align-items: center;
+  font-size : 1.3rem;
+  margin : 5px;
+}
+.review-stars .yellow-star {
+  color: yellow;
+}
+.review-rating{
+  font-weight: bold;
+}
+.review-writer{
+  opacity: 0.5;
+  font-size: 0.9em;
+  margin : 5px;
+}
+.review-body{
   display: flex;
   justify-content: space-between;
+  margin : 5px;
 }
+.review-img img{
+  width: 300px;
+  height: 200px;
+}
+.update-delete {
+  margin : 10px 5px;
+  float: right;
+}
+
 .none{
   display: none;
 }
