@@ -23,9 +23,7 @@ import {
   Stack,
   Pagination,
   Avatar,
-  collapseClasses,
 } from "@mui/material";
-import "./styles.css";
 import SearchIcon from "@mui/icons-material/Search";
 import PeopleIcon from "@mui/icons-material/People";
 import { Image as ImageIcon } from "@mui/icons-material";
@@ -42,10 +40,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"; // > 아이콘
 import LogoutIcon from "@mui/icons-material/ExitToApp";
 import { useRouter } from "next/navigation";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { fetchCampgrounds } from "@/app/fetchCampData/page";
+import { fetchMembers } from "../fetchMemberList/page";
+import { fetchOperators } from "../fetchOperatorList/page";
+import "./styles.css";
 import useAuthStore from "../../../../../store/authStore";
 import axios from "axios";
-
 const menuItems = [
   {
     label: "회원 관리",
@@ -96,76 +95,42 @@ export default function Page() {
   const [activeSubMenu, setActiveSubMenu] = React.useState(null);
   const [activeProfile, setActiveProfile] = React.useState(true);
   // 데이터
-  const [data, setData] = useState(null); // 캠핑장 데이터를 저장
-  const [filteredData, setFilteredData] = useState([]); // 필터링된 데이터
-  // 페이지
-  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
-  const itemsPerPage = 5; // 페이지당 아이템 수
+  const [data, setData] = useState(null);
+  const [filteredMembers, setFilteredMembers] = useState([]); // 필터링된 회원 데이터
+
+  const [currentMemberPage, setCurrentMemberPage] = useState(1); // 회원 페이지
+  const itemsPerPage = 10; // 페이지당 아이템 수
   // 검색기능
   const [searchTerm, setSearchTerm] = useState(""); // 캠핑장 이름 검색
-  const [region, setRegion] = useState(""); // 지역 필터
-  const [city, setCity] = useState(""); // 시/군 필터
-  const [isPetFriendly, setIsPetFriendly] = useState(false); // 반려동물 동반 가능 여부
-  const [theme, setTheme] = useState(""); // 테마 필터
-  const [type, setCampingType] = useState(""); // 캠핑장 종류 필터
   // detail로 가기 위함
   const router = useRouter();
-  // 상세 페이지로 이동
-  const handleDetailClick = (contentId) => {
-    router.push(`/admin/campgrounds/adminCampingdetail/${contentId}`); // 디테일 페이지로 이동
-  };
 
   // 컴포넌트가 마운트될 때 API 호출
   useEffect(() => {
     const getData = async () => {
-      const campgrounds = await fetchCampgrounds(); // fetchCampgrounds 함수 사용
-      setData(campgrounds); // 데이터를 상태에 저장
-      setFilteredData(campgrounds); // 초기에는 모든 데이터 표시
+      const members = await fetchMembers(); // 데이터를 가져오는 API 호출
+      const filtered = members.filter((member) => member.warn); // warn 값이 있는 항목만 필터링
+      setData(filtered); // 데이터를 상태에 저장
+      setFilteredMembers(filtered); // 초기에는 warn이 있는 데이터만 표시
     };
     getData();
   }, []);
 
   // 페이징
   // 페이지 변경 시 호출되는 함수
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value); // 페이지 상태 업데이트
+  const handleMemberPageChange = (event, value) => {
+    setCurrentMemberPage(value);
   };
-
-  // 필터링 로직
   const handleSearch = (e) => {
     e.preventDefault();
-    const filteredResults = data.filter((campground) => {
-      // 캠핑장 이름 검색
-      const matchesSearchTerm = searchTerm
-        ? campground.facltNm?.toLowerCase().includes(searchTerm.toLowerCase())
-        : true;
-      // 지역 필터링
-      const matchesRegion = region ? campground.doNm?.includes(region) : true;
-      // 시/군 필터링
-      const matchesCity = city ? campground.sigunguNm?.includes(city) : true;
-
-      // 반려동물 동반 가능 여부
-      const matchesPetFriendly = isPetFriendly
-        ? campground.animalCmgCl === "가능"
-        : true;
-      // 테마 필터링
-      const matchesTheme = theme ? campground.lctCl?.includes(theme) : true;
-      // 캠핑장 종류 필터링
-      const matchesCampingType = type
-        ? campground.induty?.includes(type)
-        : true;
-      // 모든 조건을 만족하는 캠핑장만 반환
-      return (
-        matchesSearchTerm &&
-        matchesRegion &&
-        matchesCity &&
-        matchesPetFriendly &&
-        matchesTheme &&
-        matchesCampingType
-      );
-    });
-
-    setFilteredData(filteredResults);
+    // members 데이터 필터링
+    const filteredMemberResults = data.filter((member) =>
+      searchTerm
+        ? member.username?.toLowerCase().includes(searchTerm.toLowerCase())
+        : true
+    );
+    setFilteredMembers(filteredMemberResults);
+    setCurrentMemberPage(1); // 페이지 초기화
   };
   // 검색
   // 엔터 키로 검색 처리
@@ -174,42 +139,44 @@ export default function Page() {
       handleSearch(e);
     }
   };
-  // 검색 초기화 기능
-  const handleReset = () => {
-    setSearchTerm(""); // 검색어 초기화
-    setRegion(""); // 지역 필터 초기화
-    setIsPetFriendly(false); // 반려동물 동반 필터 초기화
-    setTheme(""); // 테마 필터 초기화
-    setFilteredData(data); // 필터링된 데이터 초기화 (모든 데이터 표시)
-    setCurrentPage(1);
+
+  const maskMiddleName = (name) => {
+    if (!name || name.length === 0) return ""; // 빈 문자열 처리
+
+    const length = name.length;
+
+    if (length === 1) {
+      return name; // 1글자면 그대로 반환
+    } else if (length === 2) {
+      return name[0] + "*"; // 2글자면 마지막 글자 마스킹
+    } else {
+      const firstChar = name[0]; // 첫 글자
+      const lastChar = name[length - 1]; // 마지막 글자
+      const maskedMiddle = "*".repeat(length - 2); // 가운데 글자수만큼 '*'
+      return firstChar + maskedMiddle + lastChar;
+    }
   };
 
-  const regions = [
-    "서울",
-    "부산",
-    "대구",
-    "인천",
-    "광주",
-    "대전",
-    "울산",
-    "세종",
-    "경기도",
-    "강원도",
-    "충청북도",
-    "충청남도",
-    "전라북도",
-    "전라남도",
-    "경상북도",
-    "경상남도",
-    "제주도",
-  ];
+  const maskEmail = (email) => {
+    if (!email || !email.includes("@")) return ""; // 잘못된 이메일 처리
+    const [localPart, domain] = email.split("@"); // 이메일을 '@' 기준으로 나눔
+    if (localPart.length <= 2) {
+      return "**@" + domain; // 앞부분이 2글자 이하라면 전부 마스킹
+    }
+    const maskedLocalPart = localPart.slice(0, -2) + "**"; // 마지막 2글자를 '**'로 교체
+    return maskedLocalPart + "@" + domain;
+  };
 
+  const maskPhoneNumber = (phone) => {
+    if (!phone || phone.length < 2) return ""; // 빈 값 또는 너무 짧은 값 처리
+
+    const visiblePart = phone.slice(0, -2); // 뒤의 두 자리를 제외한 부분
+    return visiblePart + "**"; // 마지막 두 자리 마스킹
+  };
   // 현재 페이지에 해당하는 데이터 계산
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = filteredData.slice(startIndex, endIndex);
-  // 전체 페이지 수 계산
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startMemberIndex = (currentMemberPage - 1) * itemsPerPage;
+  const endMemberIndex = startMemberIndex + itemsPerPage;
+  const pagedMembers = filteredMembers.slice(startMemberIndex, endMemberIndex);
 
   // 관리자 이름(아이디)
   // 토큰
@@ -245,20 +212,38 @@ export default function Page() {
 
   // 화면 크기 체크 (1000px 이하에서 텍스트 숨기기)
   const isSmallScreen = useMediaQuery("(max-width:1000px)");
-
   // 로그아웃
   const handleLogout = () => {
     console.log("로그아웃");
   };
-
   // 메뉴 토글
   const handleSubMenuToggle = (index) => {
     setActiveSubMenu(activeSubMenu === index ? null : index);
   };
-
   // 프로필 토글
   const handleProfileToggle = () => {
     setActiveProfile(!activeProfile);
+  };
+
+  const handleDelete = async (user_idx) => {
+    const confirmDelete = window.confirm("정말로 제재를 취소하겠습니까?");
+    if (!confirmDelete) {
+      return; // 사용자가 취소 버튼을 누른 경우
+    }
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/api/member/warn/delete/${user_idx}`
+      );
+      if (response.status === 200) {
+        alert("삭제가 성공적으로 완료되었습니다.");
+        router.push("/admin/notices");
+      } else {
+        alert(`삭제에 실패했습니다: ${response.data}`);
+      }
+    } catch (error) {
+      console.error("삭제 요청 중 오류 발생:", error);
+      alert(`오류 발생: ${error.response?.data || error.message}`);
+    }
   };
 
   return (
@@ -418,6 +403,7 @@ export default function Page() {
             flexGrow: 1,
             bgcolor: "#f9f9f5",
             p: 3,
+            paddingBottom: "24px",
           }}
         >
           <Box
@@ -434,160 +420,46 @@ export default function Page() {
             <ChevronRightIcon sx={{ mx: 1, color: "#808D7C" }} />{" "}
             {/* 아이콘 삽입 */}
             <Typography variant="body1" sx={{ color: "#808D7C" }}>
-              캠핑장 관리
+              회원관리
             </Typography>
             <ChevronRightIcon sx={{ mx: 1, color: "#808D7C" }} />{" "}
             <Typography variant="body1" sx={{ color: "#808D7C" }}>
-              캠핑장 정보 보기
+              회원 정보 보기
             </Typography>
           </Box>
-          {/* 첫 번째 박스 */}
-          <Box
-            sx={{
-              borderRadius: 2,
-              paddingTop: "5px",
-              backgroundColor: "#f1f8e9",
-              marginTop: "10px",
-              textAlign: "center",
-            }}
-          >
-            <h5 style={{ color: "black" }}>캠핑장 필터</h5>
-
-            {/* 캠핑장 종류 선택 */}
-            <select
-              onChange={(e) => setCampingType(e.target.value)}
-              value={type}
-              style={{
-                padding: "10px",
-                fontSize: "12px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-                width: "200px",
-                marginBottom: "10px",
-                color: "grey",
-                marginRight: "20px",
-              }}
-            >
-              <option value="">캠핑장 종류 선택</option>
-              <option value="일반야영장">일반야영장</option>
-              <option value="글램핑">글램핑</option>
-              <option value="카라반">카라반</option>
-              <option value="자동차야영장">자동차야영장</option>
-            </select>
-            <select
-              onChange={(e) => setRegion(e.target.value)}
-              value={region}
-              style={{
-                padding: "10px",
-                fontSize: "12px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-                marginRight: "20px",
-                width: "170px",
-                color: "grey",
-              }}
-            >
-              <option value="">전체 도</option>
-              {regions.map((regionName) => (
-                <option key={regionName} value={regionName}>
-                  {regionName}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="city">
-              <input
-                type="text"
-                placeholder="시/군"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                onKeyPress={handleKeyPress}
-                style={{
-                  padding: "10px",
-                  fontSize: "12px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                  width: "180px",
-                }}
-              />
-            </label>
-            <label
-              style={{ color: "black", marginLeft: "20px", fontSize: "12px" }}
-            >
-              <input
-                type="checkbox"
-                checked={isPetFriendly}
-                onChange={(e) => setIsPetFriendly(e.target.checked)}
-                style={{ marginRight: "5px" }}
-              />
-              반려동물 동반 가능
-            </label>
-            <button
-              onClick={handleSearch}
-              style={{
-                padding: "5px 10px",
-                fontSize: "12px",
-                cursor: "pointer",
-                borderRadius: "5px",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                marginLeft: "30px", // 입력창과 버튼 사이의 간격
-              }}
-            >
-              검색
-            </button>
-            <button
-              onClick={handleReset}
-              style={{
-                padding: "5px 10px",
-                fontSize: "12px",
-                cursor: "pointer",
-                borderRadius: "5px",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                border: "none",
-                marginLeft: "10px",
-              }}
-            >
-              초기화
-            </button>
-            {/* 검색 바 */}
-            <Box
-              sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}
-            >
-              <TextField
-                variant="outlined"
-                size="small"
-                placeholder="검색어를 입력하세요"
-                value={searchTerm} // value 속성 추가
-                onChange={(e) => setSearchTerm(e.target.value)} // onChange 이벤트 추가
-                onKeyPress={handleKeyPress} // onKeyPress 이벤트 추가
-                sx={{
-                  width: isSmallScreen ? "300px" : "600px",
-                  bgcolor: "white",
+          {/* 검색 바 */}
+          <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+            <TextField
+              variant="outlined"
+              size="small"
+              placeholder="검색어를 입력하세요"
+              value={searchTerm} // value 속성 추가
+              onChange={(e) => setSearchTerm(e.target.value)} // onChange 이벤트 추가
+              onKeyPress={handleKeyPress} // onKeyPress 이벤트 추가
+              sx={{
+                width: isSmallScreen ? "300px" : "600px",
+                bgcolor: "white",
+                borderRadius: 2,
+                transition: "all 0.3s ease-in-out",
+                marginBottom: "20px",
+                marginTop: "20px",
+                "&:hover": {
+                  borderColor: "#8ca18c",
+                },
+                "& .MuiOutlinedInput-root": {
                   borderRadius: 2,
-                  transition: "all 0.3s ease-in-out",
-                  marginBottom: "20px",
-                  marginTop: "10px",
-                  "&:hover": {
-                    borderColor: "#8ca18c",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: 2,
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Box>
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
           </Box>
-
-          {/* 두 번째 박스 */}
+          {/* 첫 번째 박스 */}
           <Box
             sx={{
               backgroundColor: "#f9f9f9",
@@ -603,57 +475,49 @@ export default function Page() {
               flexDirection: "column", // 세로 방향 정렬
             }}
           >
-            <h3 style={{ color: "black", justifyContent: "center" }}>
-              캠핑장 관리
-            </h3>
+            <h3 style={{ color: "black" }}>제재된 회원</h3>
             <TableContainer
               component={Paper}
               sx={{ boxShadow: 0, borderRadius: 2 }}
             >
-              {currentData && currentData.length > 0 ? (
+              {pagedMembers && pagedMembers.length > 0 ? (
                 <Table className="camping-table">
                   <TableHead>
                     <TableRow>
-                      <TableCell>이미지</TableCell>
-                      <TableCell>상호명</TableCell>
-                      <TableCell>주소</TableCell>
-                      <TableCell>우편번호</TableCell>
+                      <TableCell>회원ID</TableCell>
+                      <TableCell>이름</TableCell>
+                      <TableCell>제재담당자</TableCell>
                       <TableCell>전화번호</TableCell>
+                      <TableCell>제재사유</TableCell>
+                      <TableCell>제재일자</TableCell>
+                      <TableCell></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentData.map((item, index) => (
-                      <TableRow
-                        key={index}
-                        onClick={() => handleDetailClick(item.contentId)}
-                      >
+                    {pagedMembers.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{item.id}</TableCell>
+                        <TableCell>{maskMiddleName(item.username)}</TableCell>
+                        <TableCell>{item.warn}</TableCell>
+                        <TableCell>{maskPhoneNumber(item.phone)}</TableCell>
+                        <TableCell>{item.warn_cause}</TableCell>
+                        <TableCell>{item.warn_start_at}</TableCell>
                         <TableCell>
-                          {item.firstImageUrl ? (
-                            // 이미지 파일인지 확인
-                            item.firstImageUrl.includes("gocamping") ? (
-                              <img
-                                src={item.firstImageUrl}
-                                alt={item.facltNm}
-                              />
-                            ) : (
-                              // 이미지가 아닌 파일일 경우
-                              <img
-                                src={`http://localhost:8080/api/files/getfile/${item.firstImageUrl}`}
-                                alt={item.firstImageUrl}
-                                style={{ width: "50px", height: "50px" }}
-                              />
-                            )
-                          ) : (
-                            // 비어 있는 경우
-                            <div className="avatar">
-                              <ImageIcon className="avatar-icon" />
-                            </div>
-                          )}
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                              backgroundColor: "#808d7c",
+                              color: "white",
+                              "&:hover": { backgroundColor: "grey" },
+                              marginLeft: "5px",
+                              padding: "2px",
+                            }}
+                            onClick={() => handleDelete(item.user_idx)}
+                          >
+                            삭제
+                          </Button>
                         </TableCell>
-                        <TableCell>{item.facltNm}</TableCell>
-                        <TableCell>{item.addr1}</TableCell>
-                        <TableCell>{item.zipcode}</TableCell>
-                        <TableCell>{item.tel}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -662,44 +526,19 @@ export default function Page() {
                 <p>데이터 없음</p>
               )}
             </TableContainer>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-end",
-                mt: 2,
-                width: "100%",
-              }}
-            >
-              <Link href="/admin/campgrounds/write" passHref>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    backgroundColor: "#333333",
-                    color: "white",
-                    marginBottom: "20px",
-                  }}
-                >
-                  캠핑장 정보 등록하기
-                </Button>
-              </Link>
-            </Box>
+
             <div
               className="pagination"
               style={{ display: "flex", justifyContent: "center" }}
             >
               <Stack spacing={2}>
                 <Pagination
-                  count={totalPages} // 전체 페이지 수
-                  page={currentPage} // 현재 페이지
-                  onChange={handlePageChange} // 페이지 변경 처리
+                  count={Math.ceil(filteredMembers.length / itemsPerPage)}
+                  page={currentMemberPage}
+                  onChange={handleMemberPageChange}
                   color="primary"
                   showFirstButton
                   showLastButton
-                  boundaryCount={2}
-                  siblingCount={4}
-                  hideNextButton={currentPage === totalPages}
-                  hidePrevButton={currentPage === 1} // 첫 페이지에서 '이전' 버튼 숨기기
                 />
               </Stack>
             </div>

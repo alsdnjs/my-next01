@@ -326,16 +326,16 @@ export default function Main() {
             padding: "20px",
           }}
         >
-          <h1 style={{ fontSize: "30px", marginBottom: "16px", color: "#333" }}>
-            12월 이런 캠핑 어때?
-          </h1>
-          <p style={{ fontSize: "20px", lineHeight: "1.6", color: "#555" }}>
-            차가운 공기 속에서도 따뜻한 캠핑의 매력을 느낄 수 있는 12월! 하얀
-            눈으로 덮인 캠핑장과 장작 타는 소리가 어우러지는 이 특별한 계절에는,
-            평소와는 조금 다른 이색적인 겨울 캠핑을 즐겨보세요. 맑고 투명한 겨울
-            하늘 아래에서 반짝이는 별빛과 함께하는 하룻밤은 그 어떤 계절보다도
-            깊은 힐링을 선물해 줄 거예요.
-          </p>
+    <h1 style={{ fontSize: "32px", marginBottom: "12px", color: "#2b4f2e", fontFamily: "'Trebuchet MS', sans-serif" }}>
+  1월 이런 캠핑 어때?
+</h1>
+<p style={{ fontSize: "18px", lineHeight: "1.8", color: "#3d3d3d", fontFamily: "'Georgia', serif" }}>
+  차가운 공기 속에서도 따뜻한 캠핑의 매력을 느낄 수 있는 1월! 하얀 눈으로 덮인 캠핑장과 
+  장작 타는 소리가 어우러지는 이 특별한 계절에는, 평소와는 조금 다른 이색적인 겨울 캠핑을 즐겨보세요.
+  맑고 투명한 겨울 하늘 아래에서 반짝이는 별빛과 함께하는 하룻밤은 그 어떤 계절보다도 깊은 힐링을 선물해 줄 거예요.
+</p>
+
+
         </div>
 
         {/* Swiper 섹션 */}

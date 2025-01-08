@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { getCookie } from "cookies-next"; // 쿠키에서 값 가져오는 함수
 import useAuthStore from "store/authStore"; // Zustand store 사용
+import "./styles.css";
 
 const SuccessPage = () => {
   const searchParams = useSearchParams();
@@ -141,14 +142,15 @@ const SuccessPage = () => {
   }
 
   return (
-    <div>
-      <h1>결제 성공!</h1>
-      <p>주문 번호: {orderId}</p>
-      <p>결제 금액: {parseInt(amount, 10).toLocaleString()}원</p>
-      {facltNm && <p>캠핑장: {facltNm}</p>} {/* 캠핑장 이름 추가 */}
-      {checkinDate && <p>체크인 날짜: {checkinDate} </p>} {/* 체크인 날짜 추가 */}
-      {checkoutDate && <p>체크아웃 날짜: {checkoutDate}</p>} {/* 체크아웃 날짜 추가 */}
-    </div>
+    <div className="success-page-container">
+    <h1>결제 성공!</h1>
+    <p>주문 번호: {orderId}</p>
+    <p className="amount">결제 금액: {parseInt(amount, 10).toLocaleString()}원</p>
+    {facltNm && <p>캠핑장: {facltNm}</p>}
+    {checkinDate && <p>체크인 날짜: {checkinDate}</p>}
+    {checkoutDate && <p>체크아웃 날짜: {checkoutDate}</p>}
+    <button className="btn" onClick={() => router.push('/')}>홈으로 가기</button>
+  </div>
   );
 };
 

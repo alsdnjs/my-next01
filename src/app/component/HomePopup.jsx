@@ -77,7 +77,7 @@ export default function HomePopup() {
             {/* 이미지 파일 조건부 렌더링 */}
             {file_name ? (
               <img
-                src={`http://localhost:8080/uploads/${file_name}`}
+                src={`http://localhost:8080/api/files/getfile/${file_name}`}
                 alt={file_name}
                 style={{
                   width: "95%",

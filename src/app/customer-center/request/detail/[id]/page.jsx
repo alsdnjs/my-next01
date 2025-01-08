@@ -188,7 +188,7 @@ export default function CampingDetail({ params }) {
                   }}
                 >
                   <img
-                    src={`http://localhost:8080/upload/${data.firstImageUrl}`}
+                    src={`http://localhost:8080/api/files/getfile/${data.firstImageUrl}`}
                     alt="캠핑장 이미지"
                     style={{
                       maxWidth: "100%",

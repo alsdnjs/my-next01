@@ -12,8 +12,8 @@ const Weather = ({ region }) => {
 
   const getRegionCode = (region) => {
     const regionCodes = {
-      서울: "11B00000",
-      인천: "11B00000",
+      서울시: "11B00000",
+      인천시: "11B00000",
       경기도: "11B00000",
       강원도: "11D10000",
       대전: "11C20000",
@@ -29,6 +29,7 @@ const Weather = ({ region }) => {
       울산: "11H20000",
       경상남도: "11H20000",
       제주도: "11G00000",
+      인천광역시: "11B00000",
     };
 
     if (!region) {

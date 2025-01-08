@@ -193,7 +193,7 @@ const SignInForm = () => {
 
                 <Grid item xs={6} sm={6} textAlign="end">
                   <Link
-                    href="/authentication/forgotIdPw"
+                    href="/authentication/forgotIdAndPassword"
                     className="primaryColor text-decoration-none"
                   >
                     Forgot your password?

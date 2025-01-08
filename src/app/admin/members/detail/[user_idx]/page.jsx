@@ -27,10 +27,13 @@ export default function CampingDetail({ params }) {
     router.push(`/admin/members/update/${user_idx}`); // 디테일 페이지로 이동
   };
 
+  const handleWarnClick = (user_idx) => {
+    router.push(`/admin/members/warn/${user_idx}`); // 디테일 페이지로 이동
+  };
+
   const maskMiddleName = (name) => {
     if (!name || name.length === 0) return ""; // 빈 문자열 처리
     const length = name.length;
-
     if (length === 1) {
       return name; // 1글자면 그대로 반환
     } else if (length === 2) {
@@ -42,6 +45,7 @@ export default function CampingDetail({ params }) {
       return firstChar + maskedMiddle + lastChar;
     }
   };
+
   const maskEmail = (email) => {
     if (!email || !email.includes("@")) return ""; // 잘못된 이메일 처리
     const [localPart, domain] = email.split("@"); // 이메일을 '@' 기준으로 나눔
@@ -317,6 +321,19 @@ export default function CampingDetail({ params }) {
                     onClick={() => handleDetailClick(data.user_idx)}
                   >
                     수정
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    onClick={() => handleWarnClick(data.user_idx)}
+                    sx={{
+                      backgroundColor: "#FF9C73",
+                      color: "white",
+                      "&:hover": { backgroundColor: "#FF4545" },
+                      marginLeft: "15px",
+                    }}
+                  >
+                    제재
                   </Button>
                   <Button
                     type="submit"

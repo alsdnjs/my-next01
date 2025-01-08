@@ -34,6 +34,8 @@ import axios from "axios";
   
 import KakaoMap from "@/app/kakaoMap/page";
 import Weather from "@/app/weather/page";
+import Medical from '@/app/medical/page';
+
 import useAuthStore from "store/authStore";
 import Image from "next/image";
 
@@ -62,11 +64,17 @@ export default function CampingDetail({ params }) {
   const LOCAL_IMG_URL = process.env.NEXT_PUBLIC_LOCAL_IMG_URL
   const [sortOrder, setSortOrder] = useState("latest"); // 정렬 기준
   const [isActive, setIsActive] = useState("latest"); // 버튼 클릭 상태를 관리
-  const { isAuthenticated, token } = useAuthStore();
+  const { isAuthenticated} = useAuthStore();
   const [logInIdx, setlogInIdx] = useState(null);  // 로그인한 user_idx 관리
   const [logInName, setlogInName] = useState(null);  // 로그인한 username 관리
+  const token = useAuthStore((state) => state.token); // Zustand에서 token 가져오기
+  
+  const [userIdx, setUserIdx] = useState(null);
+  const [userName, setUserName] = useState("");
+
   
   // 리뷰 이미지 상태
+  const [selectedFile, setSelectedFile] = useState(null); // 파일 상태 추가
   const [isImageVisible, setIsImageVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState({});
   const fileInputRef = useRef(null);
@@ -95,6 +103,7 @@ export default function CampingDetail({ params }) {
             [reviewIdx]: { ...prev[reviewIdx], file: file}
         }));
         setIsImageVisible(true);
+        setSelectedFile(file);
     }
 };
 
@@ -103,6 +112,7 @@ export default function CampingDetail({ params }) {
   useEffect(() => {
     const fetchSavedState = async () => {
       try {
+        setLoading(true); // 데이터 로드 시작
         const response = await axios.get(`http://localhost:8080/api/like/status`, {
           params: { contentId: id, user_idx: logInIdx },
           headers: {
@@ -118,34 +128,50 @@ export default function CampingDetail({ params }) {
         }
       } catch (error) {
         console.error("찜 상태를 불러오는 중 오류 발생:", error);
+        setIsSaved(false); // 오류 시 기본값 설정
+      }finally {
+        setLoading(false); // 데이터 로드 완료
       }
     };
 
-    fetchSavedState();
+    if (id && logInIdx && token) {
+      fetchSavedState();
+    }
   }, [id, logInIdx, token]);
 
   
-  // localstorage에서 user_idx, username불러오기
+  // 로그인
   useEffect(() => {
-    const authStorage = localStorage.getItem("auth-storage");
-    console.log("auth-storage:", authStorage);
-    if (authStorage) {
-      try {
-        const parsedAuth = JSON.parse(authStorage);
-        const idx = parsedAuth.state?.user?.user_idx;
-        setlogInIdx(idx);
-        console.log("로그인된 user_idx:", idx); // 디버깅용 로그
-        console.log(localStorage.getItem("auth-storage"));
-
-  
-        const name = parsedAuth.state?.user?.username;
-        setlogInName(name);
-        console.log("로그인된 username:", name); // 디버깅용 로그
-      } catch (error) {
-        console.error("auth-storage 파싱 중 오류:", error);
-      }
+    const token = getCookie("token");
+    if (token) {
+      getUserIdx(token); // 토큰이 있으면 사용자 user_idx 가져오기
     }
   }, []);
+
+const getUserIdx = async (token) => {
+  try {
+    const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
+    console.log("유저 정보 요청 URL:", API_URL);
+
+    const response = await axios.get(API_URL, {
+      headers: {
+        Authorization: `Bearer ${token}`, // JWT 토큰 사용
+      },
+    });
+
+    console.log("유저 정보 응답 데이터:", response.data);
+
+    if (response.data.success) {
+      const userIdx = response.data.data.user_idx; // user_idx 추출
+      const userName = response.data.data.username;
+      setlogInName(userName);
+      setlogInIdx(userIdx); // response에서 받아온 userIdx를 설정
+      console.log("user_idx:", userIdx, "userName:", userName);
+    }
+  } catch (error) {
+    console.error("유저 정보 가져오기 실패:", error.message || error);
+  }
+};
 
   // 예약하기 버튼 클릭 처리
 const reserveClick = (id) => {
@@ -380,9 +406,34 @@ const reserveClick = (id) => {
       };
       reader.readAsDataURL(file); // 파일을 Data URL로 읽어 이미지 미리보기 가능하게 함
     }
+    setSelectedFile(file);
   };
   // 리뷰 글쓰기 전송
   const handleSubmit = async() => {
+    try{
+      let fileIdx = null;
+      // 1. 파일 업로드 (선택된 파일이 있는 경우)
+      if (selectedFile) {
+        const fileFormData = new FormData();
+        fileFormData.append("file", selectedFile);
+        const fileResponse = await axios.post(
+          `http://localhost:8080/api/review/review/upload`,
+          fileFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (fileResponse.status === 200) {
+          fileIdx = fileResponse.data.file_idx; // 서버에서 반환된 file_idx
+          console.log("파일 업로드 성공: file_idx =", fileIdx); // 확인용 로그
+        } else {
+          throw new Error("파일 업로드 실패");
+        }
+      }
+      // 2. 리뷰 등록
       const API_URL = `${LOCAL_API_BASE_URL}/review/write`;
       const formdata = new FormData();
       formdata.append("title", formData.title)
@@ -391,18 +442,16 @@ const reserveClick = (id) => {
       formdata.append("rating", rating)
       formdata.append("contentId", id)
       formdata.append("content", formData.content)
-      if(formData.file){
-        formdata.append("file", formData.file)
+      if (fileIdx) {
+        formdata.append("file_idx", fileIdx); // 업로드된 파일 ID 추가
       }
-
-      try{
-          const response = await axios.post(API_URL, formdata, {
-              headers:{
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type" : "multipart/form-data"
-              }
+      const response = await axios.post(API_URL, formdata, {
+          headers:{
+              Authorization: `Bearer ${token}`,
+              "Content-Type" : "multipart/form-data"
+          }
           });
-          const newReview = response.data.review;
+      const newReview = response.data.review;
           setList((prevList) => [...prevList, newReview]);
           if (response.data.success) {
               alert(response.data.message);
@@ -418,8 +467,29 @@ const reserveClick = (id) => {
       }
   }
   // 리뷰 업데이트 전송
-  const handleUpdateSubmit = async(review_idx) => {
-      const API_URL = `${LOCAL_API_BASE_URL}/review/update/${review_idx}`;
+  const handleUpdateSubmit = async(review_idx, file_idx) => {
+    const fileUrl = `http://localhost:8080/api/review/review/update-file/${file_idx}`;
+    if (selectedFile) {
+      console.log("파일 업데이트 시작...");
+      const fileFormData = new FormData();
+      fileFormData.append("file", selectedFile);
+
+      const fileResponse = await fetch(fileUrl, {
+        method: "POST",
+        body: fileFormData,
+      });
+
+      if (!fileResponse.ok) {
+        const error = await fileResponse.text();
+        console.error("파일 업데이트 실패:", error);
+        alert(`파일 업데이트 실패: ${error}`);
+        return;
+      }
+
+      console.log("파일 업데이트 성공");
+    }
+    
+    const API_URL = `${LOCAL_API_BASE_URL}/review/update/${review_idx}`;
       const formdata = formData[review_idx];
       console.log(formdata);
       try{
@@ -479,32 +549,51 @@ const reserveClick = (id) => {
             <div
               style={{
                 display: "flex",
+                justifyContent: "center", // 수평 가운데 정렬
+                alignItems: "center", // 수직 가운데 정렬
                 backgroundImage: "url(/images/cam1.webp)", // 배경 이미지
                 backgroundSize: "cover", // 이미지 크기 조정
                 backgroundPosition: "center",
-                height: "250px",
-                flexDirection: "column", // 세로로 정렬
-                alignItems: "center",
+                height: "250px", // 부모 컨테이너 높이
+                flexDirection: "column", // 자식 요소를 세로로 정렬
               }}
             >
               <div
                 style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  height: "150px",
-                  width: "800px",
-                  marginTop: "70px",
+                  display: "flex", // 내부 콘텐츠를 정렬할 수 있게 설정
+                  flexDirection: "column", // 내부 요소를 세로로 정렬
+                  justifyContent: "center", // 내부 요소 수직 가운데 정렬
+                  alignItems: "center", // 내부 요소 수평 가운데 정렬
+                  backgroundColor: "rgba(255, 255, 255, 0.2)", // 반투명 배경색
+                  height: "150px", // 내부 컨테이너 높이
+                  width: "800px", // 내부 컨테이너 너비
+                  marginTop: "70px", // 위쪽 여백
                 }}
               >
-                <div
+                <p
                   style={{
                     color: "white",
                     fontWeight: "bold",
-                    textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)",
+                    textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)", // 텍스트 그림자
+                    fontSize: "2rem", // 제목 크기
+                    textAlign: "center", // 텍스트 가운데 정렬
+                    margin: 0, // 기본 여백 제거
                   }}
                 >
-                  <p style={{ fontSize: "2rem" }}>{data.facltNm}</p>
-                  <p style={{ fontSize: "20px" }}>{data.lineIntro}</p>
-                </div>
+                  {data.facltNm}
+                </p>
+                <p
+                  style={{
+                    color: "white",
+                    fontWeight: "bold",
+                    textShadow: "0 2px 8px rgba(0, 0, 0, 0.5)", // 텍스트 그림자
+                    fontSize: "20px", // 설명 크기
+                    textAlign: "center", // 텍스트 가운데 정렬
+                    margin: 0, // 기본 여백 제거
+                  }}
+                >
+                  {data.lineIntro}
+                </p>
               </div>
             </div>
             <div className="camping_layout">
@@ -1018,30 +1107,58 @@ const reserveClick = (id) => {
               </div>
             )}
 
-            {activeTab === "usage" && (
-              <div id="usage">
-                <h2>이용안내</h2>
-                <ul>
-                  <li>예약은 온라인으로만 가능합니다.</li>
-                  <li>체크인은 오후 3시, 체크아웃은 오전 11시입니다.</li>
-                  <li>애완동물은 동반이 불가합니다.</li>
-                </ul>
-              </div>
-            )}
+{activeTab === "usage" && (
+  <div id="usage" className="usage-container">
+    <h2 className="usage-title">이용안내</h2>
+    <ul className="usage-list">
+      <li>
+        <span className="icon">📅</span> 예약은 온라인으로만 가능합니다.
+      </li>
+      <li>
+        <span className="icon">⏰</span> 체크인은 <strong>오후 3시</strong>, 체크아웃은 <strong>오전 11시</strong>입니다.
+      </li>
+      <li>
+        <span className="icon">🚫</span> 애완동물 동반인 곳은 캠핑장 소개 글의 반려동물 출입 여부를 꼭 확인 해주세요.
+      </li>
+    </ul>
+  </div>
+)}
 
-            {activeTab === "location" && (
-              <div id="location">
-                 <h1>지도</h1>
-                 <KakaoMap
-                latitude={data.mapY} // DB에서 불러온 위도
-                 longitude={data.mapX} // DB에서 불러온 경도
-                />
-                <p>{data.addr1}</p>
-                <p>{data.direction}</p>
-                <h1>날씨</h1>
-                <Weather region={region} />
-              </div>
-            )}
+{activeTab === "location" && (
+  <div id="location">
+    <h1>지도</h1>
+    <KakaoMap
+      latitude={data.mapY} // DB에서 불러온 위도
+      longitude={data.mapX} // DB에서 불러온 경도
+    />
+    
+    <button className="pharmacy-button" onClick={() => setActiveTab("medical")}>
+      주변 약국 정보
+    </button>
+
+    <p>{data.addr1}</p>
+    <p>{data.direction}</p>
+
+    <h1>날씨</h1>
+    <Weather region={region} />
+  </div>
+)}
+
+{activeTab === "medical" && (
+  <div id="medical">
+    <h1>주변 약국 정보</h1>
+    <Medical 
+      latitude={data.mapY} // 위도 전달
+      longitude={data.mapX} // 경도 전달
+    />
+    
+    <button className="map-button" onClick={() => setActiveTab("location")}>
+      지도 보기
+    </button>
+  </div>
+)}
+
+
 
             {activeTab === "reviews" && (
               <div id="reviews">
@@ -1114,8 +1231,8 @@ const reserveClick = (id) => {
                                       {item.title}
                                     </div>
                                     <div className="review-img">
-                                      {item.filename ? (
-                                        <img src={`${LOCAL_IMG_URL}/${item.filename}`} alt="uploaded image" style={{width: "400px", height:"300px"}}/>
+                                      {item.file_name ? (
+                                        <img src={`http://localhost:8080/upload/${item.file_name}`} alt="uploaded image" style={{width: "400px", height:"300px"}}/>
                                       ) : (
                                         // 파일이 없으면 이미지 부분을 아예 렌더링하지 않음
                                         <p></p> // 이 부분은 선택 사항입니다. 파일이 없을 때의 대체 콘텐츠를 추가할 수 있습니다.
@@ -1182,9 +1299,9 @@ const reserveClick = (id) => {
                                                   사진 첨부(클릭하시오)
                                               </label>
                                               <div onClick={() => handleImageClick(item.review_idx)} style={{ cursor: 'pointer' }}>
-                                                  {previewImage[item.review_idx] || item.filename ? (
+                                                  {previewImage[item.review_idx] || item.file_name ? (
                                                   <Image
-                                                      src={previewImage[item.review_idx] || `${LOCAL_IMG_URL}/${item.filename}`}
+                                                      src={previewImage[item.review_idx] || `http://localhost:8080/upload/${item.file_name}`}
                                                       alt="Uploaded Image"
                                                       width={300}
                                                       height={200}
@@ -1221,7 +1338,7 @@ const reserveClick = (id) => {
                                             variant="contained" 
                                             color="primary" 
                                             style={{ marginTop: "20px" }} 
-                                            onClick={() => handleUpdateSubmit(item.review_idx)}
+                                            onClick={() => handleUpdateSubmit(item.review_idx, item.file_idx)}
                                           >
                                             저장
                                           </Button>

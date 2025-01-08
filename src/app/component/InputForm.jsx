@@ -3,7 +3,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Button, Grid, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import React, { useState } from 'react';
 
-function InputForm({label="", type="text", name="", value="", onChange="", required=false, onKeyDown=() => {}, xs=12, disabled=false, placeholder="", maxLength=50, autoFocus, endAdornment, onClick}) {
+function InputForm({label="", type="text", name="", value="", onChange="", required=false, onKeyDown=() => {}, xs=12, disabled=false, buttonDisabled=false, placeholder="", maxLength=50, autoFocus, endAdornment, onClick="", display, sx}) {
   const [showPassword, setShowPassword] = useState(false);
 
   // 비밀번호 표시 상태 변경 함수
@@ -28,15 +28,17 @@ function InputForm({label="", type="text", name="", value="", onChange="", requi
         disabled={disabled}
         placeholder={placeholder}
         onKeyDown={onKeyDown}
+        sx={{mt:"10px"}}
         aria-readonly
         InputProps={{
-          style: { borderRadius: 8 },
+          style: { borderRadius: 8, display:{display}},
           endAdornment: (
             <InputAdornment position="end">
               <IconButton
                 onClick={handleTogglePasswordVisibility}
                 edge="end"
                 aria-label="toggle password visibility"
+                disabled={buttonDisabled}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -62,17 +64,18 @@ function InputForm({label="", type="text", name="", value="", onChange="", requi
         disabled={disabled}
         placeholder={placeholder}
         aria-readonly
+        sx={{mt:"10px"}}
         InputProps={{
-          style: { borderRadius: 8 },
+          style: { borderRadius: 8, display:display},
           maxLength: maxLength,  // 최대 글자 수
           endAdornment:  endAdornment ? (             // 텍스트 안에 버튼
-              <InputAdornment position="end">
-                  <Button
-                    variant="contained"
-                    onClick={onClick}
-                    disabled={disabled}
-                  > {endAdornment}</Button>
-              </InputAdornment>
+            <InputAdornment position="end">
+              <Button
+                variant="contained"
+                onClick={onClick}
+                disabled={buttonDisabled}
+              > {endAdornment}</Button>
+            </InputAdornment>
           ) : null
         }}
       />
@@ -82,16 +85,16 @@ function InputForm({label="", type="text", name="", value="", onChange="", requi
   }
 
   return (
-    <Grid item xs={xs}>
-      <Typography
-        component="label"
-        sx={{
-          fontWeight: "500",
-          fontSize: "14px",
-          mb: "10px",
-          display: "block",
-          textAlign: "left"
-        }}
+    <Grid item xs={xs}
+      sx={{
+        fontWeight: "500",
+        fontSize: "14px",
+        textAlign: 'left',
+        display:display
+      }}
+    >
+      <Typography component="label"
+        ml="10px"
       >
         {label}
       </Typography>

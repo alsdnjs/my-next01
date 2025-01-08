@@ -62,7 +62,6 @@ function MyUsageHistory() {
       action_type: '이용완료',
     },
   ];
-  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
 
   useEffect(() => {
     getData("/myPage/getUsageHistory");
@@ -159,5 +158,3 @@ function MyUsageHistory() {
 }
 
 export default MyUsageHistory;
-
-

@@ -1,5 +1,7 @@
+"use client"
 import { Box, Button, Grid, IconButton, InputAdornment, TextField, Typography } from "@mui/material"
 import InputForm from "../../../component/InputForm"
+import { useState } from "react";
 
 function EmailVerificationForm({
     email,
@@ -12,6 +14,7 @@ function EmailVerificationForm({
     sendVerificationCode,
     verifyCode,
 }){
+
 
     return(
         <Box
@@ -29,38 +32,20 @@ function EmailVerificationForm({
                     name="email"
                     value={email}
                     onChange={handleEmailChange}
-                    disabled={emailVerified}
+                    disabled={emailVerified || verificationSent}
                     endAdornment="인증번호 발송"
                     onClick={sendVerificationCode}
                 />
-                {/* <Button
-                    fullWidth
-                    variant="contained"
-                    sx={{
-                        mt: 2,
-                        mb: 2,
-                        textTransform: "capitalize",
-                        borderRadius: "8px",
-                        fontWeight: "500",
-                        fontSize: "16px",
-                        ml:"20px",
-                        mr:"2px",
-                        padding: "10px 10px",
-                        color: "#fff !important",
-                    }}
-                    onClick={sendVerificationCode}
-                    disabled={emailVerified}
-                >
-                인증번호 보내기
-                </Button> */}
                 <InputForm
                     label="인증 코드"
                     name="verificationCode"
                     value={verificationCode}
                     onChange={handleVerificationCodeChange}
+                    display={verificationSent ? "" : "none"}
                     endAdornment="인증하기"
                     onClick={verifyCode}
                     disabled={emailVerified}
+                    buttonDisabled={emailVerified}
                 />
                 <Typography color="textSecondary" sx={{ mt: 3, ml: 3 }}>
                     {emailVerified

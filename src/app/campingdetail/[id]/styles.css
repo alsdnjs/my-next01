@@ -298,3 +298,90 @@
 .none{
   display: none;
 }
+
+/* 이용안내 css */
+.usage-container {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6; /* 전체적인 줄 간격 조정 */
+}
+
+.usage-title {
+  font-size: 24px;
+  margin-bottom: 20px; /* 제목과 리스트 사이 간격 */
+  color: #333;
+  border-bottom: 2px solid #080808;
+  padding-bottom: 5px;
+}
+
+.usage-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.usage-list li {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  margin-bottom: 15px; /* 리스트 항목 간격 */
+  color: #555;
+}
+
+.usage-list li:last-child {
+  margin-bottom: 0; /* 마지막 리스트 항목에 불필요한 간격 제거 */
+}
+
+.usage-list li .icon {
+  font-size: 20px;
+  margin-right: 12px; /* 아이콘과 텍스트 사이 간격 */
+  color: #111213;
+}
+
+strong {
+  color: #222;
+}
+
+/* 지도보기 약국정보보기 버튼 */
+/* 주변 약국 정보 버튼 */
+.pharmacy-button {
+  background-color: #ffcccc; /* 옅은 빨간색 */
+  color: #aa0000; /* 짙은 빨간색 텍스트 */
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.pharmacy-button:hover {
+  background-color: #ff9999; /* 호버 시 짙은 빨간색 */
+}
+
+/* 지도 보기 버튼 */
+.map-button {
+  background-color: #006400; /* 다크 초록색 */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.map-button:hover {
+  background-color: #004d00; /* 호버 시 더 짙은 초록색 */
+}
+
+

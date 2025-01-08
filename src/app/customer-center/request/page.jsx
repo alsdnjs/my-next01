@@ -232,6 +232,27 @@ export default function RequestPage() {
     page * rowsPerPage
   );
 
+  const handleDelete = async (popupIdx) => {
+    const confirmDelete = window.confirm("정말로 이 항목을 삭제하시겠습니까?");
+    if (!confirmDelete) {
+      return; // 사용자가 취소 버튼을 누른 경우
+    }
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/campground/sites/delete/${popupIdx}`
+      );
+      if (response.status === 200) {
+        alert("삭제가 성공적으로 완료되었습니다.");
+        router.push("/customer-center/request");
+      } else {
+        alert(`삭제에 실패했습니다: ${response.data}`);
+      }
+    } catch (error) {
+      console.error("삭제 요청 중 오류 발생:", error);
+      alert(`오류 발생: ${error.response?.data || error.message}`);
+    }
+  };
+
   return (
     <Box sx={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
       {/* 제목 및 밑줄 */}
@@ -276,6 +297,7 @@ export default function RequestPage() {
                   <TableCell>제목</TableCell>
                   <TableCell>작성자</TableCell>
                   <TableCell>등록일</TableCell>
+                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -294,6 +316,26 @@ export default function RequestPage() {
                       <TableCell>{campground.title}</TableCell>
                       <TableCell>{campground.business_idx}</TableCell>
                       <TableCell>{campground.createdtime}</TableCell>
+                      <TableCell>
+                        {businessIdx === campground.business_idx && ( // 조건부 렌더링
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                              backgroundColor: "#f9f9f9",
+                              color: "black",
+                              "&:hover": { backgroundColor: "grey" },
+                              marginLeft: "5px",
+                              padding: "2px",
+                            }}
+                            onClick={() =>
+                              handleDelete(campground.camp_request_idx)
+                            }
+                          >
+                            삭제
+                          </Button>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (

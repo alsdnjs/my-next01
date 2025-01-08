@@ -143,14 +143,14 @@ export default function NoticeDetail({ params }) {
                           data.file_path.endsWith(".gif") ? (
                             // 이미지 파일인 경우 렌더링
                             <img
-                              src={`http://localhost:8080/uploads/${data.file_name}`}
+                              src={`http://localhost:8080/api/files/getfile/${data.file_name}`}
                               alt={data.file_name}
                               style={{ width: "300px", maxHeight: "300px" }}
                             />
                           ) : (
                             // 이미지가 아닌 경우 다운로드 링크 제공
                             <a
-                              href={`http://localhost:8080/uploads/${data.file_path}`}
+                              href={`http://localhost:8080/api/files/getfile/${data.file_path}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

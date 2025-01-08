@@ -122,6 +122,9 @@ function CommonForm({agreement}, type) {
           console.log(response.data);
           alert("환영합니다.");
           router.push('/');
+        } else{
+          alert("회원가입 실패");
+          router.refresh();
         }
       } catch (error) {
         alert('회원가입 실패' + error);
@@ -132,14 +135,14 @@ function CommonForm({agreement}, type) {
 
   return (
     <Box
-        component="main"
-        sx={{
-          maxWidth: "510px",
-          ml: "auto",
-          mr: "auto",
-          padding: "50px 0 100px",
-        }}
-      >
+      component="main"
+      sx={{
+        maxWidth: "510px",
+        ml: "auto",
+        mr: "auto",
+        padding: "50px 0 100px",
+      }}
+    >
     <Grid item xs={12} md={12} lg={12} xl={12}>
       <form onSubmit={handleSubmit}>
       <Box>

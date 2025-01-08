@@ -34,7 +34,7 @@ export default function NoticeDetailPage() {
       {image && (
         <Box
           component="img"
-          src={image}
+          src={`http://localhost:8080/api/files/getfile/${image}`}
           alt="공지사항 이미지"
           sx={{
             width: "100%",

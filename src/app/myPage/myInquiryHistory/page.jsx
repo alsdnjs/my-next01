@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import { Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, Accordion, AccordionSummary, AccordionDetails, Stack, Pagination } from "@mui/material";
+import { Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, Accordion, AccordionSummary, AccordionDetails, Stack, Pagination, Avatar, CardMedia } from "@mui/material";
 import QuestionList from "./QuestionList.jsx";
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import useApi from "../../component/useApi.jsx";
@@ -9,11 +9,14 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Link from "next/link.js";
+import axios from "axios";
+import { Image } from "@mui/icons-material";
+import { useRouter } from "next/navigation.js";
 
 
 const InquiryPage = () => {
   const [data, setData] = useState([]); // 리뷰 리스트
-  const token = useAuthStore((state) => state.token);  // zustand에서 token 값 가져오기
+  const {token} = useAuthStore();  // zustand에서 token 값 가져오기
   const {getData, postData} = useApi(token, setData);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -121,7 +124,7 @@ const InquiryPage = () => {
               )}
               {question.file_idx ? (
 
-              <Link href={question.file_path}>
+              <Link href="">
                 {question.file_name}
               </Link>
               ) : (
@@ -179,67 +182,110 @@ const InquiryPage = () => {
 
 export default InquiryPage;
 
-// 모달 창 폼폼
-function InquiryModal({ open, onClose }) {
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    file: null,
-  });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+
+
+// 모달 창 폼
+function InquiryModal({ open, onClose, reload }) {
+  const {token} = useAuthStore();  // zustand에서 token 값 가져오기
+
+  const [subject, setSubject] = useState('');
+  const [content, setContent] = useState('');
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState('');
+  const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
+  const router = useRouter();
+
+  // 이미지 선택 후 미리보기
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFile(file);
+      setPreview(URL.createObjectURL(file)); // 미리보기 URL 생성
+    }
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setFormData({ ...formData, file });
-    } else {
-      alert('이미지 파일만 첨부할 수 있습니다.');
+    if (file) {
+      setFile(file);
+      setPreview(URL.createObjectURL(file)); // 미리보기 URL 생성
     }
   };
 
-  const handleSubmit = () => {
-    console.log('문의 내용:', formData);
-    alert('문의가 제출되었습니다!');
-    onClose(); // 모달 닫기
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('subject', subject);
+    formData.append('content', content);
+    if (file) {
+      formData.append('file', file); // 파일을 FormData에 추가
+    }
+
+    try {
+      const response = await axios.post(`${LOCAL_API_BASE_URL}/myPage/sendInquiry`, formData, {
+        headers: {
+          Authorization : `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data', // 파일 업로드를 위한 헤더 설정
+        },
+      })
+      
+      console.log('문의가 성공적으로 제출되었습니다:', response.data),
+      alert('문의가 성공적으로 제출되었습니다:', response.data);
+      setContent("");
+      setFile(null);
+      setPreview("");
+      setSubject("");
+      reload
+      onClose();  // 제출 성공 후 모달을 닫음
+
+    } catch (error) {
+      console.error('문의 제출 중 오류 발생:', error);
+    }
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>1:1 문의하기</DialogTitle>
       <DialogContent>
-        <TextField
-          fullWidth
-          margin="normal"
-          label="제목"
-          name="title"
-          value={formData.title}
-          onChange={handleInputChange}
-        />
-        <TextField
-          fullWidth
-          margin="normal"
-          label="내용"
-          name="content"
-          value={formData.content}
-          onChange={handleInputChange}
-          multiline
-          rows={4}
-        />
-        <div style={{ margin: '20px 0' }}>
-          <Button variant="contained" component="label" startIcon={<AttachFileIcon />}  >
-            Upload files
-            <input type="file" hidden onChange={handleFileChange} />
-          </Button>
-          {formData.file && (
-            <p style={{ marginTop: '10px' }}>
-              첨부된 파일: {formData.file.name}
-            </p>
-          )}
-        </div>
+        <form onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="제목"
+            name="subject"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="내용"
+            name="content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            multiline
+            rows={4}
+          />
+          <Box sx={{ margin: '20px 0', display:"flex", flexDirection:"column", alignItems:"center"}}>
+            <Button variant="contained" component="label" startIcon={<AttachFileIcon />}  >
+              Upload files
+              <input type="file" hidden onChange={handleFileChange} />
+            </Button>
+            {file && (
+              <p style={{ marginTop: '10px' }}>
+                첨부된 파일: {file.name}
+              </p>
+            )}
+            {preview && (
+              <div style={{ marginTop: 10, alignItems:"center" }}>
+                <CardMedia src={preview} component="img" alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
+              </div>
+            )}
+          </Box>
+        </form>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">

@@ -28,7 +28,7 @@ export default function NoticePage() {
           date: new Date(notice.created_at).toLocaleDateString("ko-KR"),
           content: notice.notice_content,
           image: notice.file_path
-            ? `http://localhost:8080/uploads/${notice.file_name}`
+            ? `http://localhost:8080/api/files/getfile/${notice.file_name}`
             : null,
         }));
         setNotices(formattedData); // 데이터를 상태에 저장

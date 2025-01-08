@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 
 function page(props) {
-  const { login } = useAuthStore();
+  const { login, token } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -14,6 +14,7 @@ function page(props) {
     const username = urlParams.get('username');
     const email = urlParams.get('email');
     const id = urlParams.get('id');
+    const firstLogin = urlParams.get('firstLogin');
     const userInfo = {
       "username": username,
       "email": email,
@@ -26,11 +27,17 @@ function page(props) {
     
     if (token) {
       login(userInfo, token);
+      if(firstLogin == "true"){
+        router.push('/authentication/snsLoginSetPassword');
+        console.log("처음 로그인함");
+        return;
+      }
       router.push('/');  // 로그인 후 대시보드로 리다이렉트
     } else {
       alert('로그인 실패');
     }
   },[])
+  
   return (
     <div>
       

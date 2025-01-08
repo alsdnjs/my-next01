@@ -80,11 +80,9 @@ const useEmailVerification = () => {
         alert(response.data.message);
         setError(""); // 에러 초기화
       } else {
-        setError("인증 코드가 일치하지 않습니다.");
-        alert("인증 코드가 일치하지 않습니다.");
+        alert(response.data.message);
       }
     } catch (err) {
-      setError("서버 오류가 발생했습니다.");
       alert("서버 오류가 발생했습니다.");
     }
   };

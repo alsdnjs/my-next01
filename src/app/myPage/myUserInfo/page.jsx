@@ -11,13 +11,13 @@ function MyUserInfo(props) {
   const [userProfile, setUserProfile] = useState({});
   const router = useRouter();
   const {isAuthenticated, logout, initialize} = useAuthStore();
-  const token = useAuthStore((state) => state.token);  // zustand에서 token 값 가져오기
+  const {token} = useAuthStore();  // zustand에서 token 값 가져오기
   const {getData, postData} = useApi(token, setUserProfile);
 
   const [open, setOpen] = useState(false); // 모달 열림 상태
   const [image, setImage] = useState(null); // 이미지 파일 상태
   const [preview, setPreview] = useState(null); // 이미지 미리보기 상태
-
+  let file_path = "http://localhost:8080/files/images/" +  userProfile.file_name;
   
   // 모달 열기
   const handleClickOpen = () => {
@@ -27,16 +27,8 @@ function MyUserInfo(props) {
   // 모달 닫기
   const handleClose = () => {
     setOpen(false);
+    setPreview(null);
   };
-
-    // 이미지 업로드 처리 (여기서는 콘솔에 출력만 함)
-    const handleSubmit = () => {
-      if (image) {
-        console.log("이미지 업로드:", image);
-        alert("프로필 사진이 변경되었습니다.");
-      }
-      handleClose(); // 모달 닫기
-    };
     
   useEffect(() => {
     const token = Cookies.get('token');
@@ -47,7 +39,6 @@ function MyUserInfo(props) {
       initialize({ user, token });
     } else {
       alert("로그인이 필요합니다.");
-
     }
   }, [initialize]);
   // 토큰 가져오기
@@ -78,14 +69,54 @@ function MyUserInfo(props) {
   //   }
   // }
 
-    // 이미지 선택 후 미리보기
-    const handleImageChange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        setImage(file);
-        setPreview(URL.createObjectURL(file)); // 미리보기 URL 생성
+  // 이미지 선택 후 미리보기
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file)); // 미리보기 URL 생성
+      console.log(URL.createObjectURL(file));
+    }
+  };
+
+  // 프로필 사진 변경 요청청
+  const updateProfileImage = async() => {
+    const API_URL = `${LOCAL_API_BASE_URL}/myPage/updateProfileImage`;
+    const formData = new FormData();
+
+    formData.append('image', image); // 파일을 FormData에 추가
+    formData.append('prevImage', userProfile.file_name)
+    
+
+    try {
+      const response = await axios.post(API_URL, formData, {
+        headers: {
+          Authorization : `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data', // 파일 업로드를 위한 헤더 설정
+        },
+      })
+
+      if(response.data.success){
+        console.log('프로필이 성공적으로 업데이트 되었습니다:', response.data),
+        alert('프로필이 성공적으로 업데이트 되었습니다:', response.data);
+        setImage(null);
+        setPreview("");
+        getData(
+          "/users/profile",           // url
+          {},                         // 매개변수
+          ()=>{} ,                    // 성공 시 메서드
+          () => {                     // 실패 시 메서드
+            alert("로그인해주세요.");
+            logout();
+            router.push('/');
+        })
       }
-    };
+      
+
+    } catch (error) {
+      console.error('문의 제출 중 오류 발생:', error);
+    }
+  }
 
   useEffect(() => {
     if (token) {
@@ -99,6 +130,7 @@ function MyUserInfo(props) {
           router.push('/');
       })
     }
+    console.log(file_path);
   }, [token]);
 
   const handleModifyClick = () => {
@@ -122,7 +154,7 @@ function MyUserInfo(props) {
         {/* 프로필 사진 */}
         <Avatar
           alt="Profile Image"
-          src={userProfile.avatar_url ? userProfile.avatar_url : "https://via.placeholder.com/150"}
+          src={"http://localhost:8080/images/" +  userProfile.file_name}
           sx={{ width: 100, height: 100, margin: '0 auto' }}
           onClick={handleClickOpen}
         />
@@ -153,14 +185,23 @@ function MyUserInfo(props) {
           회원 탈퇴하기
         </Button>
       </Box>
-            {/* 모달 */}
-            <Dialog open={open} onClose={handleClose}>
+
+
+
+
+      {/* 모달 */}
+      <Dialog open={open} onClose={handleClose}>
         <DialogTitle>프로필 사진 변경</DialogTitle>
         <DialogContent>
           <input type="file" accept="image/*" onChange={handleImageChange} />
-          {preview && (
-            <div style={{ marginTop: 10 }}>
-              <img src={preview} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }} />
+          {/* 처음엔 원래 프로필 사진 나오고 다른 파일 선택시 변경됨됨 */}
+          {preview ? (
+            <div style={{ marginTop: 10, alignItems:"center" }}>
+              <Avatar src={preview} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
+            </div>
+          ) : (
+            <div style={{ marginTop: 10, alignItems:"center" }}>
+              <Avatar src={"http://localhost:8080/images/" +  userProfile.file_name} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
             </div>
           )}
         </DialogContent>
@@ -168,7 +209,7 @@ function MyUserInfo(props) {
           <Button onClick={handleClose} color="primary">
             취소
           </Button>
-          <Button onClick={handleSubmit} color="primary">
+          <Button onClick={updateProfileImage} color="primary">
             변경
           </Button>
         </DialogActions>

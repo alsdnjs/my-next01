@@ -6,6 +6,7 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  Button,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AvatarGroup from '@mui/material/AvatarGroup';
@@ -16,89 +17,18 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import '../../globals.css';
+import useAuthStore from 'store/authStore';
+import { getCookie } from "cookies-next"; // 쿠키에서 값 가져오는 함수
+import axios from 'axios';
 
+// API 및 이미지 URL을 위한 BASE_URL 정의
+const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL || "http://localhost:8080/api";
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || "http://localhost:8080/uploads";
+const BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL || "http://localhost:8080/api";
+console.log("BASE_URL:", BASE_URL);
 
-const meetings = [
-  {
-    id: 1,
-    region: '서울',
-    title: '글램핑 겨울 크리스마스',
-    date: '2024.12.22',
-    location: '은평구',
-    members: '25/50',
-    image: '/images/photo-3.jpg',
-    tags: ['#카라반', '#글램핑', '#산'],
-    liked: false, // 좋아요 상태 추가,
-    host: {
-      name: "소경빈",
-      description: "서울숲 산책 모임",
-      profileImage: "/images/tree-1.jpg",
-    },
-  },
-  {
-    id: 2,
-    region: '경기',
-    title: '경빈 캠프',
-    date: '2024.12.09',
-    location: '마포구',
-    members: '14/21',
-    image: '/images/tree-3.jpg',
-    tags: ['#야영', '#바다', '#산'],
-    liked: false,
-    host: {
-      name: "박지민",
-      description: "즐거운 캠핑 모임",
-      profileImage: "/images/tree-2.jpg",
-    },
-  },
-  {
-    id: 3,
-    region: '인천',
-    title: '유앤캠',
-    date: '2024.11.30',
-    location: '마포구',
-    members: '5/7',
-    image: '/images/bg-dark.jpg',
-    tags: ['#오토캠핑', '#야영', '#카라반'],
-    liked: false,
-  },
-  {
-    id: 4,
-    region: '강원도',
-    title: '2024 굿바이 캠핑',
-    date: '2024.12.29',
-    location: '구로구',
-    members: '18/24',
-    image: '/images/sims.gif',
-    tags: ['#바다', '#글램핑', '#오토캠핑'],
-    liked: false,
-  },
-  {
-    id: 5,
-    region: '서울',
-    title: '2025 하이바이 캠핑',
-    date: '2024.12.29',
-    location: '마포구',
-    members: '17/24',
-    image: '/images/yellowsb.gif',
-    tags: ['#바다', '#야영', '#자연'],
-    liked: false,
-  },
-  {
-    id: 6,
-    region: '경기',
-    title: '노는게 제일 좋아',
-    date: '2024.02.29',
-    location: '강서구',
-    members: '10/35',
-    image: '/images/tree-2.jpg',
-    tags: ['#산', '#글램핑', '#오토캠핑'],
-    liked: false,
-  },
-];
-
-const regions = ['전체', '서울', '경기', '인천', '강원도', '부산', '광주', '수원', '용인', '고양', '창원', '대구', '대전', '울산', '충청도', '전라도'];
-const tags = ['#카라반', '#글램핑', '#야영', '#산', '#바다',
+const regions = ['전체', '서울', '경기', '인천', '강원도', '부산', '광주', '수원', '용인', '고양', '창원', '대구', '대전', '울산', '충청도', '전라도', '그 외'];
+const hashtags = ['#카라반', '#글램핑', '#야영', '#산', '#바다',
   '#캠프파이어', '#오토캠핑', '#자연', '#별 관찰', '#텐트',
   '#캠핑 장비', '#팀워크', '#소통', '#즐거운 추억', '#자연 보호',
   '#힐링', '#맛있는 음식', '#트레킹', '#낚시', '#자전거 타기',
@@ -107,7 +37,12 @@ const tags = ['#카라반', '#글램핑', '#야영', '#산', '#바다',
   '#친목', '#산책', '#명상', '#휴식', '#오프그리드 생활',];
 
 export default function RegularMeetingPage() {
-  const [filteredMeetings, setFilteredMeetings] = useState(meetings);
+  const token = useAuthStore((state) => state.token);
+  const [userIdx, setUserIdx] = useState(null);
+  const [userName, setUserName] = useState("");
+  // const [userId, setUserId] = useState(null);
+
+  const [filteredMeetings, setFilteredMeetings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [tagPage, setTagPage] = useState(0);
   const router = useRouter();
@@ -117,9 +52,138 @@ export default function RegularMeetingPage() {
   const [currentRank, setCurrentRank] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const [meetings, setMeetings] = useState([]);
+  const [allHashtags, setAllHashtags] = useState([]);
 
-  const handleCardClick = (id) => {
-    router.push(`/MeetingGroup/regular-Meeting/detail/${id}`);
+  const [page, setPage] = useState(0); // 페이지 번호
+  const [hasMore, setHasMore] = useState(true); // 추가 데이터 여부
+  const [isTopVisible, setIsTopVisible] = useState(false); // Top 버튼 표시 여부
+
+  useEffect(() => {
+    setAllHashtags(hashtags);
+  }, []);
+
+  useEffect(() => {
+    const token = getCookie("token");
+    if (token) {
+      getUserIdx(token); // 토큰이 있으면 사용자 user_idx 가져오기
+    }
+  }, []);
+
+  const getUserIdx = async (token) => {
+    try {
+      const API_URL = `${BASE_URL}/users/profile`;
+      console.log("유저 정보 요청 URL:", API_URL);
+      console.log("사용 중인 토큰:", token);
+      const response = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("유저 정보 응답 데이터:", response.data);
+      if (response.data.success) {
+        const { user_idx, username } = response.data.data;
+        setUserName(username);
+        setUserIdx(user_idx);
+      } else {
+        console.error("유저 정보 요청 실패:", response.data.message);
+        router.push('/authentication/login'); // 프로필 페치 실패 시 리다이렉트
+      }
+    } catch (error) {
+      console.error("유저 정보 가져오기 실패:", error.message || error);
+      router.push('/authentication/login'); // 오류 발생 시 리다이렉트
+    }
+  };
+
+  useEffect(() => {
+    console.log("현재 쿠키 token =", getCookie("token"));
+    console.log("현재 zustand token =", token);
+    console.log("localStorage token =", localStorage.getItem("token"));
+
+    if (!token) {
+      // zustand에 user가 없으면 -> 로그인 페이지로
+      router.push('/authentication/login');
+    } else {
+      // user가 있으면 -> user.id(혹은 user.user_idx 등 PK 필드)를 저장
+      //setUserId(token.id);
+    }
+  }, [token]); //, router
+
+
+  useEffect(() => {
+    if (userIdx) {
+      fetchMeetings();
+    }
+  }, [userIdx]);
+
+  const fetchMeetings = async (newPage = 0) => {
+    try {
+      console.log(`Fetching meetings for page: ${newPage}`);
+      const response = await axios.get(`${BASE_URL}/regular-meetings`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { user_idx: userIdx, page: newPage, size: 10 }, // 페이지와 크기 지정
+      });
+
+      if (response.data.meetings.length > 0) {
+        console.log("Meetings data fetched:", response.data.meetings);
+        if (newPage === 0) {
+          setMeetings(response.data.meetings);
+          setFilteredMeetings(response.data.meetings);
+        } else {
+          setMeetings((prev) => [...prev, ...response.data.meetings]);
+          setFilteredMeetings((prev) => [...prev, ...response.data.meetings]);
+        }
+        setPage(newPage);
+      } else {
+        console.log("No more meetings to fetch.");
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error fetching meetings:", error?.response?.data || error.message || error);
+      alert("모임 데이터를 불러오는 데 문제가 발생했습니다.");
+    }
+  };
+
+  const handleScroll = () => {
+    const scrollTop = window.scrollY; // or document.documentElement.scrollTop
+    const { scrollHeight, clientHeight } = document.documentElement;
+
+    if (scrollTop > 200) {
+      setIsTopVisible(true);
+    } else {
+      setIsTopVisible(false);
+    }
+
+    if (scrollTop + clientHeight >= scrollHeight - 100 && hasMore) {
+      console.log("Loading next page:", page + 1);
+      fetchMeetings(page + 1);
+    }
+  };
+
+
+  useEffect(() => {
+    console.log("Is Top Visible:", isTopVisible);
+  }, [isTopVisible]);
+
+
+  useEffect(() => {
+    console.log("Adding scroll event listener");
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      console.log("Removing scroll event listener");
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [page, hasMore]); // 페이지나 데이터가 변경될 때 이벤트를 다시 연결
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+
+
+  const handleCardClick = (meeting_idx) => {
+    console.log("Navigating to meeting detail:", meeting_idx);
+    router.push(`/MeetingGroup/regular-Meeting/detail/${meeting_idx}`);
   };
 
   // 좋아요 상태 로드
@@ -128,37 +192,74 @@ export default function RegularMeetingPage() {
     setFilteredMeetings((prevMeetings) =>
       prevMeetings.map((meeting) => ({
         ...meeting,
-        liked: !!savedLikes[meeting.id],
+        liked: !!savedLikes[meeting.meeting_idx],
       }))
     );
   }, []);
 
-  // 좋아요 상태 저장
-  const toggleLike = (id) => {
-    setFilteredMeetings((prevMeetings) => {
-      const updatedMeetings = prevMeetings.map((meeting) =>
-        meeting.id === id ? { ...meeting, liked: !meeting.liked } : meeting
+  const toggleLike = async (meeting_idx) => {
+    try {
+      const token = getCookie("token");
+      if (!token) {
+        alert("인증 토큰이 없습니다. 다시 로그인해주세요.");
+        router.push('/authentication/login');
+        return;
+      }
+      const url = `${LOCAL_API_BASE_URL}/regular-meetings/detail/${meeting_idx}/favorite`;
+      console.log("Toggle Like URL:", url);
+      console.log("Token:", token);
+
+      const response = await axios.post(url, null, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+        params: { user_idx: userIdx },
+      });
+
+      console.log("Toggle Like Response Status:", response.status);
+
+      if (response.status === 401) {
+        alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
+        router.push('/authentication/login');
+        return;
+      }
+
+      if (response.status !== 200) {
+        console.error("Failed to toggle favorite");
+        console.log("Error data:", response.data);
+        alert(`오류 발생: ${response.data.message || '알 수 없는 오류'}`);
+        return;
+      }
+
+      const data = response.data; // { success: true, favorite: true/false }
+      setFilteredMeetings((prev) =>
+        prev.map((m) =>
+          m.meeting_idx === meeting_idx ? { ...m, favorites_idx: data.favorite } : m
+        )
       );
 
-      // 로컬 스토리지 업데이트
-      const likedState = updatedMeetings.reduce((acc, meeting) => {
-        if (meeting.liked) acc[meeting.id] = true;
-        return acc;
-      }, {});
-      localStorage.setItem('likedMeetings', JSON.stringify(likedState));
-
-      return updatedMeetings;
-    });
+      const savedLikes = JSON.parse(localStorage.getItem('likedMeetings')) || {};
+      if (data.favorite) {
+        savedLikes[meeting_idx] = true;
+      } else {
+        delete savedLikes[meeting_idx];
+      }
+      localStorage.setItem('likedMeetings', JSON.stringify(savedLikes));
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      alert("좋아요 기능을 사용하는 중 오류가 발생했습니다.");
+    }
   };
-
 
 
 
   // 태그 버튼 검색 필터
   const handleTagFilter = (tag) => {
-    // setSelectedTag(tag);
-    setFilteredMeetings(meetings.filter((meeting) => meeting.tags.includes(tag)));
+    setFilteredMeetings(meetings.filter((meeting) =>
+      Array.isArray(meeting.hashtags) && meeting.hashtags.some(h => h.name === tag)
+    ));
   };
+
 
   // 지역 버튼
   const handleRegionFilter = (region) => {
@@ -179,26 +280,30 @@ export default function RegularMeetingPage() {
       meetings.filter(
         (meeting) =>
           meeting.region.toLowerCase().includes(lowerSearchTerm) ||
-          meeting.title.toLowerCase().includes(lowerSearchTerm) ||
-          meeting.date.includes(lowerSearchTerm) ||
-          meeting.location.toLowerCase().includes(lowerSearchTerm) ||
-          meeting.tags.some((tag) => tag.toLowerCase().includes(lowerSearchTerm))
+          meeting.name.toLowerCase().includes(lowerSearchTerm) ||
+          meeting.created_at.includes(lowerSearchTerm) ||
+          meeting.subregion.toLowerCase().includes(lowerSearchTerm) ||
+          (Array.isArray(meeting.hashtags) &&
+            meeting.hashtags.some((hashtag) =>
+              (typeof hashtag === 'string' ? hashtag.toLowerCase() : hashtag.name.toLowerCase()).includes(lowerSearchTerm)
+            ))
       )
     );
 
-    // 검색어 기록 추가 및 저장
+    // 검색 기록 저장
     const updatedSearchHistory = { ...searchHistory };
     updatedSearchHistory[searchTerm] = (updatedSearchHistory[searchTerm] || 0) + 1;
     setSearchHistory(updatedSearchHistory);
-    localStorage.setItem('searchHistory', JSON.stringify(updatedSearchHistory)); // 로컬스토리지 저장
+    localStorage.setItem('searchHistory', JSON.stringify(updatedSearchHistory));
     updateTopSearches(updatedSearchHistory);
   };
 
-  // 태그 페이징
+
+  // 태그 페이징 
   const handleTagPagination = (direction) => {
     setTagPage((prevPage) => {
       // 태그 갯수를 기준으로 총 페이지 수 계산
-      const totalPages = Math.ceil(tags.length / 7); // 7개씩 표시하므로 총 페이지 수는 태그 길이 / 7
+      const totalPages = Math.ceil(hashtags.length / 7); // 7개씩 표시하므로 총 페이지 수는 태그 길이 / 7
 
       if (direction === 'next') {
         // 마지막 페이지에서 오른쪽 화살표 클릭 시 첫 페이지로 돌아가도록 설정
@@ -210,7 +315,11 @@ export default function RegularMeetingPage() {
     });
   };
 
-  const visibleTags = tags.slice(tagPage * 7, (tagPage + 1) * 7);
+  // const visibleTags = allHashtags.slice(tagPage * 7, (tagPage + 1) * 7);
+  // visibleTags에서 slice 적용
+  const visibleTags = Array.isArray(allHashtags)
+    ? allHashtags.slice(tagPage * 7, (tagPage + 1) * 7)
+    : [];
 
   // 실시간 검색 기능
 
@@ -228,10 +337,13 @@ export default function RegularMeetingPage() {
       meetings.filter(
         (meeting) =>
           meeting.region.toLowerCase().includes(term.toLowerCase()) ||
-          meeting.title.toLowerCase().includes(term.toLowerCase()) ||
-          meeting.date.includes(term) ||
-          meeting.location.toLowerCase().includes(term.toLowerCase()) ||
-          meeting.tags.some((tag) => tag.toLowerCase().includes(term.toLowerCase()))
+          meeting.name.toLowerCase().includes(term.toLowerCase()) ||
+          meeting.created_at.includes(term) ||
+          meeting.subregion.toLowerCase().includes(term.toLowerCase()) ||
+          (
+            Array.isArray(meeting.hashtags) &&
+            meeting.hashtags.some((ht) => ht.name?.toLowerCase().includes(term.toLowerCase()))
+          )
       )
     );
 
@@ -264,7 +376,6 @@ export default function RegularMeetingPage() {
   const toggleExpand = () => {
     setIsExpanded((prev) => !prev);
   };
-
 
   return (
     <Box sx={{ padding: '20px', textAlign: 'center', paddingTop: '80px', margin: '0 auto', width: '70%' }}>
@@ -413,9 +524,9 @@ export default function RegularMeetingPage() {
         <IconButton onClick={() => handleTagPagination('prev')} disabled={tagPage === 0} sx={{ alignSelf: 'center' }}>
           <ArrowBackIosIcon />
         </IconButton>
-        {visibleTags.map((tag, idx) => (
+        {visibleTags.map((tag, index) => (
           <Chip
-            key={idx}
+            key={index}
             label={tag}
             clickable
             onClick={() => handleTagFilter(tag)}
@@ -430,7 +541,7 @@ export default function RegularMeetingPage() {
           />
         ))}
 
-        <IconButton onClick={() => handleTagPagination('next')} disabled={(tagPage + 1) * 7 >= tags.length} sx={{ alignSelf: 'center' }}>
+        <IconButton onClick={() => handleTagPagination('next')} disabled={(tagPage + 1) * 7 >= allHashtags.length} sx={{ alignSelf: 'center' }}>
           <ArrowForwardIosIcon sx={{ fontSize: '24px' }} />
         </IconButton>
 
@@ -457,11 +568,11 @@ export default function RegularMeetingPage() {
 
       {/* 모임 카드 */}
       <Grid container spacing={3} justifyContent="center">
-        {meetings.map((meeting) => (
-          <Grid item key={meeting.id}>
+        {filteredMeetings.map((meeting) => (
+          <Grid item key={meeting.meeting_idx}>
             <Paper
               elevation={3}
-              onClick={() => handleCardClick(meeting.id)}
+              onClick={() => handleCardClick(meeting.meeting_idx)}
               sx={{
                 cursor: 'pointer',
                 width: '360px',
@@ -469,24 +580,23 @@ export default function RegularMeetingPage() {
                 display: 'flex',
                 alignItems: 'center',
                 padding: '16px',
-                backgroundColor: meeting.liked ? '#ffe5b4' : '#f5eedc',
-                color: meeting.liked ? '#704C2E' : '#595959',
+                backgroundColor: meeting.favorites_idx ? '#ffe5b4' : '#f5eedc',
+                color: meeting.favorites_idx ? '#704C2E' : '#595959',
                 boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                position: 'relative',  // 하트 아이콘을 절대 위치로 배치
-                borderRadius: '12px', // 둥근 테두리
-                transition: 'background-color 0.3s, transform 0.3s', // 부드러운 전환 효과
+                position: 'relative',
+                borderRadius: '12px',
+                transition: 'background-color 0.3s, transform 0.3s',
                 '&:hover': {
-                  // backgroundColor: '#ffa354',
-                  backgroundColor: meeting.liked ? '#ffd18c' : '#e4d7c5',
-                  transform: 'scale(1.02)', // hover 시 확대 효과
+                  backgroundColor: meeting.favorites_idx ? '#ffd18c' : '#e4d7c5',
+                  transform: 'scale(1.02)',
                 },
               }}
             >
               {/* 하트 아이콘 */}
               <Box
                 onClick={(e) => {
-                  e.stopPropagation(); // 카드 클릭 이벤트와 구분
-                  toggleLike(meeting.id);
+                  e.stopPropagation();
+                  toggleLike(meeting.meeting_idx);
                 }}
                 sx={{
                   position: 'absolute',
@@ -494,35 +604,36 @@ export default function RegularMeetingPage() {
                   left: '10px',
                   cursor: 'pointer',
                   zIndex: 10,
-                  animation: meeting.liked ? 'likeAnimation 0.3s ease-in-out' : 'none', // 클릭 시 애니메이션
+                  animation: meeting.favorites_idx ? 'likeAnimation 0.3s ease-in-out' : 'none',
                 }}
               >
                 <img
-                  src={meeting.liked ? '/images/heart-fill-icon.svg' : '/images/heart-icon.svg'}
+                  src={meeting.favorites_idx ? '/images/heart-fill-icon.svg' : '/images/heart-icon.svg'}
                   alt="좋아요"
                   style={{ width: '25px', height: '25px', }}
                 />
-               
               </Box>
 
               {/* 모임 이미지 */}
               <Box
                 component="img"
-                src={meeting.image}
-                alt={meeting.title}
+                src={`${IMAGE_BASE_URL}/${meeting.profile_image}`}
+                //src={`${BASE_URL}/uploads/${meeting.profile_image}`}  // {meeting.profile_image}
+                alt="모임 대표 이미지"
                 sx={{
                   width: '140px',
                   height: '140px',
                   borderRadius: '8px',
                   objectFit: 'cover',
                   marginRight: '16px',
-                  flexShrink: 0, // 이미지가 늘어나거나 줄어들지 않도록 설정
+                  flexShrink: 0,
                 }}
+                onError={(e) => { e.target.src = '/images/camping2.png'; }} // 기본 이미지 설정
               />
               {/* 모임 설명 */}
               <Box
                 sx={{
-                  width: 'calc(100% - 146px)', // 이미지 크기 + margin을 제외한 너비 설정
+                  width: 'calc(100% - 146px)',
                   overflow: 'hidden',
                 }}
               >
@@ -530,33 +641,41 @@ export default function RegularMeetingPage() {
                   sx={{
                     fontWeight: 'bold',
                     marginBottom: '8px',
-                    whiteSpace: 'nowrap', // 텍스트가 한 줄에만 표시되도록 설정
-                    overflow: 'hidden', // 텍스트가 넘치면 숨기기
-                    textOverflow: 'ellipsis', // 넘친 텍스트에 "..." 표시
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }}
                 >
-                  {meeting.title}
+                  {meeting.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {meeting.region} · {meeting.location}
+                  {meeting.region} · {meeting.subregion}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {meeting.date}
+                  {meeting.created_at}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
                   <Typography variant="body2" color="text.secondary" sx={{ marginRight: '8px' }}>
-                    인원: {meeting.members}
+                    정원: {Array.isArray(meeting.membersAvatar) ? meeting.membersAvatar.length : 0} /{meeting.personnel}
                   </Typography>
                   <AvatarGroup max={4}>
-                    <Avatar alt="User 1" src="/images/picture4.png" />
-                    <Avatar alt="User 2" src="/images/picture3.png" />
-                    <Avatar alt="User 3" src="/images/picture1.png" />
-                    {/* <Avatar alt="User 4" src="/images/picture2.png" /> */}
+                    {Array.isArray(meeting.membersAvatar) &&
+                      meeting.membersAvatar
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, 4)
+                        .map((mem) => (
+                          <Avatar key={mem.user_idx || mem.avatar_url} src={`${IMAGE_BASE_URL}/${mem.avatar_url}`} />
+                        ))}
+
                   </AvatarGroup>
                 </Box>
                 <Box sx={{ marginTop: '8px', display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {meeting.tags.map((tag, idx) => (
-                    <Chip key={idx} label={tag} sx={{ backgroundColor: '#b3d468', fontSize: '12px' }} />
+                  {Array.isArray(meeting.hashtags) && meeting.hashtags.map((tagObj) => (
+                    <Chip
+                      key={tagObj.hashtag_idx || tagObj.name} // 고유한 키 사용
+                      label={tagObj.name}
+                      sx={{ backgroundColor: '#b3d468', fontSize: '12px' }}
+                    />
                   ))}
                 </Box>
               </Box>
@@ -564,6 +683,30 @@ export default function RegularMeetingPage() {
           </Grid>
         ))}
       </Grid>
+
+      <Box>
+        {/* Top 버튼 */}
+        {isTopVisible && (
+          <Fab
+            color="secondary"
+            size="small"
+            onClick={scrollToTop}
+            sx={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              zIndex: 1000,
+              backgroundColor: '#597445',
+              color: '#fff',
+              '&:hover': { backgroundColor: '#456333' },
+              display: 'block', // 항상 표시되도록
+            }}
+          >
+            ↑
+          </Fab>
+        )}
+      </Box>
+
     </Box>
   );
 }
