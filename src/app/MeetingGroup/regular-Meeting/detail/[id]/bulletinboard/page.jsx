@@ -53,9 +53,10 @@ import { getCookie } from 'cookies-next';
 const LOCAL_API_BASE_URL =
   process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL || 'http://localhost:8080/api';
 const IMAGE_BASE_URL =
-  process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'http://localhost:8080/uploads';
+  process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'http://localhost:8080/upload'; // 'uploads'에서 'upload'로 변경
 const BASE_URL =
   process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL || 'http://localhost:8080/api';
+  
 
 // ==================== 수정 모달 (기존 이미지 미리보기 X) ====================
 function EditModal({ open, post, onClose, onSuccess }) {
@@ -301,7 +302,7 @@ const TopStories = ({ topPosts, onStoryClick }) => {
           <Avatar
             src={
               post.images && post.images.length > 0
-                ? `http://localhost:8080${post.images[0]}`
+                ? `${IMAGE_BASE_URL}${post.images[0]}` // IMAGE_BASE_URL 사용
                 : '/images/default-post.jpg'
             }
             alt={post.user?.username || '익명'}
@@ -753,7 +754,7 @@ export default function BulletinBoardPage() {
                   post.images.map((imgUrl, idx) => (
                     <SwiperSlide key={idx}>
                       <img
-                        src={`http://localhost:8080${imgUrl}`}
+                        src={`http://localhost:8080${imgUrl}`} // IMAGE_BASE_URL 사용
                         alt={`img-${idx}`}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         loading="lazy"

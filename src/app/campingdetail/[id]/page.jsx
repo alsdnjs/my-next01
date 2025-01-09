@@ -1241,7 +1241,7 @@ const reserveClick = (id) => {
                                           </div>
                                           <div className="review-img">
                                             {item.file_name ? (
-                                              <img src={`http://localhost:8080/images/${item.file_name}`} alt="uploaded image"/>
+                                              <img src={`http://localhost:8080/upload/${item.file_name}`} alt="uploaded image"/>
                                             ) : (
                                               // 파일이 없으면 이미지 부분을 아예 렌더링하지 않음
                                               <p></p> // 이 부분은 선택 사항입니다. 파일이 없을 때의 대체 콘텐츠를 추가할 수 있습니다.
@@ -1308,7 +1308,7 @@ const reserveClick = (id) => {
                                               <div onClick={() => handleImageClick(item.review_idx)} style={{ cursor: 'pointer' }}>
                                                   {previewImage[item.review_idx] || item.file_name ? (
                                                   <Image
-                                                      src={previewImage[item.review_idx] || `http://localhost:8080/images/${item.file_name}`}
+                                                      src={previewImage[item.review_idx] || `http://localhost:8080/upload/${item.file_name}`}
                                                       alt="Uploaded Image"
                                                       width={300}
                                                       height={200}

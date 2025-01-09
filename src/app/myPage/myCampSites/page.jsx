@@ -73,7 +73,7 @@ function CampgroundSearchPage() {
 
   // 상세 페이지로 이동
   const handleDetailClick = (contentId) => {
-    router.push(`/admin/campgrounds/campingdetail/${contentId}`); // 디테일 페이지로 이동
+    router.push(`/campingdetail/${contentId}`); // 디테일 페이지로 이동
   };
 
   // 페이징
