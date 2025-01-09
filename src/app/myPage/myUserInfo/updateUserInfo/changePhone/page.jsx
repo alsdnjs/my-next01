@@ -49,7 +49,7 @@ export default function ChangePhone(){
             핸드폰 번호 변경
         </Typography>
 
-        <PhoneVerificationForm {...phoneVerification}/> 
+        <PhoneVerificationForm {...phoneVerification}/>
 
         <Button
             onClick={changePhone}
@@ -59,6 +59,7 @@ export default function ChangePhone(){
                 width:'510px',
                 padding: '8px 0px'
             }}
+            disabled={!phoneVerification.phoneVerified}
         >
             변경하기
         </Button>

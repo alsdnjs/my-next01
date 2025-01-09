@@ -123,10 +123,23 @@ const InquiryPage = () => {
                 </Typography>
               )}
               {question.file_idx ? (
-
-              <Link href="">
-                {question.file_name}
-              </Link>
+              <>
+                <Typography>
+                  {question.file_name}
+                </Typography>
+                <Box
+                  component="img"
+                  src={"http://localhost:8080/images/" + question.file_name}
+                  alt="Preview"
+                  sx={{
+                    width: 300,
+                    height: 300,
+                    objectFit: "cover",
+                    borderRadius: "8px", // 선택사항: 이미지 모서리를 둥글게
+                    border: "1px solid #ccc", // 선택사항: 테두리
+                  }}
+                />
+              </>
               ) : (
                 <Typography>첨부파일이 없습니다.</Typography>
               )}
@@ -157,7 +170,7 @@ const InquiryPage = () => {
       문의하기
     </Button>
   
-    <InquiryModal open={isModalOpen} onClose={handleClose} />
+    <InquiryModal open={isModalOpen} onClose={handleClose} setData={setData}/>
     <div className="pagination">
       <Stack spacing={2}>
         <Pagination
@@ -224,6 +237,11 @@ function InquiryModal({ open, onClose, reload }) {
       formData.append('file', file); // 파일을 FormData에 추가
     }
 
+    if(token == null || token == ""){
+      alert("다시 로그인해주세요.");
+      router.push("/");
+    }
+
     try {
       const response = await axios.post(`${LOCAL_API_BASE_URL}/myPage/sendInquiry`, formData, {
         headers: {
@@ -232,14 +250,15 @@ function InquiryModal({ open, onClose, reload }) {
         },
       })
       
-      console.log('문의가 성공적으로 제출되었습니다:', response.data),
-      alert('문의가 성공적으로 제출되었습니다:', response.data);
-      setContent("");
-      setFile(null);
-      setPreview("");
-      setSubject("");
-      reload
-      onClose();  // 제출 성공 후 모달을 닫음
+      if(response.data.success){
+        console.log('문의가 성공적으로 제출되었습니다:', response.data),
+        alert('문의가 성공적으로 제출되었습니다:', response.data);
+        setContent("");
+        setFile(null);
+        setPreview("");
+        setSubject("");
+        router.refresh();
+      }
 
     } catch (error) {
       console.error('문의 제출 중 오류 발생:', error);

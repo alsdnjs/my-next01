@@ -64,6 +64,16 @@ const useEmailVerification = () => {
 
   // 인증 코드 확인
   const verifyCode = async () => {
+    if (email === "") {
+      setError("이메일을 입력해주세요.");
+      alert("이메일을 입력해주세요.");
+      return;
+    }
+    if (!email.includes("@")) {
+      setError("올바른 이메일 형식을 입력해주세요.");
+      alert("올바른 이메일 형식을 입력해주세요.");
+      return;
+    }
     if (!verificationSent) {
       setError("인증 코드를 먼저 발송해주세요.");
       return;
@@ -94,6 +104,10 @@ const useEmailVerification = () => {
     emailVerified,
     error,
     countdown,
+    setEmail,
+    setVerificationSent,
+    setVerificationCode,
+    setEmailVerified,
     handleEmailChange,
     handleVerificationCodeChange,
     verifyCode,

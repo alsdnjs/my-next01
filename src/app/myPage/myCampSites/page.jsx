@@ -31,7 +31,7 @@ function CampgroundSearchPage() {
   const token = useAuthStore((state) => state.token);  // zustand에서 token 값 가져오기
   const router = useRouter();
 
-  const {getData, postData} = useApi(token, setFilteredData); // api 요청 처리리
+  const {getData, postData} = useApi(token, setFilteredData); // api 요청 처리
 
   // 페이지
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지

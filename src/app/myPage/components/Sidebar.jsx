@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {Box, Typography, List, ListItem, ListItemText, ListItemIcon, Badge, Avatar, Divider} from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import WorkIcon from "@mui/icons-material/Work";
-import SearchIcon from "@mui/icons-material/Search";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import PeopleIcon from "@mui/icons-material/People";
-import StarIcon from "@mui/icons-material/Star";
 
 const Sidebar = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const [selectedMenu, setSelectedMenu] = useState("회원정보");
   const [isSticky, setIsSticky] = useState(false);
   const [scrollY, setScrollY] = useState(0);
 
@@ -28,6 +27,13 @@ const Sidebar = () => {
     }
   };
 
+  const handleMenuClick = (path, name) => {
+    router.push(path);
+    setSelectedMenu(name);
+    console.log(path);
+    console.log(pathname);
+  };
+
   useEffect(() => {
     window.addEventListener('scroll', handleScroll);
 
@@ -41,10 +47,11 @@ const Sidebar = () => {
     {
       title: "Main",
       items: [
-        { name: "회원정보", path: "/myPage/myUserInfo", icon: <WorkIcon />, badge: 30 },
+        { name: "회원정보", path: "/myPage/myUserInfo", icon: <WorkIcon /> },
         { name: "내가 찜한 캠핑장", path: "/myPage/myCampSites", icon: <HomeIcon /> },
-        { name: "예약/이용 내역", path: "/myPage/myHistory", icon: <WorkIcon />, badge: 45 },
+        { name: "예약/이용 내역", path: "/myPage/myHistory", icon: <WorkIcon /> },
         { name: "1대1문의", path: "/myPage/myInquiryHistory", icon: <PeopleIcon /> },
+        { name: "내가 찜한 모임", path: "/myPage/myFavoriteMeetings", icon: <PeopleIcon /> },
         { name: "내가 작성한 리뷰", path: "/myPage/myReviews", icon: <PeopleIcon /> },
       ]
     }
@@ -58,7 +65,6 @@ const Sidebar = () => {
         borderRadius: "15px 0 0 15px",
         padding: 2,
         zIndex: 10,
-        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
         height: 'full',
         transition: 'top 0.3s ease', // 부드러운 애니메이션 효과
       }}
@@ -80,21 +86,20 @@ const Sidebar = () => {
           <List>
             {section.items.map((item) => (
               <ListItem
-                button
                 key={item.path}
                 sx={{
                   borderRadius: "10px",
                   backgroundColor:
-                    router.pathname === item.path ? "#007BFF" : "transparent",
-                  color: router.pathname === item.path ? "#FFFFFF" : "#333333",
+                    pathname === item.path ? "#a1eb81" : "transparent",
+                  color: pathname === item.path ? "#FFFFFF" : "#333333",
                   marginBottom: "5px",
                   "&:hover": {
-                    backgroundColor: router.pathname === item.path
-                      ? "#0056b3"
+                    backgroundColor: pathname === item.path
+                      ? "#59e61c"
                       : "#E9ECEF",
                   },
                 }}
-                onClick={() => router.push(item.path)}
+                onClick={() => handleMenuClick(item.path, item.name)}
               >
                 <ListItemIcon
                   sx={{
@@ -130,7 +135,7 @@ const Sidebar = () => {
           boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <Avatar src="/profile.jpg" alt="Jane Doe" sx={{ marginRight: "10px" }} />
+        <Avatar src="" alt="Jane Doe" sx={{ marginRight: "10px" }} />
         <Box>
           <Typography variant="body1" fontWeight="bold">
             Jane Doe

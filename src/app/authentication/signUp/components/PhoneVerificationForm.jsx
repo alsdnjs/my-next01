@@ -10,6 +10,7 @@ function PhoneVerificationForm({
     handleOtpChange,
     sendOtp,
     verifyOtp,
+    isVerified
 }){
     return(
         <Box

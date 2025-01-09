@@ -77,7 +77,7 @@ export default function CampingDetail({ params }) {
                 color: "white",
                 backgroundColor: "#333",
               }}
-              onClick={() => handleDeleteComment(comment.comment_idx)}
+              onClick={() => handleDelete(comment.comment_idx)}
             >
               삭제
             </Button>

@@ -12,8 +12,6 @@ export default function ChangeEmail() {
     const token = useAuthStore((state) => state.token);  // zustand에서 token 값 가져오기
     const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
     const emailVerificaion = useEmailVerification();
-    const [data, setData] = useState();
-    const { getData, postData } = useApi(token, setData);
     const router = useRouter();
     const emailVerified = emailVerificaion.emailVerified;
 
@@ -22,9 +20,6 @@ export default function ChangeEmail() {
     const ChangeEmail = async () => {
         const API_URL = `${LOCAL_API_BASE_URL}/users/updateEmail`;
         const email = emailVerificaion.email;
-
-        console.log(email);
-        
         
         try {
             const response = await axios.post(API_URL, {"email": email}, {
@@ -37,7 +32,11 @@ export default function ChangeEmail() {
                 alert("이메일이 성공적으로 변경되었습니다.");
                 router.back();
             } else {
-                alert("error");
+                alert(response.data.message);
+                emailVerificaion.setEmail("");
+                emailVerificaion.sendVerificationCode(false);
+                emailVerificaion.setVerificationSent(false);
+                emailVerificaion.setEmailVerified(false);
             }
         } catch (error) {
             alert("error : " + error);

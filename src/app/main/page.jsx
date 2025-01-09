@@ -190,44 +190,7 @@ export default function Main() {
           </SwiperSlide>
         </Swiper>
       </div>
-      <form onSubmit={handleSearch} className="search-form">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search ..."
-          className="search-input"
-        />
-        <select
-          value={selectedRegion}
-          onChange={(e) => setSelectedRegion(e.target.value)}
-          className="region-select"
-        >
-          <option value="">region</option>
-          {regions.map((region, i) => (
-            <option key={i} value={region}>
-              {region}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="category-select"
-        >
-          <option value="">category</option>
-          {categories.map((category, index) => (
-            <option key={index} value={category.name}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-
-        <button type="submit" className="search-button">
-          search
-        </button>
-      </form>
+    
       <div className="new-swiper-container">
         {/* 소개 텍스트 */}
         <div className="text-container">
