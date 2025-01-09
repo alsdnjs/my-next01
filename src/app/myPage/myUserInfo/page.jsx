@@ -17,7 +17,7 @@ function MyUserInfo(props) {
   const [open, setOpen] = useState(false); // 모달 열림 상태
   const [image, setImage] = useState(null); // 이미지 파일 상태
   const [preview, setPreview] = useState(null); // 이미지 미리보기 상태
-  let file_path = "http://localhost:8080/files/images/" +  userProfile.file_name;
+  let file_path = "http://localhost:8080/images/" +  userProfile.avatar_url;
   
   // 모달 열기
   const handleClickOpen = () => {
@@ -85,7 +85,7 @@ function MyUserInfo(props) {
     const formData = new FormData();
 
     formData.append('image', image); // 파일을 FormData에 추가
-    formData.append('prevImage', userProfile.file_name)
+    formData.append('prevImage', userProfile.avatar_url)
     
 
     try {
@@ -110,6 +110,8 @@ function MyUserInfo(props) {
             logout();
             router.push('/');
         })
+        console.log(userProfile);
+        
       }
       
 
@@ -154,7 +156,7 @@ function MyUserInfo(props) {
         {/* 프로필 사진 */}
         <Avatar
           alt="Profile Image"
-          src={"http://localhost:8080/images/" +  userProfile.file_name}
+          src={"http://localhost:8080/images/" +  userProfile.avatar_url}
           sx={{ width: 100, height: 100, margin: '0 auto' }}
           onClick={handleClickOpen}
         />
@@ -201,7 +203,7 @@ function MyUserInfo(props) {
             </div>
           ) : (
             <div style={{ marginTop: 10, alignItems:"center" }}>
-              <Avatar src={"http://localhost:8080/images/" +  userProfile.file_name} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
+              <Avatar src={"http://localhost:8080/images/" +  userProfile.avatar_url} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
             </div>
           )}
         </DialogContent>

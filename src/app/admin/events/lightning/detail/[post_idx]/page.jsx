@@ -248,18 +248,7 @@ export default function CampingDetail({ params }) {
                   목록으로
                 </Button>
               </Link>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{
-                  backgroundColor: "#5A9F33",
-                  color: "white",
-                  "&:hover": { backgroundColor: "#3E7A26" },
-                }}
-                onClick={() => handleDetailClick(data.post_idx)}
-              >
-                수정
-              </Button>
+              
               <Button
                 type="submit"
                 variant="contained"

@@ -21,7 +21,7 @@ const Sidebar = () => {
 
 
   const getMyMeetings = async () => {
-    const API_URL = `${LOCAL_API_BASE_URL}/myPage/getMyMeeyings`;
+    const API_URL = `${LOCAL_API_BASE_URL}/myPage/getMyMeetings`;
     const response = await axios.get(API_URL, { 
         headers: {
             Authorization: `Bearer ${token}`,

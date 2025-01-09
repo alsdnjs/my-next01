@@ -105,7 +105,7 @@ function CommonForm({agreement}, type) {
             address: address,
             address_detail: addressDetail,
             business_number: businessNumber,
-            business_ceo: ceoName,
+            business_name: ceoName,
             started_date: startedDate,
             type : userType
         };
