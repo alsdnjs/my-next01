@@ -216,7 +216,7 @@ const Comment = ({
         <Box sx={{ marginLeft: depth * 4, marginTop: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Avatar
-              src={comment.user?.avatar_url || "/images/default-avatar.jpg"}
+              src={`http://localhost:8080/upload/${comment.user?.avatar_url}` || "/images/default-avatar.jpg"}
               alt={comment.user?.username || "익명"}
               sx={{ width: 30, height: 30, marginRight: 1 }}
             />
@@ -298,7 +298,7 @@ const Comment = ({
                 }}
               >
                 <Avatar
-                  src={useAuthStore.getState().user?.avatar_url || "/images/default-avatar.jpg"}
+                  src={`http://localhost:8080/upload/${useAuthStore.getState().user?.avatar_url}` || "/images/default-avatar.jpg"}
                   alt={useAuthStore.getState().user?.username || "익명"}
                   sx={{ width: 24, height: 24 }}
                 />
@@ -828,7 +828,7 @@ export default function Detail({ postId, onClose, onAddComment }) {
           {/* 작성자 */}
           <Box sx={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
             <Avatar
-              src={post.user?.avatar_url || "/images/default-avatar.jpg"}
+              src={`http://localhost:8080/upload/${post.user?.avatar_url}` || "/images/default-avatar.jpg"}
               alt={post.user?.username || ""}
               sx={{ marginRight: "10px" }}
             />
@@ -907,7 +907,7 @@ export default function Detail({ postId, onClose, onAddComment }) {
           <Box sx={{ borderTop: "1px solid #ccc", paddingTop: "10px", marginTop: "auto", position: "relative" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Avatar
-                src={user?.avatar_url || "/images/default-avatar.jpg"}
+                src={`http://localhost:8080/upload/${user?.avatar_url}` || "/images/default-avatar.jpg"}
                 alt={user?.username || "익명"}
                 sx={{ width: 30, height: 30 }}
               />

@@ -142,6 +142,20 @@ export default function CampingDetail({ params }) {
                       <TableCell>작성일자</TableCell>
                       <TableCell>{data.created_at}</TableCell>
                     </TableRow>
+                    <TableRow>
+                      <TableCell>첨부파일</TableCell>
+                      <TableCell>{data.file_name? (
+                            // 이미지 파일인 경우 렌더링
+                            <img
+                              src={`http://localhost:8080/images/${data.file_name}`}
+                              alt={data.file_name}
+                              style={{ width: "300px", maxHeight: "300px" }}
+                            />
+                          ) : (
+                            // 이미지가 아닌 경우 다운로드 링크 제공
+                            <p>첨부파일이 없습니다.</p>
+                          )}</TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>

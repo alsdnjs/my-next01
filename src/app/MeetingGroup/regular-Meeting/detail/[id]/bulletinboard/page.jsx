@@ -302,7 +302,7 @@ const TopStories = ({ topPosts, onStoryClick }) => {
           <Avatar
             src={
               post.images && post.images.length > 0
-                ? `${IMAGE_BASE_URL}${post.images[0]}` // IMAGE_BASE_URL 사용
+                ? `http://localhost:8080/upload/${post.user?.avatar_url}` // IMAGE_BASE_URL 사용
                 : '/images/default-post.jpg'
             }
             alt={post.user?.username || '익명'}
@@ -721,7 +721,7 @@ export default function BulletinBoardPage() {
               {/* 작성자 */}
               <Box sx={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
                 <Avatar
-                  src={post.user?.avatar_url || '/images/default-avatar.jpg'}
+                  src={`http://localhost:8080/upload/${post.user?.avatar_url}` || '/images/default-avatar.jpg'}
                   alt={post.user?.username || ''}
                   sx={{ marginRight: '10px' }}
                 />

@@ -160,6 +160,7 @@ export default function Page() {
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
   const [adminName, setAdminName] = useState(""); // 관리자 이름 상태
   const [userIdx, setUserIdx] = useState("");
+  const [adminProfile, setAdminProfile] = useState(""); // 관리자 프로필
   const getUserIdx = async () => {
     try {
       const API_URL = `${LOCAL_API_BASE_URL}/users/profile`;
@@ -171,8 +172,10 @@ export default function Page() {
       if (response.data.success) {
         const userIdx = response.data.data.user_idx; // `user_idx` 추출
         const adminName = response.data.data.username;
+        const adminProfile = response.data.data.avatar_url;
         setAdminName(adminName);
         setUserIdx(userIdx);
+        setAdminProfile(adminProfile);
       } else {
         console.error("프로필 가져오기 실패:", response.data.message);
       }
@@ -260,9 +263,21 @@ export default function Page() {
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "center",
+                          overflow: "hidden"
                         }}
                       >
-                        <CameraAltIcon sx={{ color: "white" }} />
+                        {adminProfile ? (
+                          <img
+                              alt="Profile Image"
+                              src={"http://localhost:8080/images/" +  adminProfile}
+                              sx={{ width: 100, height: 100, 
+                                margin: '0 auto',  objectFit: "cover",  
+                                borderRadius: "50%", }}
+                          />
+                        ) : (
+
+                          <CameraAltIcon sx={{ color: "white" }} />
+                        )};
                       </Box>
                       <Typography
                         variant="body2"

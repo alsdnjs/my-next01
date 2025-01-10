@@ -19,7 +19,7 @@ const Footer = () => {
         <Box sx={{ display: 'flex', alignItems: 'center' , marginLeft: "30px"}}>
           <ForestIcon sx={{ fontSize: 30, color: '#ffffff'}} />
           <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 'bold' }}>
-            경빈이네 캠핑
+           Camplace
           </Typography>
         
           <Typography

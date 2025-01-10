@@ -168,15 +168,15 @@ export default function Main() {
             <div className="slide-content">
               <img src="./images/cam1.webp" alt="Slide 1" />
               <div className="slide-text">
-                Camplace: Where Gatherings Come to Life !
+                Camplace: Where Gatherings Come to Life !!
               </div>
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="slide-content">
-              <img src="./images/campingg2.jpg" alt="Slide 2" />
+              <img src="./images/campign0101.jpg" alt="Slide 2" />
               <div className="slide-text">
-                Camplace: Your Destination for Outdoor Memories !
+                Your place in nature !
               </div>
             </div>
           </SwiperSlide>

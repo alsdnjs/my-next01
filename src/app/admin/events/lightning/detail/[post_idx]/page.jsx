@@ -89,6 +89,10 @@ export default function CampingDetail({ params }) {
     ));
   };
 
+  const handleDetailClick = (post_idx) => {
+    router.push(`/admin/events/lightning/update/${post_idx}`); // 수정 페이지로 이동
+  };
+
   const handleDelete = async (comment_idx) => {
     const confirmDelete = window.confirm("정말로 이 댓글을 삭제하시겠습니까?");
     if (!confirmDelete) {
@@ -106,6 +110,28 @@ export default function CampingDetail({ params }) {
       }
     } catch (error) {
       console.error("댓글 삭제 요청 중 오류 발생:", error);
+      alert(`오류 발생: ${error.response?.data || error.message}`);
+    }
+  };
+
+  const handleDeleteMeeting = async (comment_idx) => {
+    const confirmDelete = window.confirm("정말로 이 모임을 삭제하시겠습니까?");
+    if (!confirmDelete) {
+      return; // 사용자가 취소 버튼을 누른 경우
+    }
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/meeting/meetings/delete/${comment_idx}`
+      );
+      if (response.status === 200) {
+        alert("모임이 성공적으로 삭제되었습니다.");
+        router.push("/admin/events/lightning/view");
+        fetchComments(); // 댓글 목록 갱신
+      } else {
+        alert(`모임 삭제에 실패했습니다: ${response.data}`);
+      }
+    } catch (error) {
+      console.error("모임 삭제 요청 중 오류 발생:", error);
       alert(`오류 발생: ${error.response?.data || error.message}`);
     }
   };
@@ -248,7 +274,18 @@ export default function CampingDetail({ params }) {
                   목록으로
                 </Button>
               </Link>
-              
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#5A9F33",
+                  color: "white",
+                  "&:hover": { backgroundColor: "#3E7A26" },
+                }}
+                onClick={() => handleDetailClick(data.post_idx)}
+              >
+                수정
+              </Button>
               <Button
                 type="submit"
                 variant="contained"
@@ -257,7 +294,7 @@ export default function CampingDetail({ params }) {
                   color: "white",
                   "&:hover": { backgroundColor: "#9A0007" },
                 }}
-                onClick={handleDelete}
+                onClick={() => handleDeleteMeeting(data.post_idx)} // post_idx 전달
               >
                 삭제
               </Button>
