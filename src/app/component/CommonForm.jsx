@@ -36,7 +36,7 @@ function CommonForm({agreement}, type) {
       
     // 사업자 등록번호 조회 훅
     const {
-      businessNumber, 
+      businessNumber,
       startedDate,
       ceoName,
       setBusinessNumber,

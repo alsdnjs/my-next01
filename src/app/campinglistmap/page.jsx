@@ -443,25 +443,7 @@ const Map = () => {
             marginLeft: "150px",
           }}
         >
-          {/* 나중에 db 나오면 기능구현 */}
-          <select
-            style={{
-              backgroundColor: "transparent",
-              padding: "10px",
-              fontSize: "16px",
-              borderRadius: "5px",
-              border: "1px solid white",
-              width: "120px",
-              marginBottom: "20px",
-              position: "absolute",
-              left: "30px",
-              top: "3px",
-            }}
-          >
-            <option value="">등록일순</option>
-            <option value="">리뷰순</option>
-            <option value="">찜 많은 순</option>
-          </select>
+         
           <button
             style={{
               backgroundColor: "#efefef",

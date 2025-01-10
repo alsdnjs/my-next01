@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from "react";
-import { Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, Accordion, AccordionSummary, AccordionDetails, Stack, Pagination, Avatar, CardMedia } from "@mui/material";
+import { Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, Accordion, AccordionSummary, AccordionDetails, Stack, Pagination, Avatar, CardMedia, Divider } from "@mui/material";
 import QuestionList from "./QuestionList.jsx";
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import useApi from "../../component/useApi.jsx";
@@ -147,9 +147,12 @@ const InquiryPage = () => {
           </Accordion>
         ))
       ) : (
-        <Typography variant="body1" color="textSecondary" textAlign="center">
-          표시할 데이터가 없습니다.
-        </Typography>
+        <>
+          <Divider sx={{mb:"20px"}}/>
+          <Typography variant="body1" color="textSecondary" textAlign="center">
+            표시할 데이터가 없습니다.
+          </Typography>
+        </>
       )}
     </Box>
   
@@ -253,6 +256,7 @@ function InquiryModal({ open, onClose, reload }) {
       if(response.data.success){
         console.log('문의가 성공적으로 제출되었습니다:', response.data),
         alert('문의가 성공적으로 제출되었습니다:', response.data);
+        onClose();
         setContent("");
         setFile(null);
         setPreview("");

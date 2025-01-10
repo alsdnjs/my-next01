@@ -12,7 +12,6 @@ import {
   Card,
   CardMedia,
   CardContent,
-  CardActions,
   IconButton,
   Drawer,
   List,
@@ -31,14 +30,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-
-// 아이콘 예시: 게시판, 사진첩
-import ArticleIcon from "@mui/icons-material/Article";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
-
 import axiosInstance from '../../../../utils/axiosInstance'; // axios 인스턴스 import
 import useAuthStore from 'store/authStore';
 import { getCookie } from "cookies-next";
+// 상단에 아이콘 관련 임포트 추가
+import { Icon } from '@iconify/react';
+import crownIcon from '@iconify-icons/mdi/crown';
 
 export default function MeetPage() {
   const BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL || "http://localhost:8080/api";
@@ -49,11 +46,13 @@ export default function MeetPage() {
   const meetingId = params.id || "";
   const token = useAuthStore((state) => state.token);
 
-  // 사이드 메뉴 드로어
+  // 토글로 사용하는 사이드 메뉴(햄버거) 관련
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // 모임 상세, 멤버
+  // 모임 상세 정보
   const [meeting, setMeeting] = useState(null);
+
+  // 멤버 목록
   const [members, setMembers] = useState([]);
 
   // 사용자 정보
@@ -73,15 +72,36 @@ export default function MeetPage() {
   const [editSubregion, setEditSubregion] = useState("");
   const [editPersonnel, setEditPersonnel] = useState(0);
 
-  // 리더만 수정/삭제용 메뉴
+  // 리더만 수정/삭제하기 위한 메뉴
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenu = Boolean(anchorEl);
 
   // 로딩 상태
   const [loading, setLoading] = useState(true);
 
+  // 메뉴 열기/닫기
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // 전체 멤버 보기 모달 열기/닫기
+  const openModal = () => {
+    setModalOpen(true);
+  };
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
+  // 사이드 드로어 열기/닫기
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
   // -----------------------------
-  // 1) 사용자 정보 가져오기
+  // 1) 유저 정보 가져오기
   // -----------------------------
   useEffect(() => {
     const token = getCookie("token");
@@ -97,6 +117,7 @@ export default function MeetPage() {
           Authorization: `Bearer ${token}`,
         },
       });
+
       if (response.data.success) {
         const fetchedUserIdx = response.data.data.user_idx;
         const fetchedUserName = response.data.data.username;
@@ -114,16 +135,18 @@ export default function MeetPage() {
   };
 
   // -----------------------------
-  // 2) 모임 상세 + 멤버 정보
+  // 2) 모임 상세 + 멤버 정보 가져오기
   // -----------------------------
   const fetchMeetingDetails = async () => {
     try {
+      // 백엔드에서 user_idx 파라미터가 필요할 수 있어 params로 전달
       const response = await axiosInstance.get(`/regular-meetings/detail/${meetingId}`, {
         params: { user_idx: userIdx },
       });
       if (response.data) {
         setMeeting(response.data);
       } else {
+        console.error("모임 상세 정보 요청 실패:", response.data);
         alert("모임 상세 정보를 불러오는 데 실패했습니다.");
         router.push('/MeetingGroup/regular-Meeting');
       }
@@ -140,6 +163,7 @@ export default function MeetPage() {
       if (response.data) {
         setMembers(response.data);
       } else {
+        console.error("모임 멤버 정보 요청 실패:", response.data);
         setMembers([]);
       }
     } catch (error) {
@@ -155,35 +179,37 @@ export default function MeetPage() {
       return;
     }
     if (!userIdx || !token) {
+      // userIdx와 token이 아직 설정되지 않았으면 대기
       return;
     }
 
+    // 모임 상세 및 멤버 정보
     fetchMeetingDetails();
     fetchMeetingMembers();
-  }, [meetingId, userIdx, token]);
+  }, [meetingId, userIdx, token, router]);
 
-  // 로딩 해제
+  // 로딩 상태 해제
   useEffect(() => {
     if (meeting !== null) {
       setLoading(false);
     }
   }, [meeting, members]);
 
-  // -----------------------------
-  // 3) 가입 / 탈퇴 / 수정 / 삭제
-  // -----------------------------
+  // 3) 가입 / 탈퇴 / 수정 / 삭제 로직
   const handleJoinMeeting = () => {
     axiosInstance.post(`/regular-meetings/detail/${meetingId}/join`, null, {
       params: { user_idx: userIdx },
     })
       .then(() => {
         alert("가입되었습니다!");
-        fetchMeetingDetails();
+        fetchMeetingDetails(); // 가입 후 다시 모임 정보 갱신
+        fetchMeetingMembers(); // 멤버 목록도 갱신
       })
       .catch((err) => {
         if (err.response?.status === 409) {
           alert(err.response.data); // "이미 가입된 회원입니다."
         } else {
+          console.error(err);
           alert("에러가 발생했습니다.");
         }
       });
@@ -191,12 +217,14 @@ export default function MeetPage() {
 
   const handleLeaveMeeting = () => {
     if (!confirm("정말 모임을 탈퇴하시겠습니까?")) return;
+
     axiosInstance.post(`/regular-meetings/detail/${meetingId}/leave`, null, {
       params: { user_idx: userIdx },
     })
       .then(() => {
         alert("모임을 성공적으로 탈퇴했습니다.");
         fetchMeetingDetails();
+        fetchMeetingMembers();
       })
       .catch((err) => {
         console.error("모임 탈퇴 실패:", err);
@@ -213,6 +241,7 @@ export default function MeetPage() {
     setEditSubregion(meeting.subregion || "");
     setEditPersonnel(meeting.personnel || 0);
 
+    // 기존 이미지가 있으면 미리보기
     if (meeting.profile_image) {
       setEditPreviewImage(`${IMAGE_BASE_URL}/${meeting.profile_image}`);
     } else {
@@ -222,8 +251,12 @@ export default function MeetPage() {
 
     setEditModalOpen(true);
   };
-  const closeEditModal = () => setEditModalOpen(false);
 
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+  };
+
+  // 실제 수정 요청
   const handleUpdateMeeting = async () => {
     if (!confirm("정말 수정하시겠습니까?")) return;
 
@@ -236,7 +269,7 @@ export default function MeetPage() {
       formData.append("personnel", editPersonnel);
       formData.append("user_idx", userIdx);
       formData.append("leader_idx", userIdx);
-      formData.append("profile_image", meeting.profile_image);
+      formData.append("profile_image", meeting.profile_image); // 기존 이미지 이름 유지
 
       if (editSelectedFile) {
         formData.append("file", editSelectedFile);
@@ -253,13 +286,14 @@ export default function MeetPage() {
       );
       alert("모임 수정 완료");
       setEditModalOpen(false);
-      fetchMeetingDetails();
+      fetchMeetingDetails(); // 수정 후 다시 모임 정보 불러오기
     } catch (error) {
       console.error("모임 수정 실패:", error);
       alert("수정 도중 오류가 발생했습니다.");
     }
   };
 
+  // 모임 삭제
   const handleDeleteMeeting = async () => {
     if (!confirm("정말 모임을 삭제하시겠습니까?")) {
       return;
@@ -276,40 +310,16 @@ export default function MeetPage() {
     }
   };
 
-  // 리더 메뉴 열기/닫기
-  const handleMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  // 파일 선택 시
+  // 4) 기타 함수들
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
       setEditSelectedFile(file);
-      setEditPreviewImage(URL.createObjectURL(file));
+      setEditPreviewImage(URL.createObjectURL(file)); // 미리보기
     }
   };
 
-  // -----------------------------
-  // 4) 기타 모달, 드로어
-  // -----------------------------
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
-
-  const openModal = () => {
-    setModalOpen(true);
-  };
-  const closeModal = () => {
-    setModalOpen(false);
-  };
-
-  // -----------------------------
   // 5) 렌더링
-  // -----------------------------
   if (loading) {
     return <Typography>Loading...</Typography>;
   }
@@ -317,7 +327,7 @@ export default function MeetPage() {
     return <Typography>Loading...</Typography>;
   }
 
-  // 모임장 프로필
+  // 모임장 프로필을 위한 임시 객체
   const host = {
     username: meeting.leader_username,
     name: meeting.name,
@@ -326,8 +336,9 @@ export default function MeetPage() {
     description: meeting.description,
   };
 
-  // 멤버 최대 5명까지만 미리보기
-  const displayedMembers = Array.isArray(members) ? members.slice(0, 5) : [];
+  // 멤버 표시(최대 5명까지)
+  const displayedMembers = Array.isArray(members) ? members.slice(0, 4) : [];
+  const totalMembersCount = Array.isArray(members) ? members.length + 1 : 1; // 리더 포함
   const remainingMembersCount = Array.isArray(members)
     ? members.length - displayedMembers.length
     : 0;
@@ -335,12 +346,10 @@ export default function MeetPage() {
   return (
     <Box sx={{ backgroundColor: "#f8f9fa", padding: "20px 0" }}>
       <Box sx={{ maxWidth: "800px", margin: "0 auto", padding: "0 20px" }}>
-        {/* =========================
-            (A) 우측 하단 햄버거 버튼
-        ========================== */}
+        {/* 1) 우측 하단 햄버거 버튼 */}
         <IconButton
           onClick={() => {
-            // 모임장 or 가입 멤버만 접근 가능
+            // 모임장 or 가입 멤버만 드로어 열기 가능
             if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
               handleDrawerToggle();
             } else {
@@ -384,7 +393,7 @@ export default function MeetPage() {
               flexDirection: "column",
             }}
           >
-            {/* 닫기 버튼 */}
+            {/* 드로어 닫기 버튼 */}
             <IconButton
               onClick={handleDrawerToggle}
               sx={{ display: "flex", justifyContent: "flex-end", margin: 1 }}
@@ -398,7 +407,6 @@ export default function MeetPage() {
                 { label: "게시판", href: `/MeetingGroup/regular-Meeting/detail/${meetingId}/bulletinboard` },
                 { label: "사진첩", href: `/MeetingGroup/regular-Meeting/detail/${meetingId}/photogallery` },
                 { label: "채팅", href: `/MeetingGroup/regular-Meeting/detail/${meetingId}/chat` },
-                
               ].map((item) => (
                 <Link key={item.label} href={item.href} passHref legacyBehavior>
                   <a style={{ textDecoration: "none" }}>
@@ -427,9 +435,7 @@ export default function MeetPage() {
           </Box>
         </Drawer>
 
-        {/* =========================
-            (B) 상단 배너
-        ========================== */}
+        {/*  2) 상단 메인 배너 */}
         <Box
           sx={{
             position: "relative",
@@ -443,7 +449,6 @@ export default function MeetPage() {
             borderRadius: "8px",
           }}
         >
-          {/* 프로필 박스 */}
           <Box
             sx={{
               position: "absolute",
@@ -479,9 +484,7 @@ export default function MeetPage() {
           </Box>
         </Box>
 
-        {/* =========================
-            (C) 모임 소개
-        ========================== */}
+        {/*  3) 모임 소개*/}
         <Box sx={{ mt: "70px", mb: 3, position: 'relative' }}>
           <Typography
             variant="h6"
@@ -489,6 +492,7 @@ export default function MeetPage() {
           >
             모임소개
           </Typography>
+
           {/* 리더 정보 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Avatar
@@ -497,18 +501,22 @@ export default function MeetPage() {
               sx={{ width: 50, height: 50 }}
             />
             <Box>
-              <Typography variant="subtitle1" fontWeight="bold" sx={{ color: "black" }}>
+              <Typography
+                variant="subtitle1"
+                fontWeight="bold"
+                sx={{ color: "black" }}
+              >
                 {meeting.leader_username}
               </Typography>
               <Typography variant="body2" sx={{ color: "black" }}>
                 * 장소: {meeting.region} · {meeting.subregion} <br />
-                * 정원: {members.length} / {meeting.personnel} <br />
+                * 정원: {totalMembersCount} / {meeting.personnel} <br />
                 * 내용: {meeting.description || "안녕하세요. 환영합니다."}
               </Typography>
             </Box>
           </Box>
 
-          {/* 리더 메뉴(수정/삭제) 아이콘 */}
+          {/* 리더 메뉴(수정/삭제) */}
           {userIdx && meeting && Number(userIdx) === Number(meeting.leader_idx) && (
             <Box sx={{ position: 'absolute', top: '160px' }}>
               <IconButton
@@ -545,9 +553,7 @@ export default function MeetPage() {
           )}
         </Box>
 
-        {/* =========================
-            (D) 멤버 영역
-        ========================== */}
+        {/*  4) 멤버 정보 */}
         <Box
           sx={{
             backgroundColor: "#eaffea",
@@ -580,7 +586,12 @@ export default function MeetPage() {
                   />
                 </Grid>
               ))
-            ) : null}
+            ) : (
+              // 멤버가 한 명도 없으면 아래처럼, 혹은 문구 빼도 무방
+              <Typography variant="body2" fontWeight="bold" sx={{ mt: 2, color: "black" }}>
+                아직 멤버가 없습니다.
+              </Typography>
+            )}
 
             {remainingMembersCount > 0 && (
               <Grid item>
@@ -598,7 +609,7 @@ export default function MeetPage() {
                     justifyContent: "center",
                     cursor: "pointer",
                   }}
-                  onClick={openModal} // 모달 열기
+                  onClick={openModal} // 클릭 시 전체 멤버 모달 열기
                 >
                   +{remainingMembersCount}
                 </Avatar>
@@ -606,13 +617,13 @@ export default function MeetPage() {
             )}
           </Grid>
 
-          {/* 가입/탈퇴 버튼 */}
           <Box sx={{ mt: 2 }}>
             {Number(userIdx) === Number(meeting.leader_idx) ? (
               <Typography variant="body2" fontWeight="bold" sx={{ color: "black" }}>
                 "{userName}" 모임장님, 환영합니다.
               </Typography>
             ) : meeting.member ? (
+              // 가입된 멤버인 경우
               <Box
                 sx={{
                   display: 'flex',
@@ -647,22 +658,33 @@ export default function MeetPage() {
                 </Button>
               </Box>
             ) : (
+              // 미가입자
               <>
-                <Typography variant="body2" fontWeight="bold" sx={{ color: "black" }}>
-                  "{host.name}" 모임에 가입해 다양한 추억들을 쌓아보세요!
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    mt: 1.5,
-                    backgroundColor: "#28a745",
-                    color: "white",
-                    "&:hover": { backgroundColor: "#218838" },
-                  }}
-                  onClick={handleJoinMeeting}
-                >
-                  가입하기
-                </Button>
+                {totalMembersCount >= meeting.personnel ? (
+                  <Typography variant="body2" fontWeight="bold" sx={{ color: "green" }}>
+                    "{host.name}" 모임이 정원에 도달했습니다.<br />
+                    다른 모임을 찾아보세요!
+                  </Typography>
+                ) : (
+                  <>
+                    <Typography variant="body2" fontWeight="bold" sx={{ color: "black" }}>
+                      "{host.name}" 모임에 가입해 다양한 추억들을 쌓아보세요!
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        mt: 1.5,
+                        backgroundColor: "#28a745",
+                        color: "white",
+                        "&:hover": { backgroundColor: "#218838" },
+                      }}
+                      onClick={handleJoinMeeting}
+                      disabled={totalMembersCount >= meeting.personnel}
+                    >
+                      가입하기
+                    </Button>
+                  </>
+                )}
               </>
             )}
           </Box>
@@ -694,171 +716,165 @@ export default function MeetPage() {
                 모든 멤버
               </Typography>
               <Grid container spacing={2}>
-                {Array.isArray(members) && members.length > 0 ? (
-                  members.map((member) => (
-                    <Grid item xs={4} sm={3} key={member.user_idx} sx={{ textAlign: 'center' }}>
-                      <Avatar
-                        src={`${IMAGE_BASE_URL}/${member.avatar_url}`}
-                        alt={member.username}
-                        sx={{ width: 60, height: 60, margin: '0 auto' }}
-                      />
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        {member.username}
-                      </Typography>
-                    </Grid>
-                  ))
-                ) : null}
-              </Grid>
-              <Box sx={{ textAlign: 'right', mt: 2 }}>
-                <Button
-                  variant="contained"
-                  onClick={closeModal}
-                  sx={{
-                    backgroundColor: "#28a745",
-                    "&:hover": { backgroundColor: "#218838" }
-                  }}
-                >
-                  닫기
-                </Button>
-              </Box>
-            </Box>
-          </Modal>
+      {/* 리더 표시 */}
+      <Grid item xs={4} sm={3} sx={{ textAlign: 'center' }}>
+        <Avatar
+          src={`${IMAGE_BASE_URL}/${meeting.leader_avatar_url}`}
+          alt={meeting.leader_username}
+          sx={{ width: 60, height: 60, margin: '0 auto' }}
+        />
+        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, marginLeft: 0.5 }}>
+          <Icon icon={crownIcon} color="#FFD700" width="16" height="16" />
+          <Typography variant="body2" sx={{ marginRight: 0.5 }}>
+            {meeting.leader_username}
+          </Typography>
         </Box>
+      </Grid>
 
-        {/* =========================
-            (E) 게시판 / 사진첩 카드
-        ========================== */}
-        <Box sx={{ mb: 4 }}>
-          <Grid container spacing={2} justifyContent="center">
-            {/* ------- (1) 게시판 카드 ------- */}
-            <Grid item xs={12} sm={6}>
-              <Card
-                sx={{
-                  cursor: "pointer",
-                  boxShadow: 2,
-                  transition: "transform 0.3s, box-shadow 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.02)",
-                    boxShadow: 4,
-                  },
-                }}
-                onClick={() => {
-                  if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
-                    router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/bulletinboard`);
-                  } else {
-                    alert("가입이 필요합니다.");
-                  }
-                }}
-              >
-                <CardMedia>
-                  <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                    <ArticleIcon sx={{ fontSize: 50, color: "#28a745" }} />
-                  </Box>
-                </CardMedia>
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" fontWeight="bold">
-                    게시판
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    자유롭게 글을 작성해보세요!
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ justifyContent: "center", pb: 2 }}>
-                  <Button
-                    variant="outlined"
-                    endIcon={<ArrowForwardIosIcon fontSize="small" />}
-                    sx={{
-                      fontWeight: "bold",
-                      color: "#28a745",
-                      borderColor: "#28a745",
-                      "&:hover": {
-                        backgroundColor: "#28a745",
-                        color: "#ffffff",
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // 부모 카드 클릭 막기
-                      if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
-                        router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/bulletinboard`);
-                      } else {
-                        alert("가입이 필요합니다.");
-                      }
-                    }}
-                  >
-                    더보기
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-
-            {/* ------- (2) 사진첩 카드 ------- */}
-            <Grid item xs={12} sm={6}>
-              <Card
-                sx={{
-                  cursor: "pointer",
-                  boxShadow: 2,
-                  transition: "transform 0.3s, box-shadow 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.02)",
-                    boxShadow: 4,
-                  },
-                }}
-                onClick={() => {
-                  if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
-                    router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/photogallery`);
-                  } else {
-                    alert("가입한 멤버만 접근 가능합니다.");
-                  }
-                }}
-              >
-                <CardMedia>
-                  <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                    <PhotoCameraIcon sx={{ fontSize: 50, color: "#28a745" }} />
-                  </Box>
-                </CardMedia>
-                <CardContent sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" fontWeight="bold">
-                    사진첩
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    소중한 추억을 사진으로 남겨보아요!
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ justifyContent: "center", pb: 2 }}>
-                  <Button
-                    variant="outlined"
-                    endIcon={<ArrowForwardIosIcon fontSize="small" />}
-                    sx={{
-                      fontWeight: "bold",
-                      color: "#28a745",
-                      borderColor: "#28a745",
-                      "&:hover": {
-                        backgroundColor: "#28a745",
-                        color: "#ffffff",
-                      },
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // 부모 카드 클릭 막기
-                      if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
-                        router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/photogallery`);
-                      } else {
-                        alert("가입한 멤버만 접근 가능합니다.");
-                      }
-                    }}
-                  >
-                    더보기
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
+      {/* 일반 멤버 표시 */}
+      {Array.isArray(members) && members.length > 0 ? (
+        members.map((member) => (
+          <Grid item xs={4} sm={3} key={member.user_idx} sx={{ textAlign: 'center' }}>
+            <Avatar
+              src={`${IMAGE_BASE_URL}/${member.avatar_url}`}
+              alt={member.username}
+              sx={{ width: 60, height: 60, margin: '0 auto' }}
+            />
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              {member.username}
+            </Typography>
           </Grid>
-        </Box>
+        ))
+      ) : (
+        <Typography>멤버가 없습니다.</Typography>
+      )}
+    </Grid>
+    <Box sx={{ textAlign: 'right', mt: 2 }}>
+      <Button
+        variant="contained"
+        onClick={closeModal}
+        sx={{
+          backgroundColor: "#28a745",
+          "&:hover": { backgroundColor: "#218838" }
+        }}
+      >
+        닫기
+      </Button>
+    </Box>
+  </Box>
+</Modal>
+    </Box>
+
+        {/* 5) 게시판 / 사진첩 2개 박스 가로 배치*/ }
+  <Box sx={{ mb: 4 }}>
+    <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+      {/* ------- (1) 게시판 박스 ------- */}
+      <Box
+        sx={{
+          flex: 1,
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+          boxShadow: 2,
+          padding: 2,
+          textAlign: "center",
+          cursor: "pointer",
+          "&:hover": { backgroundColor: "#f8f8f8" },
+        }}
+        onClick={() => {
+          if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
+            router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/bulletinboard`);
+          } else {
+            alert("가입이 필요합니다.");
+          }
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", color: "black", mb: 1 }}
+        >
+          게시판
+        </Typography>
+        <Button
+          variant="outlined"
+          endIcon={<ArrowForwardIosIcon fontSize="small" />}
+          sx={{
+            fontWeight: "bold",
+            color: "#28a745",
+            borderColor: "#28a745",
+            "&:hover": {
+              backgroundColor: "#28a745",
+              color: "#ffffff",
+            },
+          }}
+          onClick={(e) => {
+            e.stopPropagation(); // 부모 Box의 onClick이 먼저 실행되지 않도록
+            if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
+              router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/bulletinboard`);
+            } else {
+              alert("가입이 필요합니다.");
+            }
+          }}
+        >
+          더보기
+        </Button>
       </Box>
 
-      {/* =========================
-          (F) 모임 수정 모달
-      ========================== */}
-      <Dialog open={editModalOpen} onClose={closeEditModal} fullWidth maxWidth="sm">
+      {/* ------- (2) 사진첩 박스 ------- */}
+      <Box
+        sx={{
+          flex: 1,
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+          boxShadow: 2,
+          padding: 2,
+          textAlign: "center",
+          cursor: "pointer",
+          "&:hover": { backgroundColor: "#f8f8f8" },
+        }}
+        onClick={() => {
+          if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
+            router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/photogallery`);
+          } else {
+            alert("가입한 멤버만 접근 가능합니다.");
+          }
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", color: "black", mb: 1 }}
+        >
+          사진첩
+        </Typography>
+        <Button
+          variant="outlined"
+          endIcon={<ArrowForwardIosIcon fontSize="small" />}
+          sx={{
+            fontWeight: "bold",
+            color: "#28a745",
+            borderColor: "#28a745",
+            "&:hover": {
+              backgroundColor: "#28a745",
+              color: "#ffffff",
+            },
+          }}
+          onClick={(e) => {
+            e.stopPropagation(); // 부모 Box의 onClick이 먼저 실행되지 않도록
+            if (meeting.member || Number(userIdx) === Number(meeting.leader_idx)) {
+              router.push(`/MeetingGroup/regular-Meeting/detail/${meetingId}/photogallery`);
+            } else {
+              alert("가입한 멤버만 접근 가능합니다.");
+            }
+          }}
+        >
+          더보기
+        </Button>
+      </Box>
+    </Box>
+  </Box>
+      </Box >
+
+    {/* 6) 모임 수정 모달*/ }
+    <Dialog open = { editModalOpen } onClose = { closeEditModal } fullWidth maxWidth = "sm" >
         <DialogTitle>모임 수정하기</DialogTitle>
         <DialogContent>
           <TextField
@@ -884,7 +900,7 @@ export default function MeetPage() {
             </Box>
           )}
 
-          {/* 파일 선택 */}
+          {/* 파일 선택 버튼 */}
           <Box sx={{ mt: 2 }}>
             <Button variant="contained" component="label" color="success">
               새 프로필 사진 선택
@@ -941,7 +957,7 @@ export default function MeetPage() {
             수정하기
           </Button>
         </DialogActions>
-      </Dialog>
-    </Box>
+      </Dialog >
+    </Box >
   );
 }

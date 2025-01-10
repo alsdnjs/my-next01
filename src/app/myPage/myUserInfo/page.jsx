@@ -17,7 +17,7 @@ function MyUserInfo(props) {
   const [open, setOpen] = useState(false); // 모달 열림 상태
   const [image, setImage] = useState(null); // 이미지 파일 상태
   const [preview, setPreview] = useState(null); // 이미지 미리보기 상태
-  let file_path = "http://localhost:8080/images/" +  userProfile.avatar_url;
+  let file_path = "http://localhost:8080/images/" +  userProfile.file_name;
   
   // 모달 열기
   const handleClickOpen = () => {
@@ -79,7 +79,7 @@ function MyUserInfo(props) {
     }
   };
 
-  // 프로필 사진 변경 요청청
+  // 프로필 사진 변경 요청
   const updateProfileImage = async() => {
     const API_URL = `${LOCAL_API_BASE_URL}/myPage/updateProfileImage`;
     const formData = new FormData();
@@ -98,20 +98,22 @@ function MyUserInfo(props) {
 
       if(response.data.success){
         console.log('프로필이 성공적으로 업데이트 되었습니다:', response.data),
-        alert('프로필이 성공적으로 업데이트 되었습니다:', response.data);
+        
         setImage(null);
         setPreview("");
         getData(
           "/users/profile",           // url
           {},                         // 매개변수
-          ()=>{} ,                    // 성공 시 메서드
+          ()=>{
+            alert('프로필이 성공적으로 업데이트 되었습니다:', response.data);
+            setOpen(false);
+            setPreview(null);
+          } ,                    // 성공 시 메서드
           () => {                     // 실패 시 메서드
             alert("로그인해주세요.");
             logout();
             router.push('/');
         })
-        console.log(userProfile);
-        
       }
       
 
@@ -132,7 +134,6 @@ function MyUserInfo(props) {
           router.push('/');
       })
     }
-    console.log(file_path);
   }, [token]);
 
   const handleModifyClick = () => {
@@ -157,7 +158,7 @@ function MyUserInfo(props) {
         <Avatar
           alt="Profile Image"
           src={"http://localhost:8080/images/" +  userProfile.avatar_url}
-          sx={{ width: 100, height: 100, margin: '0 auto' }}
+          sx={{ width: 150, height: 150, margin: '0 auto' }}
           onClick={handleClickOpen}
         />
       </Box>
@@ -194,16 +195,20 @@ function MyUserInfo(props) {
       {/* 모달 */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>프로필 사진 변경</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{
+          display:"flex",
+          flexDirection:"column",
+          alignItems:"center"
+        }}>
           <input type="file" accept="image/*" onChange={handleImageChange} />
-          {/* 처음엔 원래 프로필 사진 나오고 다른 파일 선택시 변경됨됨 */}
+          {/* 처음엔 원래 프로필 사진 나오고 다른 파일 선택시 변경됨 */}
           {preview ? (
-            <div style={{ marginTop: 10, alignItems:"center" }}>
+            <div style={{ marginTop: "50px"}}>
               <Avatar src={preview} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
             </div>
           ) : (
-            <div style={{ marginTop: 10, alignItems:"center" }}>
-              <Avatar src={"http://localhost:8080/images/" +  userProfile.avatar_url} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
+            <div style={{ marginTop: 10}}>
+              <Avatar src={"http://localhost:8080/images/" +  userProfile.file_name} alt="Preview" style={{ width: 150, height: 150, objectFit: "cover" }}/>
             </div>
           )}
         </DialogContent>

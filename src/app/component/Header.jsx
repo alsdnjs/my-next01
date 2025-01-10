@@ -121,7 +121,7 @@ const Header = () => {
                   <PersonIcon className="icon" />
                 </Link>
               )}
-              <Link href="/" underline="none">
+              <Link href="/myPage/myHistory" underline="none">
                 <AssignmentTurnedInIcon className="icon" />
               </Link>
               <Link href="/" underline="none">
@@ -192,9 +192,13 @@ const Header = () => {
               </Box>
             )}
 
-            <Box className="appbar-logo">
-              <ForestOutlinedIcon  sx={{ fontSize: "40px", color: "#597445" }} />
-            </Box>
+<Box 
+      className="appbar-logo" 
+      onClick={() => router.push('/')} // 클릭 시 /로 이동
+      sx={{ cursor: 'pointer' }} // 커서를 포인터로 변경 (클릭 가능 표시)
+    >
+      <ForestOutlinedIcon sx={{ fontSize: "40px", color: "#597445" }} />
+    </Box>
 
             {!isSmallScreen && (
               <Box className="appbar-right-menu">
@@ -204,9 +208,18 @@ const Header = () => {
                 <Link href="/MeetingGroup/meeting" className="appbar-link">
                   Together
                 </Link>
-                <Link href="/myPage/myUserInfo" className="appbar-link">
+                <Typography
+                  onClick={goMyPage}
+                  className="appbar-link"
+                  sx={{
+                    cursor: 'pointer', // 기본 커서 스타일
+                    textDecoration: "none",
+                    color: "black",
+                    fontSize: "18px",
+                  }}
+                >
                   My Page
-                </Link>
+                </Typography>
               </Box>
             )}
           </Toolbar>

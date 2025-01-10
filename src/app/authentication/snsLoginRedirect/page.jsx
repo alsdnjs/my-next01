@@ -16,11 +16,13 @@ function page(props) {
     const id = urlParams.get('id');
     const user_idx = urlParams.get('user_idx');
     const firstLogin = urlParams.get('firstLogin');
+    const phone = urlParams.get('phone');
     const userInfo = {
       "username": username,
       "email": email,
       "id": id,
-      "user_idx": user_idx
+      "user_idx": user_idx,
+      "phone": phone
     }
     const token = urlParams.get('token');
     console.log(token);

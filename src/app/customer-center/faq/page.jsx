@@ -8,11 +8,11 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 
 export default function FAQPage() {
   const faqs = [
-    { question: "예약 최소 하고 싶어요.", answer: "최소 하루 전까지 예약 가능합니다." },
-    { question: "캠핑장에 Wi-Fi가 제공되나요?", answer: "일부 캠핑장에서 제공됩니다." },
-    { question: "결제는 어떤 방법이 가능한가요?", answer: "신용카드, 계좌이체, 간편결제(카카오페이, 네이버페이) 등이 가능합니다." },
-    { question: "예약 취소 및 환불 정책은 어떻게 되나요?", answer: "예약 취소는 최소 2일 전까지 가능합니다. 환불은 결제 수단에 따라 3~5일 정도 소요됩니다." },
-    { question: "반려동물 동반이 가능한가요?", answer: "일부 캠핑장은 반려동물 동반이 가능합니다. 캠핑장 별로 확인해 주세요." },
+    { question: "캠핑장을 추가 하고 싶어요.", answer: "저희 캠플레이스는 사업자 등록 후 사업자 로그인으로 하신 후에 고객센터에 캠핑장 등록 및 수정에 글작성 해주시면 확인 후 등록 해드립니다.." },
+    { question: "캠핑장에 Wi-Fi가 제공되나요 ?", answer: "일부 캠핑장에서 제공됩니다." },
+    { question: "결제는 어떤 방법이 가능한가요 ?", answer: "간편하게 TOSS를 이용하여 가능합니다." },
+    { question: "주변 정보를 확인 할 수 있나요 ?", answer: "저희 캠플레이스는 캠핑장 기준 5KM 이내 주변 약국을 알려주고 있습니다. " },
+    { question: "반려동물 동반이 가능한가요 ?", answer: "일부 캠핑장은 반려동물 동반이 가능합니다. 캠핑장 별로 확인해 주세요." },
   ];
 
   return (

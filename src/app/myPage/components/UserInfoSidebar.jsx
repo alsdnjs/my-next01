@@ -3,13 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {Box, Typography, List, ListItem, ListItemText, ListItemIcon, Badge, Avatar, Divider} from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
-import WorkIcon from "@mui/icons-material/Work";
-import SearchIcon from "@mui/icons-material/Search";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import PeopleIcon from "@mui/icons-material/People";
-import StarIcon from "@mui/icons-material/Star";
-import MyUserInfo from "../myUserInfo/page";
+
 import axios from "axios";
 import useAuthStore from "../../../../store/authStore";
 

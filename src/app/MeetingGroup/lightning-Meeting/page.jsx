@@ -69,7 +69,7 @@ export default function LightningMeetingPage() {
     } else {
       // user_idx가 없을 경우 로그인 페이지로 리다이렉트
       alert("로그인이 필요합니다.");
-      router.push("/authentication/signIn");
+      router.push("/authentication/login");
     }
   }, [router]);
 

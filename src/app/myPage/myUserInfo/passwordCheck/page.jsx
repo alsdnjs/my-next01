@@ -37,11 +37,12 @@ function page(props) {
     }
 
     try {
-      const response = await axios.post(API_URL, password, {
+      const response = await axios.post(API_URL, {password}, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json', // JSON 형식 명시
-        }
+        },
+        params: {"password":password}
       });
       console.log(response.data);
       if(response.data.success){

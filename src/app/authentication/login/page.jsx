@@ -1,6 +1,4 @@
 "use client"
-
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Grid from "@mui/material/Grid";
@@ -16,6 +14,7 @@ import InputForm from "../../component/InputForm";
 // zustand store 호출
 import useAuthStore from '../../../../store/authStore';
 import axios from "axios";
+import ForestOutlinedIcon from "@mui/icons-material/ForestOutlined";
 
 
 
@@ -31,6 +30,11 @@ const SignInForm = () => {
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
+  const [rememberMe, setRememberMe] = useState(false);
+  
+  useEffect(() => {
+    console.log(rememberMe);
+  }, [rememberMe])  
 
   // 텍스트필드 초기화
   const initMvo = {
@@ -45,6 +49,18 @@ const SignInForm = () => {
 
   //사용자 정보
   const [mvo, setMvo] = useState(initMvo);
+
+  useEffect(() => {
+    // "아이디 저장"이 체크되어 있을 경우, localStorage에서 아이디를 가져와서 입력란에 채웁니다.
+    const savedId = localStorage.getItem('id');
+    if (savedId) {
+      setMvo({
+        id:savedId,
+        password: ""
+      });
+      setRememberMe(true);
+    }
+  }, []);
 
   // 로그인 처리
   // 서버에서 sendRedirect로 넘어오는 값을 받아서 로그인 처리
@@ -62,6 +78,7 @@ const SignInForm = () => {
         router.push("/");
     }
   }, [login, router])
+  
 
   function changeMvo(e) {
     const { name, value } = e.target;
@@ -71,6 +88,21 @@ const SignInForm = () => {
   }
 
   function goServer() {
+    if (rememberMe) {
+      // "아이디 저장"이 체크되어 있다면 localStorage에 아이디를 저장합니다.
+      localStorage.setItem('id', mvo.id);
+    } else {
+      // "아이디 저장"이 체크되지 않았다면 localStorage에서 아이디를 삭제합니다.
+      localStorage.removeItem('id');
+    }
+
+    const searchParams = new URLSearchParams(window.location.search);
+    // 어떤 경로로 로그인 페이지에 왔는가?
+    let from = searchParams.get('from');
+    // 경로가 없으면 메인페이지로
+    if(from == null){
+      from = "/";
+    }
     const API_URL = `${LOCAL_API_BASE_URL}/users/login`;
     console.log(mvo);
     
@@ -78,30 +110,24 @@ const SignInForm = () => {
     .then(response => {
       console.log(response.data);
       console.log(mvo);
-      const data = response.data;
-      if (data.success) {
-        alert(data.message);
-        login(data.data, data.token);
-        router.push('/');
+      if (response.data.success) {
+        alert(response.data.message);
+        login(response.data.data, response.data.token);
+        // 원래 가고자 했던 경로로 넘어간다.
+        router.push(`/${from}`);
       } else {
-        alert(data.message);
+        alert(response.data.message);
         setMvo(initMvo);
       }
     });
   }
-  
-  // 회원가입 페이지로 이동
-  const handleSignup = () => {
-    router.push("/signUp");  // 회원가입 페이지로 이동
-  };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      // e.preventDefault(); // 기본 Enter 동작 막기 (필요시)
+      goServer();
+      console.log("keydown");
+    }
   };
 
 
@@ -129,15 +155,14 @@ const SignInForm = () => {
       >
         <Grid item xs={12} md={12} lg={12} xl={12} >
           <Box>
-            <Typography as="h1" fontSize="28px" fontWeight="700" mb="5px">
-              Sign In{" "}
-              <Image
-                src="/images/favicon.png"
-                alt="favicon"
-                className={styles.favicon}
-                width={30}
-                height={30}
-              />
+            <Typography as="h1" fontSize="28px" fontWeight="700" mb="5px" sx={{
+              display:"flex",
+              textAlign:"center",
+              alignItems:"center",
+              justifyContent:"center"
+            }}>
+              Sign In{"  "}
+              <ForestOutlinedIcon sx={{ fontSize: "40px", color: "#597445", ml:"10px" }} />
             </Typography>
 
             <Typography fontSize="15px" mb="30px">
@@ -153,30 +178,24 @@ const SignInForm = () => {
               <span>or</span>
             </div>
 
-            <Box component="form" noValidate onSubmit={handleSubmit}>
+            <Box component="form" noValidate>
               <Box
-                sx={{
-                  background: "#fff",
-                  padding: "30px 20px",
-                  borderRadius: "10px",
-                  mb: "20px"
-                }}
+                sx={{background: "#fff", padding: "30px 20px", borderRadius: "10px", mb: "20px"}}
                 className="bg-black"
               >
                 <Grid container alignItems="center" spacing={2}>
 
                   <InputForm
-                    label="아이디"
-                    name='id'
+                    label="아이디" name='id'
                     value={mvo.id}
                     onChange={changeMvo}
+                    onKeyDown={handleKeyDown}
                   />
                   <InputForm
-                    label="비밀번호"
-                    type="password"
-                    name='password'
+                    label="비밀번호" type="password" name='password'
                     value={mvo.password}
                     onChange={changeMvo}
+                    onKeyDown={handleKeyDown}
                   />
                 </Grid>
               </Box>
@@ -185,7 +204,7 @@ const SignInForm = () => {
                 <Grid item xs={6} sm={6}>
                   <FormControlLabel
                     control={
-                      <Checkbox value="allowExtraEmails" color="primary" />
+                      <Checkbox checked={rememberMe} color="primary" onChange={(e) => setRememberMe(e.target.checked)}/>
                     }
                     label="Remember me."
                   />
@@ -193,7 +212,13 @@ const SignInForm = () => {
 
                 <Grid item xs={6} sm={6} textAlign="end">
                   <Link
-                    href="/authentication/forgotIdAndPassword"
+                    href="/authentication/forgotId"
+                    className="primaryColor text-decoration-none"
+                  >
+                    Forgot your ID?
+                  </Link><br/>
+                  <Link
+                    href="/authentication/forgotPassword"
                     className="primaryColor text-decoration-none"
                   >
                     Forgot your password?
@@ -202,18 +227,9 @@ const SignInForm = () => {
               </Grid>
 
               <Button
-                type="submit"
                 fullWidth
                 variant="contained"
-                sx={{
-                  mt: 2,
-                  textTransform: "capitalize",
-                  borderRadius: "8px",
-                  fontWeight: "500",
-                  fontSize: "16px",
-                  padding: "12px 10px",
-                  color: "#fff !important",
-                }}
+                sx={{ mt: 2, textTransform: "capitalize", borderRadius: "8px", fontWeight: "500", fontSize: "16px", padding: "12px 10px", color: "#fff !important"}}
                 onClick={goServer}
               >
                 Sign In

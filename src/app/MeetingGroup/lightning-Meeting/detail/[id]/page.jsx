@@ -34,6 +34,8 @@ import PeopleIcon from "@mui/icons-material/People";
 import { motion, AnimatePresence } from "framer-motion";
 import Picker from "emoji-picker-react";
 
+const IMAGE_BASE_URL =
+  process.env.NEXT_PUBLIC_IMAGE_BASE_URL; // 'uploads'에서 'upload'로 변경
 // Styled Components
 const CommentContainer = styled(Box)(({ theme }) => ({
   padding: "5px 0",
@@ -89,6 +91,7 @@ export default function MeetingDetailPage() {
   const router = useRouter();
   const [userIdx, setUserIdx] = useState(null);
   const [userId, setUserId] = useState("Unknown");
+  const [avatar_url, setAvatar_url] = useState(null);
   const [meeting, setMeeting] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -124,11 +127,13 @@ export default function MeetingDetailPage() {
     const authStorage = localStorage.getItem("auth-storage");
     let storedUserIdx = null;
     let storedUserId = "Unknown";
+    let storedAvatar_url=null;
     if (authStorage) {
       try {
         const authData = JSON.parse(authStorage);
         storedUserIdx = authData?.state?.user?.user_idx;
         storedUserId = authData?.state?.user?.id || "Unknown";
+        storedAvatar_url = authData?.state?.user?.avatar_url || "Unknown";
         console.log("Extracted user_idx from auth-storage:", storedUserIdx);
         console.log("Extracted user_id from auth-storage:", storedUserId);
       } catch (error) {
@@ -139,9 +144,10 @@ export default function MeetingDetailPage() {
     if (storedUserIdx) {
       setUserIdx(parseInt(storedUserIdx, 10));
       setUserId(storedUserId);
+      setAvatar_url(storedAvatar_url);
     } else {
       alert("로그인이 필요합니다.");
-      router.push("/authentication/signIn");
+      router.push("/authentication/login");
     }
   }, [router]);
 
@@ -567,6 +573,7 @@ export default function MeetingDetailPage() {
                 {!isReply && (
                   // 메인 댓글 입력창의 프로필 사진 추가
                   <Avatar
+                    src={`${IMAGE_BASE_URL}/${comment.avatar_url}`}
                     sx={{
                       marginRight: "16px",
                       bgcolor: "#1976d2",
@@ -587,6 +594,7 @@ export default function MeetingDetailPage() {
                 {isReply && (
                   // 대댓글 아바타 크기 조절 및 아이콘 추가
                   <Avatar
+                    src={`${IMAGE_BASE_URL}/${comment.avatar_url}`}
                     sx={{
                       marginRight: "12px",
                       bgcolor: "#1976d2",
@@ -688,6 +696,7 @@ export default function MeetingDetailPage() {
                           }}
                         >
                           <Avatar
+                          src={`${IMAGE_BASE_URL}/${comment.avatar_url}`}
                             sx={{
                               marginRight: "16px",
                               bgcolor: "#ffffff",
@@ -948,6 +957,7 @@ export default function MeetingDetailPage() {
             <Box sx={{ display: "flex", alignItems: "center" }}>
               {/* 메인 댓글 입력창의 프로필 사진 다시 표시 */}
               <Avatar
+                src={`${IMAGE_BASE_URL}/${avatar_url}`}
                 sx={{
                   marginRight: "16px",
                   bgcolor: "#1976d2",

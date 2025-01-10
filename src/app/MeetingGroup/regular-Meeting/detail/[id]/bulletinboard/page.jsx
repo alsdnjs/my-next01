@@ -680,44 +680,47 @@ export default function BulletinBoardPage() {
               className={styles.postCard}
               onClick={() => handleCardClick(post)}
             >
-              {/* 수정/삭제 아이콘 */}
-              <IconButton
-                sx={{ position: 'absolute', top: '5px', right: '5px' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleMoreClick(e, post.board_idx);
-                }}
-              >
-                <MoreVertIcon />
-              </IconButton>
-              {/* 펼쳐지는 메뉴 */}
-              <MuiMenu
-                anchorEl={anchorEls[post.board_idx] || null}
-                open={Boolean(anchorEls[post.board_idx])}
-                onClose={() => handleMoreClose(post.board_idx)}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              >
-                <MuiMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleMoreClose(post.board_idx);
-                    handleEditOpen(post);
-                  }}
-                >
-                  수정
-                </MuiMenuItem>
-                <MuiMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleMoreClose(post.board_idx);
-                    handleDeletePost(post.board_idx);
-                  }}
-                >
-                  삭제
-                </MuiMenuItem>
-              </MuiMenu>
-
+              {/* 0110 경빈 추가: 작성자일 경우에만 수정/삭제 아이콘 표시 /}
+              {post.user?.user_idx === userIdx && (
+                <>
+                  {/ 수정/삭제 아이콘 /}
+                  <IconButton
+                    sx={{ position: 'absolute', top: '5px', right: '5px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMoreClick(e, post.board_idx);
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                  {/ 펼쳐지는 메뉴 */}
+                  <MuiMenu
+                    anchorEl={anchorEls[post.board_idx] || null}
+                    open={Boolean(anchorEls[post.board_idx])}
+                    onClose={() => handleMoreClose(post.board_idx)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  >
+                    <MuiMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMoreClose(post.board_idx);
+                        handleEditOpen(post);
+                      }}
+                    >
+                      수정
+                    </MuiMenuItem>
+                    <MuiMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMoreClose(post.board_idx);
+                        handleDeletePost(post.board_idx);
+                      }}
+                    >
+                      삭제
+                    </MuiMenuItem>
+                  </MuiMenu>
+                  
               {/* 작성자 */}
               <Box sx={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
                 <Avatar

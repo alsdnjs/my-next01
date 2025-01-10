@@ -1,5 +1,5 @@
 "use client"
-import { Avatar, Box, Button, Pagination, Paper, Stack, SvgIcon, Typography } from '@mui/material';
+import { Avatar, Box, Button, Divider, Pagination, Paper, Stack, SvgIcon, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import useAuthStore from '../../../../store/authStore';
 import { useRouter } from 'next/navigation';
@@ -98,7 +98,7 @@ const MyReviews = () => {
                     {item.facltNm}
                   </h1>
                   <Box sx={{display:"flex", mb:"20px"}}>
-                    <Typography>내 평점 :  </Typography><RatingStars rating={4}/>
+                    <Typography>내 평점 :  </Typography><RatingStars rating={item.rating}/>
                   </Box>
                   <Typography>
                   <Typography>내 평가글 :  </Typography><Box>{item.content}</Box>
@@ -112,7 +112,12 @@ const MyReviews = () => {
             </Paper>
           ))
         ) : (
-          <p style={{ color: "black" }}>조건에 맞는 캠핑장이 없습니다.</p>
+          <>
+          <Divider sx={{mb:"20px", mt:"20px"}}/>
+          <Typography sx={{mt:"20px"}}>
+              내가 작성한 후기가 없습니다.
+          </Typography>
+      </>
         )}
         <div className="pagination">
           <Stack spacing={2}>

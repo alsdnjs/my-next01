@@ -1,10 +1,10 @@
 "use client"
 import React, { useState } from "react";
-import { Button, TextField, Box, Typography, Container, Alert } from "@mui/material";
-import InputForm from "../../component/InputForm";
+import { Button, TextField, Box, Typography, Container, Alert, Grid } from "@mui/material";
+
 import useEmailVerification from "../signUp/hooks/useEmailVerification";
 import EmailVerificationForm from "../signUp/components/EmailVerificaionForm";
-import useAuthStore from "../../../../store/authStore";
+
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +12,7 @@ export default function FindIdAndPasswordPage() {
   const emailVerification = useEmailVerification();
   const LOCAL_API_BASE_URL = process.env.NEXT_PUBLIC_LOCAL_API_BASE_URL;
   const [data, setData] = useState();
+  const [id, setId] = useState();
   const router = useRouter();
 
   const handleFindId = () => {
@@ -46,10 +47,11 @@ export default function FindIdAndPasswordPage() {
     <Container maxWidth="xs" sx={{display:"flex", flexDirection:"row", justifyContent:"center"}}>
       <Box
         sx={{
-          display: "flex", flexDirection: "column", alignItems: "center", marginTop: 5, padding: 3, minWidth:"500px",
+          display: "flex", flexDirection: "column", alignItems: "center", marginTop: 5, padding: 3, minWidth: "400px",
           border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#f9f9f9", mr:"50px"
         }}
       >
+        
         <Typography variant="h5" gutterBottom>
           아이디 찾기
         </Typography>
@@ -67,41 +69,6 @@ export default function FindIdAndPasswordPage() {
           sx={{ marginTop: 2 }}
         >
           아이디 찾기
-        </Button>
-
-        {/* 뒤로 가기 버튼 */}
-        <Button
-          variant="outlined"
-          fullWidth
-          sx={{ marginTop: 1 }}
-          onClick={() => window.history.back()}
-        >
-          뒤로 가기
-        </Button>
-      </Box>
-      <Box
-        sx={{
-          display: "flex", flexDirection: "column", alignItems: "center", marginTop: 5, padding: 3, minWidth:"500px",
-          border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#f9f9f9",
-        }}
-      >
-        <Typography variant="h5" gutterBottom>
-          비밀번호 찾기
-        </Typography>
-
-        <EmailVerificationForm {...emailVerification}/>
-
-
-        {/* 비밀번호 찾기 버튼 */}
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleFindId}
-          disabled={!emailVerification.emailVerified}
-          sx={{ marginTop: 2 }}
-        >
-          비밀번호 찾기
         </Button>
 
         {/* 뒤로 가기 버튼 */}

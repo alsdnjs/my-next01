@@ -1,5 +1,5 @@
 "use client"
-import { Avatar, AvatarGroup, Box, Chip, Grid, Paper, Typography } from '@mui/material';
+import { Avatar, AvatarGroup, Box, Chip, Divider, Grid, Paper, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react'
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -52,10 +52,10 @@ export default function MyFavoriteMeetings() {
     return (
         <div>
         <Typography variant="h5">내가 찜한 모임</Typography>
-      {/* 모임 카드 */}
-        <Grid container spacing={3} justifyContent="center">
-            {data.map((data, index) => (
-                <Grid item key={data.meeting_idx}>
+        {/* 모임 카드 */}
+        <Grid spacing={3} justifyContent="center" sx={{m:"20px", display:"flex", maxWidth:"1000px", flexWrap:"wrap"}}>
+            {data && data.length > 0 ? (data.map((data, index) => (
+                <Grid item key={index} sx={{m:"20px"}}>
                     <Paper
                         elevation={3}
                         onClick={() => handleCardClick(data.meeting_idx)}
@@ -65,7 +65,6 @@ export default function MyFavoriteMeetings() {
                             height: '150px',
                             display: 'flex',
                             alignItems: 'center',
-                            mt:"50px",
                             padding: '16px',
                             backgroundColor: data.favorites_idx ? '#ffe5b4' : '#f5eedc',
                             color: data.favorites_idx ? '#704C2E' : '#595959',
@@ -79,92 +78,97 @@ export default function MyFavoriteMeetings() {
                             },
                         }}
                     >
-                {/* 하트 아이콘 */}
-                <Box
-                    onClick={(e) => {
-                        toggleLikesDelete(data.meeting_idx);
-                    }}
-                    sx={{
-                        position: 'absolute',
-                        top: '10px',
-                        left: '10px',
-                        cursor: 'pointer',
-                        zIndex: 10,
-                        animation: data.favorites_idx ? 'likeAnimation 0.3s ease-in-out' : 'none',
-                    }}
-                >
-                    {data.favorites_idx ? <FavoriteBorderIcon sx={{ backgroundColor: 'red' }} /> :<FavoriteIcon/>  }
-                </Box>
-
-                {/* 모임 이미지 */}
-                <Box
-                    component="img"
-                    src={`${BASE_URL}/images/${data.profile_image}`}  // {meeting.profile_image}
-                    alt="모임 대표 이미지"
-                    sx={{
-                        width: '140px',
-                        height: '140px',
-                        borderRadius: '8px',
-                        objectFit: 'cover',
-                        marginRight: '16px',
-                        flexShrink: 0,
-                    }}
-                    // onError={(e) => { e.target.src = '/images/camping2.png'; }} // 기본 이미지 설정
-                />
-                {/* 모임 설명 */}
-                <Box
-                    sx={{
-                    width: 'calc(100% - 146px)',
-                    overflow: 'hidden',
-                    }}
-                >
-                    <Typography variant="h6"
-                    sx={{
-                        fontWeight: 'bold',
-                        marginBottom: '8px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}
+                    {/* 하트 아이콘 */}
+                    <Box
+                        onClick={(e) => {
+                            toggleLikesDelete(data.meeting_idx);
+                        }}
+                        sx={{
+                            position: 'absolute',
+                            top: '10px',
+                            left: '10px',
+                            cursor: 'pointer',
+                            zIndex: 10,
+                            animation: data.favorites_idx ? 'likeAnimation 0.3s ease-in-out' : 'none',
+                        }}
                     >
-                    {data.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                    {data.region} · {data.subregion}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                    {data.created_at}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ marginRight: '8px' }}>
-                        정원: {Array.isArray(data.membersAvatar) ? data.membersAvatar.length : 0} /{data.personnel}
-                    </Typography>
-                    <AvatarGroup max={4}>
-                        {/* {Array.isArray(meeting.membersAvatar) &&
-                        meeting.membersAvatar
-                            .sort(() => Math.random() - 0.5)
-                            .slice(0, 4)
-                            .map((mem) => (
-                            <Avatar key={mem.user_idx || mem.avatar_url} src={`${IMAGE_BASE_URL}/${mem.avatar_url}`} />
-                            ))} */}
+                        {data.favorites_idx ? <FavoriteBorderIcon sx={{ backgroundColor: 'red' }} /> :<FavoriteIcon/>  }
+                    </Box>
 
-                    </AvatarGroup>
-                    </Box>
-                    <Box sx={{ marginTop: '8px', display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {Array.isArray(data.hashtags) && data.hashtags.map((tagObj) => (
-                        <Chip
-                        key={tagObj.hashtag_idx || tagObj.name} // 고유한 키 사용
-                        label={tagObj.name}
-                        sx={{ backgroundColor: '#b3d468', fontSize: '12px' }}
-                        />
-                    ))}
-                    </Box>
-                </Box>
-                </Paper>
-            </Grid>
-            ))}
+                    {/* 모임 이미지 */}
+                    <Box
+                        component="img"
+                        src={`${BASE_URL}/images/${data.profile_image}`}  // {meeting.profile_image}
+                        alt="모임 대표 이미지"
+                        sx={{
+                            width: '140px',
+                            height: '140px',
+                            borderRadius: '8px',
+                            objectFit: 'cover',
+                            marginRight: '16px',
+                            flexShrink: 0,
+                        }}
+                        // onError={(e) => { e.target.src = '/images/camping2.png'; }} // 기본 이미지 설정
+                    />
+                    {/* 모임 설명 */}
+                    <Box
+                        sx={{
+                        width: 'calc(100% - 146px)',
+                        overflow: 'hidden',
+                        }}
+                    >
+                        <Typography variant="h6"
+                        sx={{
+                            fontWeight: 'bold',
+                            marginBottom: '8px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                        >
+                        {data.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                        {data.region} · {data.subregion}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                        {data.created_at}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                            
+                            <AvatarGroup max={4}>
+                                {/* {Array.isArray(meeting.membersAvatar) &&
+                                meeting.membersAvatar
+                                    .sort(() => Math.random() - 0.5)
+                                    .slice(0, 4)
+                                    .map((mem) => (
+                                    <Avatar key={mem.user_idx || mem.avatar_url} src={`${IMAGE_BASE_URL}/${mem.avatar_url}`} />
+                                    ))} */}
+
+                            </AvatarGroup>
+                        </Box>
+                            <Box sx={{ marginTop: '8px', display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                {Array.isArray(data.hashtags) && data.hashtags.map((tagObj) => (
+                                    <Chip
+                                    key={tagObj.hashtag_idx || tagObj.name} // 고유한 키 사용
+                                    label={tagObj.name}
+                                    sx={{ backgroundColor: '#b3d468', fontSize: '12px' }}
+                                    />
+                                ))}
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Grid>
+            ))) : (
+                <>
+                    <Divider sx={{mb:"20px"}}/>
+                    <Typography sx={{mt:"20px"}}>
+                        찜한 모임이 없습니다.
+                    </Typography>
+                </>
+            )}
         </Grid>
 
-    </div>
+        </div>
     )
 }

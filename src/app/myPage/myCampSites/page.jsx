@@ -62,7 +62,8 @@ function CampgroundSearchPage() {
       })
       if(response.data.success){
         alert("성공적으로 삭제되었습니다.");
-        getData();
+        // contentId와 일치하지 않는 항목만 남기기
+      setFilteredData(filteredData.filter((item) => item.contentId !== contentId));
       } else {
 
       }
@@ -182,7 +183,7 @@ function CampgroundSearchPage() {
                         borderRadius: "5px"
                       }}
                     >
-                      찜 (예시)개
+                    
                     </Typography>
 
                     <Typography
@@ -194,7 +195,7 @@ function CampgroundSearchPage() {
                         padding: "3px",
                       }}
                     >
-                      리뷰 (예시)개
+                     
                     </Typography>
                   </Box>
                   <h1

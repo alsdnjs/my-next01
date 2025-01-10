@@ -124,27 +124,7 @@ const Sidebar = () => {
       ))}
 
       <Divider />
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          marginTop: "20px",
-          padding: "10px",
-          backgroundColor: "#FFFFFF",
-          borderRadius: "10px",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <Avatar src="" alt="Jane Doe" sx={{ marginRight: "10px" }} />
-        <Box>
-          <Typography variant="body1" fontWeight="bold">
-            Jane Doe
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            Maintenance Lead
-          </Typography>
-        </Box>
-      </Box>
+      
     </Box>
   );
 };
